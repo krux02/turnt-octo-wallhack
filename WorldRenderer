@@ -1,0 +1,103 @@
+package main
+
+import "github.com/go-gl/gl"
+
+type Vertex struct {
+	position mathgl.Vec3f
+	normal   mathgl.Vec3f
+}
+
+type WorldRenderer struct {
+	Program       gl.Program
+	WorldRenLoc   WorldRenderLocations
+	WorldVAO      gl.VertexArray
+	Indices       gl.Buffer
+	Vertices      gl.Buffer
+	WorldNumverts int
+}
+
+type WorldRenderLocations struct {
+	vertexPosition_modelspace gl.AttribLocation
+	vertexNormal_modelspace   gl.AttribLocation
+	matrix                    gl.UniformLocation
+	model                     gl.UniformLocation
+	time                      gl.UniformLocation
+	seaLevel                  gl.UniformLocation
+	highlight                 gl.UniformLocation
+	// u_color                   gl.UniformLocation
+	// u_texture                 gl.UniformLocation
+	// u_slope                   gl.UniformLocation
+	// u_screenRect              gl.UniformLocation
+	// min_h                     gl.UniformLocation
+	// max_h                     gl.UniformLocation
+}
+
+func NewWorldRenderer(heightMap *HeightMap) *WorldRenderer {
+	vertices := heights.Vertices()
+	indices := heights.Triangulate()
+	min_h, max_h := heights.Bounds()
+
+	prog := helper.MakeProgram("World.vs", "World.fs")
+	defer prog.Delete()
+	prog.Use()
+
+	vao_A := gl.GenVertexArray()
+	defer vao_A.Delete()
+	vao_A.Bind()
+	vertexPosLoc := prog.GetAttribLocation("vertexPosition_modelspace")
+	vertexPosLoc.EnableArray()
+	vertexNormLoc := prog.GetAttribLocation("vertexNormal_modelspace")
+	vertexNormLoc.EnableArray()
+
+	indexBuffer := gl.GenBuffer()
+	defer indexBuffer.Delete()
+	indexBuffer.Bind(gl.ELEMENT_ARRAY_BUFFER)
+	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(indices)*int(unsafe.Sizeof(int(0))), indices, gl.STATIC_DRAW)
+
+	verticesBuffer := gl.GenBuffer()
+	defer verticesBuffer.Delete()
+
+	verticesBuffer.Bind(gl.ARRAY_BUFFER)
+	gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*int(unsafe.Sizeof(Vertex{})), vertices, gl.STATIC_DRAW)
+	vertexPosLoc.AttribPointer(3, gl.FLOAT, false, vertexStride, unsafe.Offsetof(Vertex{}.position))
+	vertexNormLoc.AttribPointer(3, gl.FLOAT, false, vertexStride, unsafe.Offsetof(Vertex{}.normal))
+
+	matrixLoc := prog.GetUniformLocation("matrix")
+	modelLoc := prog.GetUniformLocation("model")
+	timeLoc := prog.GetUniformLocation("time")
+	seaLevelLoc := prog.GetUniformLocation("seaLevel")
+	highlightLoc := prog.GetUniformLocation("highlight")
+
+	prog.GetUniformLocation("u_color").Uniform1i(0)
+	prog.GetUniformLocation("u_texture").Uniform1i(1)
+	prog.GetUniformLocation("u_slope").Uniform1i(2)
+	prog.GetUniformLocation("u_screenRect").Uniform1i(3)
+	prog.GetUniformLocation("min_h").Uniform1f(min_h)
+	prog.GetUniformLocation("max_h").Uniform1f(max_h)
+
+	wrl := WorldRenderLocations{
+		vertexPosLoc,
+		vertexNormLoc,
+		matrixLoc,
+		modelLoc,
+		timeLoc,
+		seaLevelLoc,
+		highlightLoc,
+	}
+
+	return &WorldRenderer{
+		prog,
+		wrl,
+		vao_A,
+		indexBuffer,
+		verticesBuffer,
+		len(indices),
+	}
+}
+
+func (wr *WorldRenderer) Delete() {
+	wr.Program.Delete()
+	wr.WorldVAO.Delete()
+	wr.Indices.Delete()
+	wr.Vertices.Delete()
+}

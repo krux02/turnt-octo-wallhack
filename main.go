@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/Jragonmiris/mathgl/examples/opengl-tutorial/helper"
+	//	"github.com/Jragonmiris/mathgl/examples/opengl-tutorial/helper"
 	"github.com/go-gl/gl"
 	"github.com/go-gl/glfw"
 	"github.com/krux02/mathgl"
@@ -12,29 +12,21 @@ import (
 	"unsafe"
 )
 
-type Vertex struct {
-	position mathgl.Vec3f
-	normal   mathgl.Vec3f
-}
-
 type GameState struct {
 	Camera         *Camera
+	Proj           mathgl.Mat4f
 	HeightMap      *HeightMap
 	ParticleSystem *ParticleSystem
+	ParticlesVAO   gl.VertexArray
+	WordlRenderer  *WorldRenderer
 	Player         Player
+	fps            float32
 }
 
 const vertexStride = int(unsafe.Sizeof(Vertex{}))
 
-var mat1 = mathgl.Perspective(90, 4.0/3.0, 0.01, 1000)
-
-func Resize(width int, height int) {
-	gl.Viewport(0, 0, width, height)
-	mat1 = mathgl.Perspective(90, float64(width)/float64(height), 0.1, 1000)
-
-	tw.WindowSize(width, height)
-	// RandomNoiseRectangle(width, height)
-}
+const w = 128
+const h = 128
 
 func main() {
 	if err := glfw.Init(); err != nil {
@@ -53,6 +45,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 		return
 	}
+
 	gl.Init()
 	gl.GetError() // Ignore error
 
@@ -69,62 +62,20 @@ func main() {
 
 	xxx := 0
 
+	var fps float32
 	bar.AddButton("but1", func() { fmt.Printf("but1 %d\n", xxx); xxx += 1 }, "")
 	bar.AddButton("but2", func() { fmt.Printf("but2 %d\n", xxx); xxx += 1 }, "")
-
-	//C.TwWindowSize(1024, 768);
-
-	glfw.SetWindowSizeCallback(Resize)
+	bar.AddVarRO("fps", tw.TYPE_FLOAT, unsafe.Pointer(&fps), "")
 
 	initDebugContext()
 
-	const w = 128
-	const h = 128
-
 	heights := NewHeightMap(w, h)
 	heights.DiamondSquare(w)
-	vertices := heights.Vertices()
-	indices := heights.Triangulate()
 	min_h, max_h := heights.Bounds()
 
+	wr := NewWorldRenderer(heights)
+
 	gl.ClearColor(0., 0., 0.4, 0.)
-
-	prog := helper.MakeProgram("World.vs", "World.fs")
-	defer prog.Delete()
-	prog.Use()
-
-	vao_A := gl.GenVertexArray()
-	defer vao_A.Delete()
-	vao_A.Bind()
-	vertexPosLoc := prog.GetAttribLocation("vertexPosition_modelspace")
-	vertexPosLoc.EnableArray()
-	vertexNormLoc := prog.GetAttribLocation("vertexNormal_modelspace")
-	vertexNormLoc.EnableArray()
-
-	indexBuffer := gl.GenBuffer()
-	defer indexBuffer.Delete()
-	indexBuffer.Bind(gl.ELEMENT_ARRAY_BUFFER)
-	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(indices)*int(unsafe.Sizeof(int(0))), indices, gl.STATIC_DRAW)
-
-	verticesBuffer := gl.GenBuffer()
-	defer verticesBuffer.Delete()
-	verticesBuffer.Bind(gl.ARRAY_BUFFER)
-	gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*int(unsafe.Sizeof(Vertex{})), vertices, gl.STATIC_DRAW)
-	vertexPosLoc.AttribPointer(3, gl.FLOAT, false, vertexStride, unsafe.Offsetof(Vertex{}.position))
-	vertexNormLoc.AttribPointer(3, gl.FLOAT, false, vertexStride, unsafe.Offsetof(Vertex{}.normal))
-
-	matrixLoc := prog.GetUniformLocation("matrix")
-	modelLoc := prog.GetUniformLocation("model")
-	timeLoc := prog.GetUniformLocation("time")
-	seaLevelLoc := prog.GetUniformLocation("seaLevel")
-	highlightLoc := prog.GetUniformLocation("highlight")
-
-	prog.GetUniformLocation("u_color").Uniform1i(0)
-	prog.GetUniformLocation("u_texture").Uniform1i(1)
-	prog.GetUniformLocation("u_slope").Uniform1i(2)
-	prog.GetUniformLocation("u_screenRect").Uniform1i(3)
-	prog.GetUniformLocation("min_h").Uniform1f(min_h)
-	prog.GetUniformLocation("max_h").Uniform1f(max_h)
 
 	InitScreenQuad()
 
@@ -135,17 +86,6 @@ func main() {
 	gl.ActiveTexture(gl.TEXTURE5)
 
 	ps := NewParticleSystem(100000, mathgl.Vec3f{32, 32, 32}, 0.1, 500)
-
-	gamestate := GameState{
-		nil,
-		heights,
-		ps,
-		&MyPlayer{Camera{mathgl.Vec3f{5, 5, 10}, mathgl.QuatIdentf()}, PlayerInput{}, mathgl.Vec3f{}},
-	}
-
-	gamestate.Camera = gamestate.Player.GetCamera()
-
-	InitInput(&gamestate)
 
 	gl.Enable(gl.DEPTH_TEST)
 
@@ -160,49 +100,73 @@ func main() {
 
 	gl.Enable(gl.CULL_FACE)
 
+	gamestate := GameState{
+		nil,
+		mathgl.Perspective(90, 4.0/3.0, 0.01, 1000),
+		heights,
+		ps,
+		vao_C,
+		wr,
+		&MyPlayer{Camera{mathgl.Vec3f{5, 5, 10}, mathgl.QuatIdentf()}, PlayerInput{}, mathgl.Vec3f{}},
+		0,
+	}
+	gamestate.Camera = gamestate.Player.GetCamera()
+
+	glfw.SetWindowSizeCallback(func(width int, height int) {
+		gl.Viewport(0, 0, width, height)
+		gamestate.Proj = mathgl.Perspective(90, float64(width)/float64(height), 0.1, 1000)
+		tw.WindowSize(width, height)
+	})
+
+	InitInput(&gamestate)
+
+	MainLoop(&gamestate)
+}
+
+func MainLoop(gamestate *GameState) {
+	var frames int
+	time := glfw.Time()
 	for ok := true; ok; ok = (glfw.Key(glfw.KeyEsc) != glfw.KeyPress && glfw.WindowParam(glfw.Opened) == gl.TRUE) {
-		Input(&gamestate)
+		frames += 1
 
-		gamestate.Player.Update(&gamestate)
+		if glfw.Time() > time+1 {
+			gamestate.fps = float32(frames)
+			frames = 0
+			time = glfw.Time()
+		}
 
-		mat2 := gamestate.Camera.View()
+		Input(gamestate)
 
-		prog.Use()
+		gamestate.Player.Update(gamestate)
+
+		view := gamestate.Camera.View()
+		projView := gamestate.Proj.Mul4(view)
+
+		gamestate.WordlRenderer.Program.Use()
 
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-		timeLoc.Uniform1f(float32(glfw.Time()))
-		seaLevelLoc.Uniform1f(float32(math.Sin(glfw.Time()*0.1)*10 - 5))
-		highlightLoc.Uniform1f(float32(highlight))
+
+		Loc := gamestate.WordlRenderer.WorldRenLoc
+
+		Loc.time.Uniform1f(float32(glfw.Time()))
+		Loc.seaLevel.Uniform1f(float32(math.Sin(glfw.Time()*0.1)*10 - 5))
+		Loc.highlight.Uniform1f(float32(highlight))
 
 		gl.Disable(gl.BLEND)
 
-		prog.Use()
-		vao_A.Bind()
-		numverts := len(indices)
+		gamestate.WordlRenderer.Render(gamestate)
 
-		mathgl.Translate3D(w, 0, 0)
+		gamestate.ParticlesVAO.Bind()
 
-		projView := mat1.Mul4(mat2)
+		gamestate.ParticleSystem.DoStep()
 
 		for i := -2; i <= 2; i++ {
 			for j := -2; j <= 2; j++ {
 				modelMat := mathgl.Translate3D(float64(i*w), float64(j*h), 0)
 				finalMat := projView.Mul4(modelMat)
-				matrixLoc.UniformMatrix4f(false, (*[16]float32)(&finalMat))
-				modelLoc.UniformMatrix4f(false, (*[16]float32)(&modelMat))
-				gl.DrawElements(gl.TRIANGLES, numverts, gl.UNSIGNED_INT, uintptr(0))
+				gamestate.ParticleSystem.Render(&finalMat)
 			}
 		}
-
-		finalMat := projView
-
-		vao_C.Bind()
-		gl.BlendFunc(gl.SRC_ALPHA, gl.ONE)
-		gl.Enable(gl.BLEND)
-		gl.DepthMask(false)
-
-		ps.DoStep()
-		ps.Render(&finalMat)
 
 		//RenderScreenQuad()
 
