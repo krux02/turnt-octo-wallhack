@@ -1,10 +1,9 @@
 package main
 
 import (
-	"github.com/Jragonmiris/mathgl/examples/opengl-tutorial/helper"
 	"github.com/go-gl/gl"
 	"github.com/go-gl/glh"
-	"github.com/go-gl/glfw"
+	glfw "github.com/go-gl/glfw3"
 	"github.com/krux02/mathgl"
 	"io/ioutil"
 	"math/rand"
@@ -92,7 +91,7 @@ func NewParticleSystem(numParticles int, origin mathgl.Vec3f, initialSpeed, maxL
 		program.GetUniformLocation("u_maxLifetime"),
 	}
 
-	renderProgram := helper.MakeProgram("Particle.vs", "Particle.fs")
+	renderProgram := MakeProgram("Particle.vs", "Particle.fs")
 	renderLocations := RenderProgramLocations{
 		renderProgram.GetAttribLocation("a_pos1"),
 		renderProgram.GetAttribLocation("a_lifetime"),
@@ -138,7 +137,7 @@ func (ps *ParticleSystem) DoStep() {
 	ps.Locations.pos2.AttribPointer(3, gl.FLOAT, false, int(unsafe.Sizeof(ParticleVertex{})), unsafe.Offsetof(ParticleVertex{}.Pos2))
 	ps.Locations.lifetime.AttribPointer(1, gl.FLOAT, false, int(unsafe.Sizeof(ParticleVertex{})), unsafe.Offsetof(ParticleVertex{}.Lifetime))
 
-	time := glfw.Time()
+	time := glfw.GetTime()
 	ps.Locations.origin.Uniform3f(100*float32(math.Sin(time)),100*float32(math.Cos(time)),100)
 
 	ps.Data2.BindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0)

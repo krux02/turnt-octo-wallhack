@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/Jragonmiris/mathgl/examples/opengl-tutorial/helper"
 	"github.com/go-gl/gl"
 	"github.com/krux02/mathgl"
 	"unsafe"
@@ -11,7 +10,7 @@ var progB gl.Program
 var vao_B gl.VertexArray
 
 func InitScreenQuad() {
-	progB = helper.MakeProgram("screenQuad.vs", "ScreenQuad.fs")
+	progB = MakeProgram("screenQuad.vs", "ScreenQuad.fs")
 
 	progB.Use()
 

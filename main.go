@@ -2,17 +2,33 @@ package main
 
 import (
 	"fmt"
-	//	"github.com/Jragonmiris/mathgl/examples/opengl-tutorial/helper"
 	"github.com/go-gl/gl"
-	"github.com/go-gl/glfw"
+	glfw "github.com/go-gl/glfw3"
+	"github.com/go-gl/glh"
 	"github.com/krux02/mathgl"
 	"github.com/krux02/tw"
+	"io/ioutil"
 	"math"
 	"os"
 	"unsafe"
 )
 
+func MakeProgram(vertFname, fragFname string) gl.Program {
+	vertSource, err := ioutil.ReadFile(vertFname)
+	if err != nil {
+		panic(err)
+	}
+
+	fragSource, err := ioutil.ReadFile(fragFname)
+	if err != nil {
+		panic(err)
+	}
+
+	return glh.NewProgram(glh.Shader{gl.VERTEX_SHADER, string(vertSource)}, glh.Shader{gl.FRAGMENT_SHADER, string(fragSource)})
+}
+
 type GameState struct {
+	Window         *glfw.Window
 	Camera         *Camera
 	Proj           mathgl.Mat4f
 	HeightMap      *HeightMap
@@ -28,29 +44,32 @@ const vertexStride = int(unsafe.Sizeof(Vertex{}))
 const w = 128
 const h = 128
 
+func errorCallback(err glfw.ErrorCode, desc string) {
+	fmt.Printf("%v: %v\n", err, desc)
+}
+
 func main() {
-	if err := glfw.Init(); err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
-		return
-	}
+	glfw.Init()
 	defer glfw.Terminate()
 
-	glfw.OpenWindowHint(glfw.FsaaSamples, 4)
-	glfw.OpenWindowHint(glfw.OpenGLVersionMajor, 3)
-	glfw.OpenWindowHint(glfw.OpenGLVersionMinor, 3)
-	glfw.OpenWindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
-	glfw.OpenWindowHint(glfw.OpenGLDebugContext, gl.TRUE)
+	glfw.WindowHint(glfw.Samples, 4)
+	glfw.WindowHint(glfw.ContextVersionMajor, 3)
+	glfw.WindowHint(glfw.ContextVersionMinor, 3)
+	glfw.WindowHint(glfw.OpenglProfile, glfw.OpenglCoreProfile)
+	glfw.WindowHint(glfw.OpenglDebugContext, gl.TRUE)
 
-	if err := glfw.OpenWindow(1024, 768, 0, 0, 0, 0, 32, 0, glfw.Windowed); err != nil {
+	window, err := glfw.CreateWindow(1024, 768, "gogog", nil, nil)
+	if window == nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 		return
 	}
+
+	window.MakeContextCurrent()
 
 	gl.Init()
 	gl.GetError() // Ignore error
 
-	glfw.SetWindowTitle("gogogo")
-	glfw.Enable(glfw.StickyKeys)
+	window.SetInputMode(glfw.StickyKeys, gl.TRUE)
 
 	speed := 0.0
 
@@ -101,6 +120,7 @@ func main() {
 	gl.Enable(gl.CULL_FACE)
 
 	gamestate := GameState{
+		window,
 		nil,
 		mathgl.Perspective(90, 4.0/3.0, 0.01, 1000),
 		heights,
@@ -112,11 +132,13 @@ func main() {
 	}
 	gamestate.Camera = gamestate.Player.GetCamera()
 
-	glfw.SetWindowSizeCallback(func(width int, height int) {
+	window.SetSizeCallback(func(window *glfw.Window, width int, height int) {
 		gl.Viewport(0, 0, width, height)
 		gamestate.Proj = mathgl.Perspective(90, float64(width)/float64(height), 0.1, 1000)
 		tw.WindowSize(width, height)
 	})
+
+	tw.WindowSize(1024, 768)
 
 	InitInput(&gamestate)
 
@@ -125,14 +147,21 @@ func main() {
 
 func MainLoop(gamestate *GameState) {
 	var frames int
-	time := glfw.Time()
-	for ok := true; ok; ok = (glfw.Key(glfw.KeyEsc) != glfw.KeyPress && glfw.WindowParam(glfw.Opened) == gl.TRUE) {
-		frames += 1
+	time := glfw.GetTime()
 
-		if glfw.Time() > time+1 {
+	window := gamestate.Window
+
+	ok := true
+
+	window.SetCloseCallback(func(window *glfw.Window) { ok = false })
+
+	for ok {
+		ok = ok && window.GetKey(glfw.KeyEscape) != glfw.Press
+
+		if glfw.GetTime() > time+1 {
 			gamestate.fps = float32(frames)
 			frames = 0
-			time = glfw.Time()
+			time = glfw.GetTime()
 		}
 
 		Input(gamestate)
@@ -148,8 +177,8 @@ func MainLoop(gamestate *GameState) {
 
 		Loc := gamestate.WordlRenderer.WorldRenLoc
 
-		Loc.time.Uniform1f(float32(glfw.Time()))
-		Loc.seaLevel.Uniform1f(float32(math.Sin(glfw.Time()*0.1)*10 - 5))
+		Loc.time.Uniform1f(float32(glfw.GetTime()))
+		Loc.seaLevel.Uniform1f(float32(math.Sin(glfw.GetTime()*0.1)*10 - 5))
 		Loc.highlight.Uniform1f(float32(highlight))
 
 		gl.Disable(gl.BLEND)
@@ -174,6 +203,7 @@ func MainLoop(gamestate *GameState) {
 
 		tw.Draw()
 
-		glfw.SwapBuffers()
+		window.SwapBuffers()
+		glfw.PollEvents()
 	}
 }

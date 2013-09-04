@@ -3,7 +3,6 @@ package main
 import "github.com/go-gl/gl"
 import "github.com/krux02/mathgl"
 import "unsafe"
-import "github.com/Jragonmiris/mathgl/examples/opengl-tutorial/helper"
 
 
 type Vertex struct {
@@ -41,7 +40,7 @@ func NewWorldRenderer(heightMap *HeightMap) *WorldRenderer {
 	indices := heightMap.Triangulate()
 	min_h, max_h := heightMap.Bounds()
 
-	prog := helper.MakeProgram("World.vs", "World.fs")
+	prog := MakeProgram("World.vs", "World.fs")
 	prog.Use()
 
 	vao_A := gl.GenVertexArray()
