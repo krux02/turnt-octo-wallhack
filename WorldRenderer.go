@@ -4,10 +4,10 @@ import "github.com/go-gl/gl"
 import "github.com/krux02/mathgl"
 import "unsafe"
 
+// import "fmt"
 
 type Vertex struct {
-	position mathgl.Vec3f
-	normal   mathgl.Vec3f
+	Vertex_ms, Normal_ms mathgl.Vec3f
 }
 
 type WorldRenderer struct {
@@ -20,19 +20,9 @@ type WorldRenderer struct {
 }
 
 type WorldRenderLocations struct {
-	vertexPosition_modelspace gl.AttribLocation
-	vertexNormal_modelspace   gl.AttribLocation
-	matrix                    gl.UniformLocation
-	model                     gl.UniformLocation
-	time                      gl.UniformLocation
-	seaLevel                  gl.UniformLocation
-	highlight                 gl.UniformLocation
-	// u_color                   gl.UniformLocation
-	// u_texture                 gl.UniformLocation
-	// u_slope                   gl.UniformLocation
-	// u_screenRect              gl.UniformLocation
-	// min_h                     gl.UniformLocation
-	// max_h                     gl.UniformLocation
+	Vertex_ms, Normal_ms                                    gl.AttribLocation
+	Matrix, Model, Time, SeaLevel, Highlight                gl.UniformLocation
+	Min_h, Max_h, U_color, U_texture, U_slope, U_screenRect gl.UniformLocation
 }
 
 func NewWorldRenderer(heightMap *HeightMap) *WorldRenderer {
@@ -45,48 +35,30 @@ func NewWorldRenderer(heightMap *HeightMap) *WorldRenderer {
 
 	vao_A := gl.GenVertexArray()
 	vao_A.Bind()
-	vertexPosLoc := prog.GetAttribLocation("vertexPosition_modelspace")
-	vertexPosLoc.EnableArray()
-	vertexNormLoc := prog.GetAttribLocation("vertexNormal_modelspace")
-	vertexNormLoc.EnableArray()
+
+	Loc := WorldRenderLocations{}
+	BindLocations(prog, &Loc)
 
 	indexBuffer := gl.GenBuffer()
 	indexBuffer.Bind(gl.ELEMENT_ARRAY_BUFFER)
 	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(indices)*int(unsafe.Sizeof(int(0))), indices, gl.STATIC_DRAW)
 
 	verticesBuffer := gl.GenBuffer()
-
 	verticesBuffer.Bind(gl.ARRAY_BUFFER)
 	gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*int(unsafe.Sizeof(Vertex{})), vertices, gl.STATIC_DRAW)
-	vertexPosLoc.AttribPointer(3, gl.FLOAT, false, vertexStride, unsafe.Offsetof(Vertex{}.position))
-	vertexNormLoc.AttribPointer(3, gl.FLOAT, false, vertexStride, unsafe.Offsetof(Vertex{}.normal))
 
-	matrixLoc := prog.GetUniformLocation("matrix")
-	modelLoc := prog.GetUniformLocation("model")
-	timeLoc := prog.GetUniformLocation("time")
-	seaLevelLoc := prog.GetUniformLocation("seaLevel")
-	highlightLoc := prog.GetUniformLocation("highlight")
+	SetAttribPointers(&Loc, &Vertex{})
 
-	prog.GetUniformLocation("u_color").Uniform1i(0)
-	prog.GetUniformLocation("u_texture").Uniform1i(1)
-	prog.GetUniformLocation("u_slope").Uniform1i(2)
-	prog.GetUniformLocation("u_screenRect").Uniform1i(3)
-	prog.GetUniformLocation("min_h").Uniform1f(min_h)
-	prog.GetUniformLocation("max_h").Uniform1f(max_h)
-
-	wrl := WorldRenderLocations{
-		vertexPosLoc,
-		vertexNormLoc,
-		matrixLoc,
-		modelLoc,
-		timeLoc,
-		seaLevelLoc,
-		highlightLoc,
-	}
+	Loc.U_color.Uniform1i(0)
+	Loc.U_texture.Uniform1i(1)
+	Loc.U_slope.Uniform1i(2)
+	Loc.U_screenRect.Uniform1i(3)
+	Loc.Min_h.Uniform1f(min_h)
+	Loc.Max_h.Uniform1f(max_h)
 
 	return &WorldRenderer{
 		prog,
-		wrl,
+		Loc,
 		vao_A,
 		indexBuffer,
 		verticesBuffer,
@@ -116,8 +88,8 @@ func (wr *WorldRenderer) Render(gamestate *GameState) {
 			modelMat := mathgl.Translate3D(float64(i*w), float64(j*h), 0)
 			finalMat := projView.Mul4(modelMat)
 
-			wr.WorldRenLoc.matrix.UniformMatrix4f(false, (*[16]float32)(&finalMat))
-			wr.WorldRenLoc.model.UniformMatrix4f(false, (*[16]float32)(&modelMat))
+			wr.WorldRenLoc.Matrix.UniformMatrix4f(false, (*[16]float32)(&finalMat))
+			wr.WorldRenLoc.Model.UniformMatrix4f(false, (*[16]float32)(&modelMat))
 
 			gl.DrawElements(gl.TRIANGLES, numverts, gl.UNSIGNED_INT, uintptr(0))
 		}
@@ -127,5 +99,3 @@ func (wr *WorldRenderer) Render(gamestate *GameState) {
 	gl.Enable(gl.BLEND)
 	gl.DepthMask(false)
 }
-
-		

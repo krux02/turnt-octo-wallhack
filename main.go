@@ -14,17 +14,27 @@ import (
 )
 
 func MakeProgram(vertFname, fragFname string) gl.Program {
+
+	vertFname = fmt.Sprintf("shaders/%s", vertFname)
+	fragFname = fmt.Sprintf("shaders/%s", fragFname)
+	
 	vertSource, err := ioutil.ReadFile(vertFname)
 	if err != nil {
+		fmt.Println("can't read file", vertFname)
 		panic(err)
 	}
 
 	fragSource, err := ioutil.ReadFile(fragFname)
 	if err != nil {
+		fmt.Println("can't read file", fragFname)
 		panic(err)
 	}
 
 	return glh.NewProgram(glh.Shader{gl.VERTEX_SHADER, string(vertSource)}, glh.Shader{gl.FRAGMENT_SHADER, string(fragSource)})
+}
+
+type ViewPort struct {
+
 }
 
 type GameState struct {
@@ -33,7 +43,6 @@ type GameState struct {
 	Proj           mathgl.Mat4f
 	HeightMap      *HeightMap
 	ParticleSystem *ParticleSystem
-	ParticlesVAO   gl.VertexArray
 	WordlRenderer  *WorldRenderer
 	Player         Player
 	fps            float32
@@ -109,13 +118,12 @@ func main() {
 	gl.Enable(gl.DEPTH_TEST)
 
 	ps.Program.Use()
-	ps.Program.GetUniformLocation("heights").Uniform1i(4)
-	ps.Program.GetUniformLocation("lowerBound").Uniform3f(0, 0, min_h)
-	ps.Program.GetUniformLocation("upperBound").Uniform3f(w, h, max_h)
+
+	ps.Locations.Heights.Uniform1i(4)
+	ps.Locations.LowerBound.Uniform3f(0, 0, min_h)
+	ps.Locations.UpperBound.Uniform3f(w, h, max_h)
 
 	gl.PointSize(4)
-
-	vao_C := gl.GenVertexArray()
 
 	gl.Enable(gl.CULL_FACE)
 
@@ -125,7 +133,6 @@ func main() {
 		mathgl.Perspective(90, 4.0/3.0, 0.01, 1000),
 		heights,
 		ps,
-		vao_C,
 		wr,
 		&MyPlayer{Camera{mathgl.Vec3f{5, 5, 10}, mathgl.QuatIdentf()}, PlayerInput{}, mathgl.Vec3f{}},
 		0,
@@ -151,12 +158,7 @@ func MainLoop(gamestate *GameState) {
 
 	window := gamestate.Window
 
-	ok := true
-
-	window.SetCloseCallback(func(window *glfw.Window) { ok = false })
-
-	for ok {
-		ok = ok && window.GetKey(glfw.KeyEscape) != glfw.Press
+	for !window.ShouldClose() && window.GetKey(glfw.KeyEscape) != glfw.Press {
 
 		if glfw.GetTime() > time+1 {
 			gamestate.fps = float32(frames)
@@ -168,7 +170,7 @@ func MainLoop(gamestate *GameState) {
 
 		gamestate.Player.Update(gamestate)
 
-		view := gamestate.Camera.View()
+		view     := gamestate.Camera.View()
 		projView := gamestate.Proj.Mul4(view)
 
 		gamestate.WordlRenderer.Program.Use()
@@ -177,25 +179,18 @@ func MainLoop(gamestate *GameState) {
 
 		Loc := gamestate.WordlRenderer.WorldRenLoc
 
-		Loc.time.Uniform1f(float32(glfw.GetTime()))
-		Loc.seaLevel.Uniform1f(float32(math.Sin(glfw.GetTime()*0.1)*10 - 5))
-		Loc.highlight.Uniform1f(float32(highlight))
+		Loc.Time.Uniform1f(float32(glfw.GetTime()))
+		Loc.SeaLevel.Uniform1f(float32(math.Sin(glfw.GetTime()*0.1)*10 - 5))
+		Loc.Highlight.Uniform1f(float32(highlight))
 
 		gl.Disable(gl.BLEND)
 
 		gamestate.WordlRenderer.Render(gamestate)
 
-		gamestate.ParticlesVAO.Bind()
-
 		gamestate.ParticleSystem.DoStep()
 
-		for i := -2; i <= 2; i++ {
-			for j := -2; j <= 2; j++ {
-				modelMat := mathgl.Translate3D(float64(i*w), float64(j*h), 0)
-				finalMat := projView.Mul4(modelMat)
-				gamestate.ParticleSystem.Render(&finalMat)
-			}
-		}
+		finalMat := projView
+		gamestate.ParticleSystem.Render(&finalMat)
 
 		//RenderScreenQuad()
 

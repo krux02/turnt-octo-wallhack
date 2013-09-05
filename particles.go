@@ -2,14 +2,16 @@ package main
 
 import (
 	"github.com/go-gl/gl"
-	"github.com/go-gl/glh"
 	glfw "github.com/go-gl/glfw3"
+	"github.com/go-gl/glh"
 	"github.com/krux02/mathgl"
 	"io/ioutil"
+	"math"
 	"math/rand"
 	"unsafe"
-	"math"
 )
+
+import "fmt"
 
 type ParticleVertex struct {
 	Pos1     mathgl.Vec3f
@@ -18,19 +20,16 @@ type ParticleVertex struct {
 }
 
 type ProgramLocations struct {
-	pos1        gl.AttribLocation
-	pos2        gl.AttribLocation
-	lifetime    gl.AttribLocation
-	origin      gl.UniformLocation
-	gravity     gl.UniformLocation
-	maxLifetime gl.UniformLocation
+	Pos1, Pos2, Lifetime            gl.AttribLocation
+	Origin, Gravity, MaxLifetime    gl.UniformLocation
+	Heights, LowerBound, UpperBound gl.UniformLocation
 }
 
 type RenderProgramLocations struct {
-	pos1        gl.AttribLocation
-	lifetime    gl.AttribLocation
-	matrix      gl.UniformLocation
-	maxLifetime gl.UniformLocation
+	Pos1        gl.AttribLocation
+	Lifetime    gl.AttribLocation
+	Matrix      gl.UniformLocation
+	MaxLifetime gl.UniformLocation
 }
 
 type ParticleSystem struct {
@@ -38,6 +37,7 @@ type ParticleSystem struct {
 	Locations       ProgramLocations
 	RenderProgram   gl.Program
 	RenderLocations RenderProgramLocations
+	VertexArray     gl.VertexArray
 	Data1           gl.Buffer
 	Data2           gl.Buffer
 	NumParticles    int
@@ -47,7 +47,7 @@ type ParticleSystem struct {
 	MaxLifetime     float32
 }
 
-func NewParticleSystem(numParticles int, origin mathgl.Vec3f, initialSpeed, maxLifetime float32) *ParticleSystem {
+func NewParticleSystem(numParticles int, Origin mathgl.Vec3f, initialSpeed, MaxLifetime float32) *ParticleSystem {
 	vertices := make([]ParticleVertex, numParticles)
 	buffer1, buffer2 := gl.GenBuffer(), gl.GenBuffer()
 
@@ -57,8 +57,11 @@ func NewParticleSystem(numParticles int, origin mathgl.Vec3f, initialSpeed, maxL
 			dir = mathgl.Vec3f{rand.Float32()*2 - 1, rand.Float32()*2 - 1, rand.Float32()*2 - 1}
 		}
 		dir = dir.Mul(initialSpeed)
-		vertices[i] = ParticleVertex{origin, origin.Sub(dir), rand.Float32() * maxLifetime}
+		vertices[i] = ParticleVertex{Origin, Origin.Sub(dir), rand.Float32() * MaxLifetime}
 	}
+
+	vao := gl.GenVertexArray()
+	vao.Bind()
 
 	buffer1.Bind(gl.ARRAY_BUFFER)
 	gl.BufferData(gl.ARRAY_BUFFER, numParticles*int(unsafe.Sizeof(ParticleVertex{})), vertices, gl.STREAM_DRAW)
@@ -68,7 +71,7 @@ func NewParticleSystem(numParticles int, origin mathgl.Vec3f, initialSpeed, maxL
 
 	program := gl.CreateProgram()
 
-	content, err := ioutil.ReadFile("ParticleTFF.vs")
+	content, err := ioutil.ReadFile("shaders/ParticleTFF.vs")
 	if err != nil {
 		panic(err)
 	}
@@ -76,40 +79,31 @@ func NewParticleSystem(numParticles int, origin mathgl.Vec3f, initialSpeed, maxL
 	shader := glh.MakeShader(gl.VERTEX_SHADER, string(content))
 
 	program.AttachShader(shader)
-	program.TransformFeedbackVaryings([]string{"v_pos1", "v_pos2", "v_lifetime"}, gl.INTERLEAVED_ATTRIBS)
-
+	program.TransformFeedbackVaryings([]string{"v_Pos1", "v_Pos2", "v_Lifetime"}, gl.INTERLEAVED_ATTRIBS)
 	program.Link()
+
+	fmt.Println(program.GetInfoLog())
 
 	defer shader.Delete()
 
-	locations := ProgramLocations{
-		program.GetAttribLocation("a_pos1"),
-		program.GetAttribLocation("a_pos2"),
-		program.GetAttribLocation("a_lifetime"),
-		program.GetUniformLocation("u_origin"),
-		program.GetUniformLocation("u_gravity"),
-		program.GetUniformLocation("u_maxLifetime"),
-	}
+	ProgLoc := ProgramLocations{}
+	BindLocations(program, &ProgLoc)
 
 	renderProgram := MakeProgram("Particle.vs", "Particle.fs")
-	renderLocations := RenderProgramLocations{
-		renderProgram.GetAttribLocation("a_pos1"),
-		renderProgram.GetAttribLocation("a_lifetime"),
-		renderProgram.GetUniformLocation("matrix"),
-		renderProgram.GetUniformLocation("u_maxLifetime"),
-	}
+	RenderLoc := RenderProgramLocations{}
+	BindLocations(renderProgram, &RenderLoc)
 
-	return &ParticleSystem{program, locations, renderProgram, renderLocations, buffer1, buffer2, numParticles, origin, -9.81 / 200, initialSpeed, maxLifetime}
+	return &ParticleSystem{program, ProgLoc, renderProgram, RenderLoc, vao, buffer1, buffer2, numParticles, Origin, -9.81 / 200, initialSpeed, MaxLifetime}
 }
 
 func (ps *ParticleSystem) SetUniformsAndProgram() {
 	ps.Program.Use()
-	ps.Locations.origin.Uniform3f(ps.Origin[0], ps.Origin[1], ps.Origin[2])
-	ps.Locations.gravity.Uniform1f(ps.Gravity)
-	ps.Locations.maxLifetime.Uniform1f(ps.MaxLifetime)
-	ps.Locations.pos1.EnableArray()
-	ps.Locations.pos2.EnableArray()
-	ps.Locations.lifetime.EnableArray()
+	ps.Locations.Origin.Uniform3f(ps.Origin[0], ps.Origin[1], ps.Origin[2])
+	ps.Locations.Gravity.Uniform1f(ps.Gravity)
+	ps.Locations.MaxLifetime.Uniform1f(ps.MaxLifetime)
+	ps.Locations.Pos1.EnableArray()
+	ps.Locations.Pos2.EnableArray()
+	ps.Locations.Lifetime.EnableArray()
 
 	dirs := make([]float32, 64*3)
 	for i := 0; i < 64; i++ {
@@ -122,10 +116,11 @@ func (ps *ParticleSystem) SetUniformsAndProgram() {
 		dirs[i*3+2] = dir[2]
 	}
 
-	ps.Program.GetUniformLocation("randomDirs").Uniform3fv(64, dirs)
+	ps.Program.GetUniformLocation("RandomDirs").Uniform3fv(64, dirs)
 }
 
 func (ps *ParticleSystem) DoStep() {
+	ps.VertexArray.Bind()
 	ps.SetUniformsAndProgram()
 
 	gl.Enable(gl.RASTERIZER_DISCARD)
@@ -133,12 +128,12 @@ func (ps *ParticleSystem) DoStep() {
 
 	ps.Data1.Bind(gl.ARRAY_BUFFER)
 
-	ps.Locations.pos1.AttribPointer(3, gl.FLOAT, false, int(unsafe.Sizeof(ParticleVertex{})), unsafe.Offsetof(ParticleVertex{}.Pos1))
-	ps.Locations.pos2.AttribPointer(3, gl.FLOAT, false, int(unsafe.Sizeof(ParticleVertex{})), unsafe.Offsetof(ParticleVertex{}.Pos2))
-	ps.Locations.lifetime.AttribPointer(1, gl.FLOAT, false, int(unsafe.Sizeof(ParticleVertex{})), unsafe.Offsetof(ParticleVertex{}.Lifetime))
+	ps.Locations.Pos1.AttribPointer(3, gl.FLOAT, false, int(unsafe.Sizeof(ParticleVertex{})), unsafe.Offsetof(ParticleVertex{}.Pos1))
+	ps.Locations.Pos2.AttribPointer(3, gl.FLOAT, false, int(unsafe.Sizeof(ParticleVertex{})), unsafe.Offsetof(ParticleVertex{}.Pos2))
+	ps.Locations.Lifetime.AttribPointer(1, gl.FLOAT, false, int(unsafe.Sizeof(ParticleVertex{})), unsafe.Offsetof(ParticleVertex{}.Lifetime))
 
 	time := glfw.GetTime()
-	ps.Locations.origin.Uniform3f(100*float32(math.Sin(time)),100*float32(math.Cos(time)),100)
+	ps.Locations.Origin.Uniform3f(100*float32(math.Sin(time)), 100*float32(math.Cos(time)), 100)
 
 	ps.Data2.BindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0)
 
@@ -153,14 +148,24 @@ func (ps *ParticleSystem) DoStep() {
 }
 
 func (ps *ParticleSystem) Render(matrix *mathgl.Mat4f) {
+	ps.VertexArray.Bind()
+
 	ps.RenderProgram.Use()
-	ps.RenderLocations.pos1.EnableArray()
-	ps.RenderLocations.lifetime.EnableArray()
-	ps.RenderLocations.matrix.UniformMatrix4f(false, (*[16]float32)(matrix))
-	ps.RenderLocations.maxLifetime.Uniform1f(ps.MaxLifetime)
+	ps.RenderLocations.Pos1.EnableArray()
+	ps.RenderLocations.Lifetime.EnableArray()
+	ps.RenderLocations.Matrix.UniformMatrix4f(false, (*[16]float32)(matrix))
+	ps.RenderLocations.MaxLifetime.Uniform1f(ps.MaxLifetime)
 
 	ps.Data1.Bind(gl.ARRAY_BUFFER)
-	ps.RenderLocations.pos1.AttribPointer(3, gl.FLOAT, false, int(unsafe.Sizeof(ParticleVertex{})), unsafe.Offsetof(ParticleVertex{}.Pos1))
-	ps.RenderLocations.lifetime.AttribPointer(1, gl.FLOAT, false, int(unsafe.Sizeof(ParticleVertex{})), unsafe.Offsetof(ParticleVertex{}.Lifetime))
+	ps.RenderLocations.Pos1.AttribPointer(3, gl.FLOAT, false, int(unsafe.Sizeof(ParticleVertex{})), unsafe.Offsetof(ParticleVertex{}.Pos1))
+	ps.RenderLocations.Lifetime.AttribPointer(1, gl.FLOAT, false, int(unsafe.Sizeof(ParticleVertex{})), unsafe.Offsetof(ParticleVertex{}.Lifetime))
 	gl.DrawArrays(gl.POINTS, 0, ps.NumParticles)
+}
+
+func (ps *ParticleSystem) Delete() {
+	ps.VertexArray.Delete()
+	ps.Data1.Delete()
+	ps.Data2.Delete()
+	ps.Program.Delete()
+	ps.RenderProgram.Delete()
 }

@@ -40,6 +40,13 @@ func InitInput(gamestate *GameState) {
 			case glfw.KeyKpSubtract:
 				highlight -= 1
 				// highlightLoc.Uniform1f(float32(highlight))
+			case glfw.KeyEnter:
+				switch window.GetInputMode(glfw.Cursor) {
+				case glfw.CursorNormal:
+					window.SetInputMode(glfw.Cursor, glfw.CursorDisabled)
+				default:
+					window.SetInputMode(glfw.Cursor, glfw.CursorNormal)
+				}
 			default:
 			}
 		}

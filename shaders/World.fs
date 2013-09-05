@@ -1,14 +1,13 @@
 #version 330 core
 
-uniform float time;
-uniform float highlight;
+uniform float Highlight;
 
-uniform float min_h = -17;
-uniform float max_h = 28;
-uniform sampler1D u_color;
-uniform sampler2D u_texture;
-uniform sampler2D u_slope;
-uniform sampler2DRect u_screenRect;
+uniform float Min_h = -17;
+uniform float Max_h = 28;
+uniform sampler1D U_color;
+uniform sampler2D U_texture;
+uniform sampler2D U_slope;
+uniform sampler2DRect U_screenRect;
 
 uniform vec3 lightDir = vec3(-0.57735);
 uniform vec3 ambientColor = vec3(0.5);
@@ -25,14 +24,14 @@ void main()
 	float light = dot(-lightDir,normal_ws);
 	vec3 texColorA;
 	if(dot(normal_ws,vec3(0,0,1)) > 0.5)
-		texColorA = texture(u_color,(pos_ws.z-min_h)/(max_h-min_h)).rgb;
+		texColorA = texture(U_color,(pos_ws.z-Min_h)/(Max_h-Min_h)).rgb;
 	else
-		texColorA = texture(u_slope, pos_ws.xy).xyz;
+		texColorA = texture(U_slope, pos_ws.xy).xyz;
 
-	vec3 texColorB = texture(u_texture, pos_ws.xy).xyz;
+	vec3 texColorB = texture(U_texture, pos_ws.xy).xyz;
 	vec3 texColor = texColorA*texColorB;
 	texColor = max((light * sunColor),ambientColor) * mix(v_color.xyz, texColor, v_color.w);
-	vec4 foreGround = texture(u_screenRect, gl_FragCoord.xy);
+	vec4 foreGround = texture(U_screenRect, gl_FragCoord.xy);
 	//texColor = mix(foreGround.xyz, texColor, 0.9);
 	//texColor = foreGround.xyz;
 
@@ -54,7 +53,7 @@ void main()
 	color = texColor;
 	//color = texture(screenRect, gl_FragCoord.xy).rgb;
 
-	if( gl_PrimitiveID == highlight ) {
+	if( gl_PrimitiveID == Highlight ) {
 		color = vec3(1) - color;
 	}
 }

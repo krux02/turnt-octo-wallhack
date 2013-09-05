@@ -1,13 +1,13 @@
 #version 330 core
 
 // Input vertex data, different for all executions of this shader.
-in vec3 vertexPosition_modelspace;
-in vec3 vertexNormal_modelspace;
+in vec3 Vertex_ms;
+in vec3 Normal_ms;
 
-uniform mat4 model;
-uniform mat4 matrix;
-uniform float seaLevel;
-uniform float time;
+uniform mat4 Model;
+uniform mat4 Matrix;
+uniform float SeaLevel;
+uniform float Time;
 
 uniform vec3 waveColor1 = vec3(0,0,1);
 uniform vec3 waveColor2 = vec3(0,1,1);
@@ -19,21 +19,21 @@ out vec3 pos_ws;
 out vec3 normal_ws;
 
 void main() {
-	float wavePos = dot((model*vec4(vertexPosition_modelspace,1)).xy, waveDir)+time;
+	float wavePos = dot((Model*vec4(Vertex_ms,1)).xy, waveDir)+Time;
 	float s = sin(wavePos);
 	float c = cos(wavePos);
-	float waveHeight = s * waveAmplitudeScale + seaLevel;
+	float waveHeight = s * waveAmplitudeScale + SeaLevel;
 
 	vec3 waveNormal = normalize(vec3(waveDir * vec2(-c*waveAmplitudeScale),1));
 	vec3 waveColor = mix(waveColor1, waveColor2, (s+1)/2);
 
-	pos_ws = vertexPosition_modelspace;
+	pos_ws = Vertex_ms;
 	
 	float mixValue = clamp(pos_ws.z-waveHeight, 0, 1);
 	v_color = vec4(waveColor,mixValue);
-	normal_ws = mix(waveNormal, vertexNormal_modelspace, mixValue);
+	normal_ws = mix(waveNormal, Normal_ms, mixValue);
 
-	vec3 pos = vec3( vertexPosition_modelspace.xy, max(waveHeight, vertexPosition_modelspace.z));
+	vec3 pos = vec3( Vertex_ms.xy, max(waveHeight, Vertex_ms.z));
 
-    gl_Position = matrix * vec4(pos,1);
+    gl_Position = Matrix * vec4(pos,1);
 }
