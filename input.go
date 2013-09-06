@@ -3,7 +3,8 @@ package main
 import glfw "github.com/go-gl/glfw3"
 import "github.com/krux02/mathgl"
 import "github.com/krux02/tw"
-import "fmt"
+import "math"
+// import "fmt"
 
 var drag glfw.MouseButton = -1
 var lastMousePos = mathgl.Vec2f{0, 0}
@@ -64,8 +65,7 @@ func InitInput(gamestate *GameState) {
 	}
 
 	MouseMove := func(window *glfw.Window, mouseX, mouseY float64) {
-		fmt.Println("mouse move", mouseX, mouseY)
-		tw.EventMousePosGLFW(int(mouseX), int(mouseY))
+		tw.EventMousePosGLFW(int(math.Floor(mouseX)), int(math.Floor(mouseY)))
 	}
 
 	CharacterType := func(window *glfw.Window, char uint) {

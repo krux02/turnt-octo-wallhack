@@ -2,7 +2,7 @@ package main
 
 import "github.com/go-gl/gl"
 import "github.com/krux02/mathgl"
-import "unsafe"
+import "math"
 
 // import "fmt"
 
@@ -41,11 +41,11 @@ func NewWorldRenderer(heightMap *HeightMap) *WorldRenderer {
 
 	indexBuffer := gl.GenBuffer()
 	indexBuffer.Bind(gl.ELEMENT_ARRAY_BUFFER)
-	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(indices)*int(unsafe.Sizeof(int(0))), indices, gl.STATIC_DRAW)
+	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, ByteSizeOfSlice(indices), indices, gl.STATIC_DRAW)
 
 	verticesBuffer := gl.GenBuffer()
 	verticesBuffer.Bind(gl.ARRAY_BUFFER)
-	gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*int(unsafe.Sizeof(Vertex{})), vertices, gl.STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, ByteSizeOfSlice(vertices), vertices, gl.STATIC_DRAW)
 
 	SetAttribPointers(&Loc, &Vertex{})
 
@@ -73,23 +73,30 @@ func (wr *WorldRenderer) Delete() {
 	wr.Vertices.Delete()
 }
 
-func (wr *WorldRenderer) Render(gamestate *GameState) {
+func (wr *WorldRenderer) Render(world *HeightMap, Proj mathgl.Mat4f, View mathgl.Mat4f, time float64, highlight int) {
+	wr.Program.Use()
 	wr.WorldVAO.Bind()
+
+	Loc := wr.WorldRenLoc
+	Loc.Time.Uniform1f(float32(time))
+	Loc.SeaLevel.Uniform1f(float32(math.Sin(time*0.1)*10 - 5))
+	Loc.Highlight.Uniform1f(float32(highlight))
+
 	numverts := wr.WorldNumverts
 
-	view := gamestate.Camera.View()
-	projView := gamestate.Proj.Mul4(view)
+	
+	ProjView := Proj.Mul4(View)
 
-	w := gamestate.HeightMap.W
-	h := gamestate.HeightMap.H
+	w := world.W
+	h := world.H
 
 	for i := -2; i <= 2; i++ {
 		for j := -2; j <= 2; j++ {
-			modelMat := mathgl.Translate3D(float64(i*w), float64(j*h), 0)
-			finalMat := projView.Mul4(modelMat)
+			Model := mathgl.Translate3D(float64(i*w), float64(j*h), 0)
+			ProjViewModel := ProjView.Mul4(Model)
 
-			wr.WorldRenLoc.Matrix.UniformMatrix4f(false, (*[16]float32)(&finalMat))
-			wr.WorldRenLoc.Model.UniformMatrix4f(false, (*[16]float32)(&modelMat))
+			wr.WorldRenLoc.Matrix.UniformMatrix4f(false, (*[16]float32)(&ProjViewModel))
+			wr.WorldRenLoc.Model.UniformMatrix4f(false, (*[16]float32)(&Model))
 
 			gl.DrawElements(gl.TRIANGLES, numverts, gl.UNSIGNED_INT, uintptr(0))
 		}

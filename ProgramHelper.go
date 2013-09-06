@@ -1,14 +1,13 @@
 package main
 
 import (
-	"reflect"
 	"github.com/go-gl/gl"
 	"github.com/go-gl/glh"
 	"io/ioutil"
+	"reflect"
 )
 
 import "fmt"
-
 
 func ReadShaderFile(name string) string {
 	name = fmt.Sprintf("shaders/%s", name)
@@ -25,11 +24,21 @@ func ReadShaderFile(name string) string {
 func MakeProgram(vertFname, fragFname string) gl.Program {
 	vertSource := ReadShaderFile(vertFname)
 	fragSource := ReadShaderFile(fragFname)
-	
+
 	return glh.NewProgram(glh.Shader{gl.VERTEX_SHADER, vertSource}, glh.Shader{gl.FRAGMENT_SHADER, fragSource})
 }
 
-func BindLocations(prog gl.Program, locations interface{})  {
+func ByteSizeOfSlice(slice interface{}) int {
+	value := reflect.ValueOf(slice)
+	typ := reflect.TypeOf(slice)
+	if( typ.Kind() != reflect.Slice ){
+		panic("slice is not a slice")
+	}
+	size := value.Len() * int(typ.Elem().Size())
+	return size
+}
+
+func BindLocations(prog gl.Program, locations interface{}) {
 	value := reflect.ValueOf(locations).Elem()
 	Type := reflect.TypeOf(locations).Elem()
 
@@ -73,11 +82,11 @@ func LocationMap(locations interface{}) (map[string]gl.AttribLocation, map[strin
 		}
 	}
 
-	return attribs,uniforms
+	return attribs, uniforms
 }
 
 func SetAttribPointers(locations interface{}, vertexData interface{}) {
-	attribs,_ := LocationMap(locations)
+	attribs, _ := LocationMap(locations)
 
 	Type := reflect.TypeOf(vertexData).Elem()
 	stride := int(Type.Size())
@@ -109,10 +118,14 @@ func SetAttribPointers(locations interface{}, vertexData interface{}) {
 		}
 
 		offset := structElement.Offset
-		Loc := attribs[structElement.Name]
-		Loc.EnableArray()
 
-		// fmt.Printf("Loc: %d, size: %d, type: %d, stride: %d, offset: %d\n", Loc, size, typ, stride, offset)
-		Loc.AttribPointer(size, typ, false, stride, offset)
+		Loc := attribs[structElement.Name]
+		if Loc >= 0 {
+			Loc.EnableArray()
+			Loc.AttribPointer(size, typ, false, stride, offset)
+			fmt.Printf("Loc: %d, size: %d, type: %d, stride: %d, offset: %d\n", Loc, size, typ, stride, offset)
+		} else {
+			fmt.Printf("Loc: %d, !!!", Loc)
+		}
 	}
 }

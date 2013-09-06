@@ -2,11 +2,9 @@ package main
 
 import (
 	"github.com/go-gl/gl"
-	"github.com/go-gl/glh"
 	"github.com/krux02/mathgl"
 	"math/rand"
 	"sort"
-	"unsafe"
 )
 
 import "fmt"
@@ -28,6 +26,7 @@ type PalmTree struct {
 }
 
 func CreateVertexDataBuffer() gl.Buffer {
+	fmt.Println("CreateVertexDataBuffer:")
 
 	palmShape := []PalmShape{
 		PalmShape{mathgl.Vec4f{-1, 0, 0, 1}, mathgl.Vec2f{0, 0}},
@@ -38,22 +37,28 @@ func CreateVertexDataBuffer() gl.Buffer {
 
 	palmShapeBuffer := gl.GenBuffer()
 	palmShapeBuffer.Bind(gl.ARRAY_BUFFER)
-	gl.BufferData(gl.ARRAY_BUFFER, len(palmShape)*int(unsafe.Sizeof(PalmShape{})), palmShape, gl.STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, ByteSizeOfSlice(palmShape), palmShape, gl.STATIC_DRAW)
+
+	fmt.Println(palmShape)
 
 	return palmShapeBuffer
 }
 
 func (pt *PalmTreesInstanceData) CreateInstanceDataBuffer() gl.Buffer {
+	fmt.Println("CreateInstanceDataBuffer:")
 	vertices := gl.GenBuffer()
 	vertices.Bind(gl.ARRAY_BUFFER)
-	gl.BufferData(gl.ARRAY_BUFFER, int(unsafe.Sizeof(PalmTree{}))*len(pt.positions), pt.positions, gl.STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, ByteSizeOfSlice(pt.positions), pt.positions, gl.STATIC_DRAW)
+
+	fmt.Println(pt.positions)
 	return vertices
 }
 
 func (pt *PalmTreesInstanceData) CreateIndexDataBuffer() gl.Buffer {
+	fmt.Println("CreateIndexDataBuffer:")
 	indices := gl.GenBuffer()
 	indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
-	size := int(unsafe.Sizeof(int(0))) * len(pt.positions)
+	size := ByteSizeOfSlice(pt.positions)
 	gl.BufferData(gl.ARRAY_BUFFER, 4*size, nil, gl.STATIC_DRAW)
 	gl.BufferSubData(gl.ARRAY_BUFFER, 0*size, size, pt.sortedX)
 	gl.BufferSubData(gl.ARRAY_BUFFER, 1*size, size, pt.sortedY)
@@ -147,11 +152,8 @@ type PalmTrees struct {
 
 func NewPalmTrees(world *HeightMap, count int) *PalmTrees {
 	pt := NewPalmTreesInstanceData(world, count)
-	Prog := glh.NewProgram(
-		glh.Shader{gl.VERTEX_SHADER, ReadShaderFile("Sprite.vs")},
-		glh.Shader{gl.FRAGMENT_SHADER, ReadShaderFile("Sprite.fs")},
-	)
 
+	Prog := MakeProgram("Sprite.vs", "Sprite.fs")
 	Prog.Use()
 
 	vao := gl.GenVertexArray()
@@ -168,15 +170,17 @@ func NewPalmTrees(world *HeightMap, count int) *PalmTrees {
 
 	instanceDataBuffer := pt.CreateInstanceDataBuffer()
 	SetAttribPointers(&Loc, &PalmTree{})
-	Loc.Vertex_os.AttribDivisor(1)
-	Loc.TexCoord.AttribDivisor(1)
+	Loc.Position_ws.AttribDivisor(1)
 
-	return &PalmTrees{Prog, Loc, PalmTreesBuffers{vao, instanceDataBuffer, vertexDataBuffer}, count}
+	buffers := PalmTreesBuffers{vao, instanceDataBuffer, vertexDataBuffer}
+
+	return &PalmTrees{Prog, Loc, buffers, count}
 }
 
 func (pt* PalmTrees) Render(Proj,View mathgl.Mat4f) {
 
 	pt.Prog.Use()
+	pt.Buffers.Vao.Bind()
 
 	pt.Loc.Proj.UniformMatrix4f(false, (*[16]float32)(&Proj))
 	pt.Loc.View.UniformMatrix4f(false, (*[16]float32)(&View))

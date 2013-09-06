@@ -36,49 +36,53 @@ func (p *MyPlayer) Position() mathgl.Vec3f {
 }
 
 func (p *MyPlayer) Update(gamestate *GameState) {
-	move := p.input.move
+
 	rot := p.input.rotate
-
-	if move.Len() > 0 {
-		move = move.Normalize()
-	}
-	move = move.Mul(0.01)
-
-	move = p.Camera.direction.Rotate(move)
-	p.velocety = p.velocety.Add(move)
-
-	p.Camera.MoveAbsolute(p.velocety)
-
 	p.Camera.Yaw(rot[0])
 	p.Camera.Pitch(rot[1])
 	p.Camera.Roll(rot[2])
 
-	groundHeight := gamestate.HeightMap.Get2f(p.Position()[0], p.Position()[1])
-
-	height := p.Camera.position[2]
-	minHeight := groundHeight + 1.5
-	maxHeight := groundHeight + 20
-
-	if height < minHeight {
-		diff := minHeight - height
-		p.velocety[2] += diff
-		p.Camera.position[2] += diff
+	move := p.input.move
+	if move.Len() > 0 {
+		move = move.Normalize()
 	}
+	move = p.Camera.direction.Rotate(move)
 
-	p.velocety = p.velocety.Mul(0.95)
+	if !gamestate.PlayerPhysics {
+		move = move.Mul(0.1)
+		p.velocety = move
+		p.Camera.MoveAbsolute(move)
+	} else {
+		move = move.Mul(0.01)
+		p.velocety = p.velocety.Add(move)
+		p.Camera.MoveAbsolute(p.velocety)
 
-	if height > maxHeight {
-		p.velocety[2] -= 0.02
+		groundHeight := gamestate.HeightMap.Get2f(p.Position()[0], p.Position()[1])
+
+		height := p.Camera.position[2]
+		minHeight := groundHeight + 1.5
+		maxHeight := groundHeight + 20
+
+		if height < minHeight {
+			diff := minHeight - height
+			p.velocety[2] += diff
+			p.Camera.position[2] += diff
+		}
+
+		p.velocety = p.velocety.Mul(0.95)
+
+		if height > maxHeight {
+			p.velocety[2] -= 0.02
+		}
+
+		groundFactor := (height - groundHeight) / 20
+		if groundFactor > 1 {
+			groundFactor = 1
+		}
+		if groundFactor < 0 {
+			groundFactor = 0
+		}
+		groundFactor = 1 - groundFactor
+		groundFactor = groundFactor * groundFactor
 	}
-
-	groundFactor := (height - groundHeight) / 20
-	if groundFactor > 1 {
-		groundFactor = 1
-	}
-	if groundFactor < 0 {
-		groundFactor = 0
-	}
-	groundFactor = 1-groundFactor
-	groundFactor = groundFactor*groundFactor
-
 }

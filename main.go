@@ -6,21 +6,25 @@ import (
 	glfw "github.com/go-gl/glfw3"
 	"github.com/krux02/mathgl"
 	"github.com/krux02/tw"
-	"math"
 	"os"
 	"unsafe"
 )
 
 type GameState struct {
-	Window         *glfw.Window
-	Camera         *Camera
-	Proj           mathgl.Mat4f
-	HeightMap      *HeightMap
-	PalmTrees      *PalmTrees
-	ParticleSystem *ParticleSystem
-	WordlRenderer  *WorldRenderer
-	Player         Player
-	fps            float32
+	Window          *glfw.Window
+	Camera          *Camera
+	Proj            mathgl.Mat4f
+	HeightMap       *HeightMap
+	PalmTrees       *PalmTrees
+	ParticleSystem  *ParticleSystem
+	WordlRenderer   *WorldRenderer
+	Player          Player
+	Fps             float32
+	ParticleRender  bool
+	ParticlePhysics bool
+	WorldRender     bool
+	TreeRender      bool
+	PlayerPhysics   bool
 }
 
 const vertexStride = int(unsafe.Sizeof(Vertex{}))
@@ -92,11 +96,11 @@ func main() {
 
 	gl.Enable(gl.DEPTH_TEST)
 
-	ps.Program.Use()
+	ps.TransformProg.Use()
 
-	ps.Locations.Heights.Uniform1i(4)
-	ps.Locations.LowerBound.Uniform3f(0, 0, min_h)
-	ps.Locations.UpperBound.Uniform3f(w, h, max_h)
+	ps.TransformLoc.Heights.Uniform1i(4)
+	ps.TransformLoc.LowerBound.Uniform3f(0, 0, min_h)
+	ps.TransformLoc.UpperBound.Uniform3f(w, h, max_h)
 
 	gl.PointSize(4)
 
@@ -112,8 +116,19 @@ func main() {
 		wr,
 		&MyPlayer{Camera{mathgl.Vec3f{5, 5, 10}, mathgl.QuatIdentf()}, PlayerInput{}, mathgl.Vec3f{}},
 		0,
+		true,
+		true,
+		true,
+		true,
+		true,
 	}
 	gamestate.Camera = gamestate.Player.GetCamera()
+
+	bar.AddVarRW("ParticleRender", tw.TYPE_BOOL8, unsafe.Pointer(&gamestate.ParticleRender), "")
+	bar.AddVarRW("ParticlePhysics", tw.TYPE_BOOL8, unsafe.Pointer(&gamestate.ParticlePhysics), "")
+	bar.AddVarRW("WorldRender", tw.TYPE_BOOL8, unsafe.Pointer(&gamestate.WorldRender), "")
+	bar.AddVarRW("TreeRender", tw.TYPE_BOOL8, unsafe.Pointer(&gamestate.TreeRender), "")
+	bar.AddVarRW("PlayerPhysics", tw.TYPE_BOOL8, unsafe.Pointer(&gamestate.PlayerPhysics), "")
 
 	window.SetSizeCallback(func(window *glfw.Window, width int, height int) {
 		gl.Viewport(0, 0, width, height)
@@ -135,41 +150,38 @@ func MainLoop(gamestate *GameState) {
 	window := gamestate.Window
 
 	for !window.ShouldClose() && window.GetKey(glfw.KeyEscape) != glfw.Press {
+		currentTime := glfw.GetTime()
 
-		if glfw.GetTime() > time+1 {
-			gamestate.fps = float32(frames)
+		if currentTime > time+1 {
+			gamestate.Fps = float32(frames)
 			frames = 0
-			time = glfw.GetTime()
+			time = currentTime
 		}
 
 		Input(gamestate)
 
 		gamestate.Player.Update(gamestate)
 
+		Proj := gamestate.Proj
 		View := gamestate.Camera.View()
-		projView := gamestate.Proj.Mul4(View)
-
-		gamestate.WordlRenderer.Program.Use()
+		ProjView := Proj.Mul4(View)
 
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-		Loc := gamestate.WordlRenderer.WorldRenLoc
-
-		Loc.Time.Uniform1f(float32(glfw.GetTime()))
-		Loc.SeaLevel.Uniform1f(float32(math.Sin(glfw.GetTime()*0.1)*10 - 5))
-		Loc.Highlight.Uniform1f(float32(highlight))
-
 		gl.Disable(gl.BLEND)
 
-		gamestate.WordlRenderer.Render(gamestate)
-
-		gamestate.PalmTrees.Render(gamestate.Proj, View)
-
-		gamestate.ParticleSystem.DoStep()
-
-		finalMat := projView
-		gamestate.ParticleSystem.Render(&finalMat)
-
+		if gamestate.WorldRender {
+			gamestate.WordlRenderer.Render(gamestate.HeightMap, Proj, View, currentTime, highlight)
+		}
+		if gamestate.TreeRender {
+			gamestate.PalmTrees.Render(Proj, View)
+		}
+		if gamestate.ParticlePhysics {
+			gamestate.ParticleSystem.DoStep(currentTime)
+		}
+		if gamestate.ParticleRender {
+			gamestate.ParticleSystem.Render(&ProjView)
+		}
 		//RenderScreenQuad()
 
 		gl.DepthMask(true)
