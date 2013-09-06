@@ -4,44 +4,19 @@ import (
 	"fmt"
 	"github.com/go-gl/gl"
 	glfw "github.com/go-gl/glfw3"
-	"github.com/go-gl/glh"
 	"github.com/krux02/mathgl"
 	"github.com/krux02/tw"
-	"io/ioutil"
 	"math"
 	"os"
 	"unsafe"
 )
-
-func MakeProgram(vertFname, fragFname string) gl.Program {
-
-	vertFname = fmt.Sprintf("shaders/%s", vertFname)
-	fragFname = fmt.Sprintf("shaders/%s", fragFname)
-	
-	vertSource, err := ioutil.ReadFile(vertFname)
-	if err != nil {
-		fmt.Println("can't read file", vertFname)
-		panic(err)
-	}
-
-	fragSource, err := ioutil.ReadFile(fragFname)
-	if err != nil {
-		fmt.Println("can't read file", fragFname)
-		panic(err)
-	}
-
-	return glh.NewProgram(glh.Shader{gl.VERTEX_SHADER, string(vertSource)}, glh.Shader{gl.FRAGMENT_SHADER, string(fragSource)})
-}
-
-type ViewPort struct {
-
-}
 
 type GameState struct {
 	Window         *glfw.Window
 	Camera         *Camera
 	Proj           mathgl.Mat4f
 	HeightMap      *HeightMap
+	PalmTrees      *PalmTrees
 	ParticleSystem *ParticleSystem
 	WordlRenderer  *WorldRenderer
 	Player         Player
@@ -132,6 +107,7 @@ func main() {
 		nil,
 		mathgl.Perspective(90, 4.0/3.0, 0.01, 1000),
 		heights,
+		NewPalmTrees(heights, 128),
 		ps,
 		wr,
 		&MyPlayer{Camera{mathgl.Vec3f{5, 5, 10}, mathgl.QuatIdentf()}, PlayerInput{}, mathgl.Vec3f{}},
@@ -170,8 +146,8 @@ func MainLoop(gamestate *GameState) {
 
 		gamestate.Player.Update(gamestate)
 
-		view     := gamestate.Camera.View()
-		projView := gamestate.Proj.Mul4(view)
+		View := gamestate.Camera.View()
+		projView := gamestate.Proj.Mul4(View)
 
 		gamestate.WordlRenderer.Program.Use()
 
@@ -186,6 +162,8 @@ func MainLoop(gamestate *GameState) {
 		gl.Disable(gl.BLEND)
 
 		gamestate.WordlRenderer.Render(gamestate)
+
+		gamestate.PalmTrees.Render(gamestate.Proj, View)
 
 		gamestate.ParticleSystem.DoStep()
 

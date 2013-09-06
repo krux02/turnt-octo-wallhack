@@ -3,10 +3,31 @@ package main
 import (
 	"reflect"
 	"github.com/go-gl/gl"
+	"github.com/go-gl/glh"
+	"io/ioutil"
 )
 
 import "fmt"
 
+
+func ReadShaderFile(name string) string {
+	name = fmt.Sprintf("shaders/%s", name)
+
+	source, err := ioutil.ReadFile(name)
+	if err != nil {
+		fmt.Println("can't read file", name)
+		panic(err)
+	}
+
+	return string(source)
+}
+
+func MakeProgram(vertFname, fragFname string) gl.Program {
+	vertSource := ReadShaderFile(vertFname)
+	fragSource := ReadShaderFile(fragFname)
+	
+	return glh.NewProgram(glh.Shader{gl.VERTEX_SHADER, vertSource}, glh.Shader{gl.FRAGMENT_SHADER, fragSource})
+}
 
 func BindLocations(prog gl.Program, locations interface{})  {
 	value := reflect.ValueOf(locations).Elem()
@@ -91,7 +112,7 @@ func SetAttribPointers(locations interface{}, vertexData interface{}) {
 		Loc := attribs[structElement.Name]
 		Loc.EnableArray()
 
-		fmt.Printf("Loc: %d, size: %d, type: %d, stride: %d, offset: %d\n", Loc, size, typ, stride, offset)
+		// fmt.Printf("Loc: %d, size: %d, type: %d, stride: %d, offset: %d\n", Loc, size, typ, stride, offset)
 		Loc.AttribPointer(size, typ, false, stride, offset)
 	}
 }

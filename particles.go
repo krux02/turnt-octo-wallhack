@@ -11,7 +11,7 @@ import (
 	"unsafe"
 )
 
-import "fmt"
+// import "fmt"
 
 type ParticleVertex struct {
 	Pos1     mathgl.Vec3f
@@ -82,8 +82,6 @@ func NewParticleSystem(numParticles int, Origin mathgl.Vec3f, initialSpeed, MaxL
 	program.TransformFeedbackVaryings([]string{"v_Pos1", "v_Pos2", "v_Lifetime"}, gl.INTERLEAVED_ATTRIBS)
 	program.Link()
 
-	fmt.Println(program.GetInfoLog())
-
 	defer shader.Delete()
 
 	ProgLoc := ProgramLocations{}
@@ -144,7 +142,6 @@ func (ps *ParticleSystem) DoStep() {
 	tmp := ps.Data1
 	ps.Data1 = ps.Data2
 	ps.Data2 = tmp
-
 }
 
 func (ps *ParticleSystem) Render(matrix *mathgl.Mat4f) {

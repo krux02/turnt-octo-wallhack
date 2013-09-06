@@ -1,12 +1,18 @@
-in vec4 vertex_os;
-in vec2 texCoord;
-in vec4 position_cs;
+#version 330 core
+
+in vec4 Vertex_os;
+in vec2 TexCoord;
+in vec4 Position_ws;
+
+uniform mat4 Proj;
+uniform mat4 View;
 
 out vec2 v_texCoord;
 
-uniform mat4 Proj;
-
 void main() {
-	v_texCoord = texCoord;
-	gl_Position = Proj * vec4( vertex_os.xyz + position_cs.xyz, 1);
+	v_texCoord = TexCoord;
+	vec4 Position_cs = View * Position_ws;
+	gl_Position = Proj * vec4( Vertex_os.xyz + Position_cs.xyz, 1);
 }
+
+

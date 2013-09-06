@@ -1,10 +1,12 @@
-uniform sampler2D image;
+#version 330 core
+
+uniform sampler2D PalmTree;
 
 in vec2 v_texCoord;
 
 out vec4 color;
 
 void main() {
-	color = texture(image)
+	color = texture(PalmTree, v_texCoord);
 }
 
