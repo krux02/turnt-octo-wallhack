@@ -4,6 +4,9 @@ import "math/rand"
 import "github.com/krux02/mathgl"
 import "github.com/go-gl/gl"
 import "math"
+import "image"
+import "image/color"
+
 // import "fmt"
 
 type HeightMap struct {
@@ -29,9 +32,9 @@ func (this *HeightMap) Get(x, y int) float32 {
 
 func (this *HeightMap) Get2f(x, y float32) float32 {
 	l := float32(math.Floor(float64(x)))
-	r := float32(math.Floor(float64(x+1)))
+	r := float32(math.Floor(float64(x + 1)))
 	b := float32(math.Floor(float64(y)))
-	t := float32(math.Floor(float64(y+1)))
+	t := float32(math.Floor(float64(y + 1)))
 
 	bl := this.Get(int(l), int(b))
 	br := this.Get(int(r), int(b))
@@ -190,6 +193,26 @@ func (m *HeightMap) Triangulate() []int32 {
 		v3 := flat(x, y+1)
 		v4 := flat(x+1, y+1)
 
+		// v1h := m.Vertices()[v1].Vertex_ms[2]
+		// v2h := m.Vertices()[v2].Vertex_ms[2]
+		// v3h := m.Vertices()[v3].Vertex_ms[2]
+		// v4h := m.Vertices()[v4].Vertex_ms[2]
+
+		// vec1 := mathgl.Vec3f{0, v1h, 0}
+		// vec2 := mathgl.Vec3f{1, 0.5*v2h + 0.5*v3h, 0}
+		// vec3 := mathgl.Vec3f{2, v4h, 0}
+
+		// cross1 := vec1.Sub(vec2).Cross(vec3.Sub(vec2))
+
+		// vec1 = mathgl.Vec3f{0, v2h, 0}
+		// vec2 = mathgl.Vec3f{1, 0.5*v1h + 0.5*v4h, 0}
+		// vec3 = mathgl.Vec3f{2, v3h, 0}
+
+		// cross2 := vec1.Sub(vec2).Cross(vec3.Sub(vec2))
+
+		// fmt.Println(cross1, cross2)
+
+		// if math.Abs(float64(cross1[2])) > math.Abs(float64(cross2[2])) {
 		put(v1)
 		put(v2)
 		put(v3)
@@ -197,6 +220,16 @@ func (m *HeightMap) Triangulate() []int32 {
 		put(v3)
 		put(v2)
 		put(v4)
+		// } else {
+		// put(v1)
+		// put(v2)
+		// put(v4)
+
+		// put(v4)
+		// put(v3)
+		// put(v1)
+		// }
+
 	}
 
 	for i := 0; i < w; i++ {
@@ -239,4 +272,42 @@ func (m *HeightMap) Bounds() (float32, float32) {
 	}
 
 	return min_h, max_h
+}
+
+const MaxShort = 65535
+
+func (m *HeightMap) ExportImage() image.Image {
+
+	minh, maxh := m.Bounds()
+	diff := maxh - minh
+	rect := image.Rect(0, 0, m.W, m.H)
+	img := image.NewGray16(rect)
+
+	for y := 0; y < m.H; y++ {
+		for x := 0; x < m.W; x++ {
+			h := (m.Get(x, y) - minh) / diff
+			c := color.Gray16{uint16(h * MaxShort)}
+			img.SetGray16(x, y, c)
+		}
+	}
+
+	return img
+}
+
+func NewHeightMapFramFile(filename string) *HeightMap {
+	img, err := ReadToGray16(filename)
+	if err != nil {
+		panic(err)
+	}
+
+	w := img.Bounds().Dx()
+	h := img.Bounds().Dy()
+	m := NewHeightMap(w, h)
+
+	src := img.Pix
+	dst := m.Data
+	for i := 0; i < len(src); i += 2 {
+		dst[i>>1] = float32(int(src[i])|(int(src[i+1])<<8)) / MaxShort
+	}
+	return m
 }

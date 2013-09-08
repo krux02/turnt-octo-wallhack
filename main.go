@@ -29,8 +29,8 @@ type GameState struct {
 
 const vertexStride = int(unsafe.Sizeof(Vertex{}))
 
-const w = 128
-const h = 128
+const w = 64
+const h = 64
 
 func errorCallback(err glfw.ErrorCode, desc string) {
 	fmt.Printf("%v: %v\n", err, desc)
@@ -67,15 +67,12 @@ func main() {
 	tw.Define(" GLOBAL help='This example shows how to integrate AntTweakBar with GLFW and OpenGL.' ")
 	bar.AddVarRW("speed", tw.TYPE_DOUBLE, unsafe.Pointer(&speed), " label='Rot speed' min=0 max=2 step=0.01 keyIncr=s keyDecr=S help='Rotation speed (turns/second)' ")
 
-	xxx := 0
-
 	var fps float32
-	bar.AddButton("but1", func() { fmt.Printf("but1 %d\n", xxx); xxx += 1 }, "")
-	bar.AddButton("but2", func() { fmt.Printf("but2 %d\n", xxx); xxx += 1 }, "")
 	bar.AddVarRO("fps", tw.TYPE_FLOAT, unsafe.Pointer(&fps), "")
 
 	initDebugContext()
 
+	// heights := NewHeightMapFramFile("test.png")
 	heights := NewHeightMap(w, h)
 	heights.DiamondSquare(w)
 	min_h, max_h := heights.Bounds()
@@ -104,14 +101,14 @@ func main() {
 
 	gl.PointSize(4)
 
-	gl.Enable(gl.CULL_FACE)
+	//gl.Enable(gl.CULL_FACE)
 
 	gamestate := GameState{
 		window,
 		nil,
 		mathgl.Perspective(90, 4.0/3.0, 0.01, 1000),
 		heights,
-		NewPalmTrees(heights, 128),
+		NewPalmTrees(heights, 25000),
 		ps,
 		wr,
 		&MyPlayer{Camera{mathgl.Vec3f{5, 5, 10}, mathgl.QuatIdentf()}, PlayerInput{}, mathgl.Vec3f{}},
@@ -129,6 +126,25 @@ func main() {
 	bar.AddVarRW("WorldRender", tw.TYPE_BOOL8, unsafe.Pointer(&gamestate.WorldRender), "")
 	bar.AddVarRW("TreeRender", tw.TYPE_BOOL8, unsafe.Pointer(&gamestate.TreeRender), "")
 	bar.AddVarRW("PlayerPhysics", tw.TYPE_BOOL8, unsafe.Pointer(&gamestate.PlayerPhysics), "")
+	bar.AddButton("save image", func() { SaveImage("test.png", heights.ExportImage()) }, "")
+
+	wireframe := false
+
+	setCallback := func(value unsafe.Pointer) {
+		if( *(*bool)(value) ) {
+			gl.PolygonMode( gl.FRONT_AND_BACK, gl.LINE );
+			wireframe = true
+		} else {
+			gl.PolygonMode( gl.FRONT_AND_BACK, gl.FILL );
+			wireframe = false
+		}
+	}
+
+	getCallback := func(value unsafe.Pointer) {
+		*(*bool)(value) = wireframe
+	}
+
+	bar.AddVarCB("wireframe", tw.TYPE_BOOL8, setCallback, getCallback, nil, "")
 
 	window.SetSizeCallback(func(window *glfw.Window, width int, height int) {
 		gl.Viewport(0, 0, width, height)
@@ -184,7 +200,7 @@ func MainLoop(gamestate *GameState) {
 		}
 		//RenderScreenQuad()
 
-		gl.DepthMask(true)
+		// gl.DepthMask(true)
 
 		tw.Draw()
 

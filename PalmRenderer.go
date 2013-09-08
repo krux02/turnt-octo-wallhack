@@ -22,24 +22,27 @@ type PalmShape struct {
 
 // instance data for each tree
 type PalmTree struct {
-	Position_ws mathgl.Vec3f
+	Position_ws mathgl.Vec4f
+}
+
+type PalmTreeFullVertex struct {
+	Vertex_ws mathgl.Vec4f
+	TexCoord  mathgl.Vec2f
 }
 
 func CreateVertexDataBuffer() gl.Buffer {
 	fmt.Println("CreateVertexDataBuffer:")
 
 	palmShape := []PalmShape{
-		PalmShape{mathgl.Vec4f{-1, 0, 0, 1}, mathgl.Vec2f{0, 0}},
-		PalmShape{mathgl.Vec4f{-1, 2, 0, 1}, mathgl.Vec2f{0, 1}},
-		PalmShape{mathgl.Vec4f{1, 2, 0, 1}, mathgl.Vec2f{1, 1}},
-		PalmShape{mathgl.Vec4f{1, 0, 0, 1}, mathgl.Vec2f{1, 0}},
+		PalmShape{mathgl.Vec4f{-1, 0, 0, 1}, mathgl.Vec2f{0, 1}},
+		PalmShape{mathgl.Vec4f{-1, 2, 0, 1}, mathgl.Vec2f{0, 0}},
+		PalmShape{mathgl.Vec4f{1, 2, 0, 1}, mathgl.Vec2f{1, 0}},
+		PalmShape{mathgl.Vec4f{1, 0, 0, 1}, mathgl.Vec2f{1, 1}},
 	}
 
 	palmShapeBuffer := gl.GenBuffer()
 	palmShapeBuffer.Bind(gl.ARRAY_BUFFER)
 	gl.BufferData(gl.ARRAY_BUFFER, ByteSizeOfSlice(palmShape), palmShape, gl.STATIC_DRAW)
-
-	fmt.Println(palmShape)
 
 	return palmShapeBuffer
 }
@@ -50,7 +53,7 @@ func (pt *PalmTreesInstanceData) CreateInstanceDataBuffer() gl.Buffer {
 	vertices.Bind(gl.ARRAY_BUFFER)
 	gl.BufferData(gl.ARRAY_BUFFER, ByteSizeOfSlice(pt.positions), pt.positions, gl.STATIC_DRAW)
 
-	fmt.Println(pt.positions)
+	// fmt.Println(pt.positions)
 	return vertices
 }
 
@@ -106,7 +109,7 @@ func NewPalmTreesInstanceData(world *HeightMap, count int) *PalmTreesInstanceDat
 		x := rand.Float32() * float32(world.W)
 		y := rand.Float32() * float32(world.H)
 		z := world.Get2f(x, y)
-		pt.positions[i] = PalmTree{mathgl.Vec3f{x, y, z}}
+		pt.positions[i] = PalmTree{mathgl.Vec4f{x, y, z, 1}}
 		pt.sortedX[i] = i
 		pt.sortedY[i] = i
 		pt.sortedXInv[i] = i
@@ -147,7 +150,7 @@ type PalmTrees struct {
 	Prog    gl.Program
 	Loc     TreeRenderLocatins
 	Buffers PalmTreesBuffers
-	Count 	int
+	Count   int
 }
 
 func NewPalmTrees(world *HeightMap, count int) *PalmTrees {
@@ -166,10 +169,10 @@ func NewPalmTrees(world *HeightMap, count int) *PalmTrees {
 	Loc.PalmTree.Uniform1i(3)
 
 	vertexDataBuffer := CreateVertexDataBuffer()
-	SetAttribPointers(&Loc, &PalmShape{})
+	SetAttribPointers(&Loc, &PalmShape{}, true)
 
 	instanceDataBuffer := pt.CreateInstanceDataBuffer()
-	SetAttribPointers(&Loc, &PalmTree{})
+	SetAttribPointers(&Loc, &PalmTree{}, true)
 	Loc.Position_ws.AttribDivisor(1)
 
 	buffers := PalmTreesBuffers{vao, instanceDataBuffer, vertexDataBuffer}
@@ -177,7 +180,9 @@ func NewPalmTrees(world *HeightMap, count int) *PalmTrees {
 	return &PalmTrees{Prog, Loc, buffers, count}
 }
 
-func (pt* PalmTrees) Render(Proj,View mathgl.Mat4f) {
+func (pt *PalmTrees) Render(Proj, View mathgl.Mat4f) {
+	gl.Disable(gl.BLEND)
+	//gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
 	pt.Prog.Use()
 	pt.Buffers.Vao.Bind()

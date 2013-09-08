@@ -7,7 +7,7 @@ in vec2 v_texCoord;
 out vec4 color;
 
 void main() {
-	//color = texture(PalmTree, v_texCoord);
-	color = vec4(1,0,1,1);
+	color = texture(PalmTree, v_texCoord);
+	if(color.a < 0.5)
+		discard;
 }
-

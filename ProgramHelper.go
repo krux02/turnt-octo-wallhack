@@ -31,7 +31,7 @@ func MakeProgram(vertFname, fragFname string) gl.Program {
 func ByteSizeOfSlice(slice interface{}) int {
 	value := reflect.ValueOf(slice)
 	typ := reflect.TypeOf(slice)
-	if( typ.Kind() != reflect.Slice ){
+	if typ.Kind() != reflect.Slice {
 		panic("slice is not a slice")
 	}
 	size := value.Len() * int(typ.Elem().Size())
@@ -85,7 +85,7 @@ func LocationMap(locations interface{}) (map[string]gl.AttribLocation, map[strin
 	return attribs, uniforms
 }
 
-func SetAttribPointers(locations interface{}, vertexData interface{}) {
+func SetAttribPointers(locations interface{}, vertexData interface{}, log bool) {
 	attribs, _ := LocationMap(locations)
 
 	Type := reflect.TypeOf(vertexData).Elem()
@@ -123,9 +123,11 @@ func SetAttribPointers(locations interface{}, vertexData interface{}) {
 		if Loc >= 0 {
 			Loc.EnableArray()
 			Loc.AttribPointer(size, typ, false, stride, offset)
-			fmt.Printf("Loc: %d, size: %d, type: %d, stride: %d, offset: %d\n", Loc, size, typ, stride, offset)
-		} else {
-			fmt.Printf("Loc: %d, !!!", Loc)
+			if log {
+				fmt.Printf("Loc: %d, size: %d, type: %d, stride: %d, offset: %d\n", Loc, size, typ, stride, offset)
+			}
+		} else if log {
+			fmt.Printf("Loc: %d, !!!\n", Loc)
 		}
 	}
 }

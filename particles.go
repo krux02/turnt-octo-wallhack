@@ -9,8 +9,6 @@ import (
 	"math/rand"
 )
 
-// import "fmt"
-
 type ParticleVertex struct {
 	Pos1     mathgl.Vec3f
 	Pos2     mathgl.Vec3f
@@ -104,23 +102,23 @@ func (ps *ParticleSystem) SetVaos() {
 
 	ps.VaoTff1.Bind()
 	ps.Data1.Bind(gl.ARRAY_BUFFER)
-	SetAttribPointers(&ps.TransformLoc, &ParticleVertex{})
+	SetAttribPointers(&ps.TransformLoc, &ParticleVertex{}, false)
 	ps.Data2.BindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0)
 
 	ps.VaoTff2.Bind()
 	ps.Data2.Bind(gl.ARRAY_BUFFER)
-	SetAttribPointers(&ps.TransformLoc, &ParticleVertex{})
+	SetAttribPointers(&ps.TransformLoc, &ParticleVertex{}, false)
 	ps.Data1.BindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0)
 
 	ps.RenderProg.Use()
 
 	ps.VaoRender1.Bind()
 	ps.Data1.Bind(gl.ARRAY_BUFFER)
-	SetAttribPointers(&ps.RenderLoc, &ParticleVertex{})
+	SetAttribPointers(&ps.RenderLoc, &ParticleVertex{}, false)
 
 	ps.VaoRender2.Bind()
 	ps.Data2.Bind(gl.ARRAY_BUFFER)
-	SetAttribPointers(&ps.RenderLoc, &ParticleVertex{})
+	SetAttribPointers(&ps.RenderLoc, &ParticleVertex{}, false)
 }
 
 func (ps *ParticleSystem) SetUniforms() {
@@ -151,7 +149,7 @@ func (ps *ParticleSystem) DoStep(time float64) {
 
 	ps.Data1.Bind(gl.ARRAY_BUFFER)
 
-	SetAttribPointers(&ps.TransformLoc, &ParticleVertex{})
+	SetAttribPointers(&ps.TransformLoc, &ParticleVertex{}, false)
 
 	ps.TransformLoc.Origin.Uniform3f(100*float32(math.Sin(time)), 100*float32(math.Cos(time)), 100)
 	//ps.TransformLoc.Origin.Uniform3f(0, 0, 100)
@@ -176,9 +174,12 @@ func (ps *ParticleSystem) Render(matrix *mathgl.Mat4f) {
 	Loc.Matrix.UniformMatrix4f(false, (*[16]float32)(matrix))
 	Loc.MaxLifetime.Uniform1f(ps.MaxLifetime)
 
+	
 	ps.Data1.Bind(gl.ARRAY_BUFFER)
-	SetAttribPointers(&ps.RenderLoc, &ParticleVertex{})
+	SetAttribPointers(&ps.RenderLoc, &ParticleVertex{}, false)
+	gl.DepthMask(false)
 	gl.DrawArrays(gl.POINTS, 0, ps.NumParticles)
+	gl.DepthMask(true)
 }
 
 func (ps *ParticleSystem) Delete() {

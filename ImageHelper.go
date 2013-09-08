@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/go-gl/gl"
 	"image"
 	"image/draw"
 	_ "image/jpeg"
+	"image/png"
 	"os"
 )
 
@@ -15,12 +17,12 @@ func LoadTexture1D(name string) (gl.Texture, error) {
 		fmt.Println(err)
 		return 0, err
 	}
+	defer file.Close()
 	m, _, err := image.Decode(file)
 	if err != nil {
 		fmt.Println(err)
 		return 0, err
 	}
-	defer file.Close()
 
 	bounds := m.Bounds()
 
@@ -54,12 +56,12 @@ func LoadTexture2D(name string) (gl.Texture, error) {
 		fmt.Println(err)
 		return 0, err
 	}
+	defer file.Close()
 	m, _, err := image.Decode(file)
 	if err != nil {
 		fmt.Println(err)
 		return 0, err
 	}
-	defer file.Close()
 
 	bounds := m.Bounds()
 
@@ -77,4 +79,44 @@ func LoadTexture2D(name string) (gl.Texture, error) {
 	}
 
 	return texture, nil
+}
+
+func ReadToGray16(filename string) (*image.Gray16, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		fmt.Println("cant open file")
+		return nil, err
+	}
+	m, _, err := image.Decode(file)
+	if err != nil {
+		fmt.Println("cant decode file")
+		return nil, err
+	}
+
+	bounds := m.Bounds()
+
+	imageData := image.NewGray16(m.Bounds())
+	draw.Draw(imageData, bounds, m, image.ZP, draw.Src)
+
+	return imageData, nil
+}
+
+func SaveImage(filename string, img image.Image) {
+	file, err := os.Create(filename)
+	if err != nil {
+		fmt.Println("cant write to file", filename)
+		fmt.Println(err)
+		return
+	}
+	defer file.Close()
+
+	writer := bufio.NewWriter(file)
+	err = png.Encode(writer, img)
+	if err != nil {
+		fmt.Println("cant write to file", filename)
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Println("file written", filename)
 }

@@ -47,7 +47,7 @@ func NewWorldRenderer(heightMap *HeightMap) *WorldRenderer {
 	verticesBuffer.Bind(gl.ARRAY_BUFFER)
 	gl.BufferData(gl.ARRAY_BUFFER, ByteSizeOfSlice(vertices), vertices, gl.STATIC_DRAW)
 
-	SetAttribPointers(&Loc, &Vertex{})
+	SetAttribPointers(&Loc, &Vertex{}, true)
 
 	Loc.U_color.Uniform1i(0)
 	Loc.U_texture.Uniform1i(1)
@@ -104,5 +104,4 @@ func (wr *WorldRenderer) Render(world *HeightMap, Proj mathgl.Mat4f, View mathgl
 
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE)
 	gl.Enable(gl.BLEND)
-	gl.DepthMask(false)
 }
