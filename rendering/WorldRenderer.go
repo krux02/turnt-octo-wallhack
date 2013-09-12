@@ -1,8 +1,9 @@
-package main
+package rendering
 
 import "github.com/go-gl/gl"
 import "github.com/krux02/mathgl"
 import "github.com/krux02/turnt-octo-wallhack/helpers"
+import "github.com/krux02/turnt-octo-wallhack/world"
 import "math"
 
 // import "fmt"
@@ -26,8 +27,26 @@ type WorldRenderLocations struct {
 	Min_h, Max_h, U_color, U_texture, U_slope, U_screenRect gl.UniformLocation
 }
 
-func NewWorldRenderer(heightMap *HeightMap) *WorldRenderer {
-	vertices := heightMap.Vertices()
+func Vertices(m *world.HeightMap) []Vertex {
+	vertices := make([]Vertex, (m.W+1)*(m.H+1))
+
+	i := 0
+
+	for y := 0; y <= m.H; y++ {
+		for x := 0; x <= m.W; x++ {
+			h := m.Get(x, y)
+			pos := mathgl.Vec3f{float32(x), float32(y), h}
+			nor := m.Normal(x, y)
+			vertices[i] = Vertex{pos, nor}
+			i += 1
+		}
+	}
+
+	return vertices
+}
+
+func NewWorldRenderer(heightMap *world.HeightMap) *WorldRenderer {
+	vertices := Vertices(heightMap)
 	indices := heightMap.Triangulate()
 	min_h, max_h := heightMap.Bounds()
 
@@ -74,7 +93,7 @@ func (wr *WorldRenderer) Delete() {
 	wr.Vertices.Delete()
 }
 
-func (wr *WorldRenderer) Render(world *HeightMap, Proj mathgl.Mat4f, View mathgl.Mat4f, time float64, highlight int) {
+func (wr *WorldRenderer) Render(world *world.HeightMap, Proj mathgl.Mat4f, View mathgl.Mat4f, time float64, highlight int) {
 	wr.Program.Use()
 	wr.WorldVAO.Bind()
 

@@ -3,13 +3,14 @@ package main
 import (
 	"fmt"
 	"github.com/go-gl/gl"
+	"github.com/krux02/turnt-octo-wallhack/helpers"
 )
 
 func initTextures() func() {
 	textures := make([]gl.Texture, 0, 6)
 
 	gl.ActiveTexture(gl.TEXTURE0)
-	colorTexture, err := LoadTexture1D("textures/gradient.png")
+	colorTexture, err := helpers.LoadTexture1D("textures/gradient.png")
 	if err != nil {
 		fmt.Println(err)
 	} else {
@@ -20,7 +21,7 @@ func initTextures() func() {
 	}
 
 	gl.ActiveTexture(gl.TEXTURE1)
-	detailTexture, err := LoadTexture2D("textures/GravelCobbleS.jpg")
+	detailTexture, err := helpers.LoadTexture2D("textures/GravelCobbleS.jpg")
 	if err != nil {
 		fmt.Println(err)
 	} else {
@@ -33,7 +34,7 @@ func initTextures() func() {
 	}
 
 	gl.ActiveTexture(gl.TEXTURE2)
-	slopeTexture, err := LoadTexture2D("textures/GravelCobble0003_2_S.jpg")
+	slopeTexture, err := helpers.LoadTexture2D("textures/GravelCobble0003_2_S.jpg")
 	if err != nil {
 		fmt.Println("cant load GravelCobble0003_2_S.jpg")
 		fmt.Println(err)
@@ -47,7 +48,7 @@ func initTextures() func() {
 	}
 
 	gl.ActiveTexture(gl.TEXTURE3)
-	palmTexture, err := LoadTexture2D("textures/palme.png")
+	palmTexture, err := helpers.LoadTexture2D("textures/palme.png")
 	if err != nil {
 		fmt.Println("can't load palme.png")
 		fmt.Println(err)
@@ -64,7 +65,7 @@ func initTextures() func() {
 	// texture 5 is used by tw
 
 	gl.ActiveTexture(gl.TEXTURE6)
-	firebullTexture, err := LoadTexture2D("textures/fireball.png")
+	firebullTexture, err := helpers.LoadTexture2D("textures/fireball.png")
 	if err != nil {
 		panic("fireball.png")
 	} else {

@@ -1,7 +1,8 @@
-package main
+package world
 
 import "math/rand"
 import "github.com/krux02/mathgl"
+import "github.com/krux02/turnt-octo-wallhack/helpers"
 import "github.com/go-gl/gl"
 import "math"
 import "image"
@@ -152,24 +153,6 @@ func (m *HeightMap) Normal(x int, y int) mathgl.Vec3f {
 	return n1.Add(n2).Add(n3).Add(n4).Normalize()
 }
 
-func (m *HeightMap) Vertices() []Vertex {
-	vertices := make([]Vertex, (m.W+1)*(m.H+1))
-
-	i := 0
-
-	for y := 0; y <= m.H; y++ {
-		for x := 0; x <= m.W; x++ {
-			h := m.Get(x, y)
-			pos := mathgl.Vec3f{float32(x), float32(y), h}
-			nor := m.Normal(x, y)
-			vertices[i] = Vertex{pos, nor}
-			i += 1
-		}
-	}
-
-	return vertices
-}
-
 func (m *HeightMap) Triangulate() []int32 {
 	w, h := m.W, m.H
 
@@ -295,7 +278,7 @@ func (m *HeightMap) ExportImage() image.Image {
 }
 
 func NewHeightMapFramFile(filename string) *HeightMap {
-	img, err := ReadToGray16(filename)
+	img, err := helpers.ReadToGray16(filename)
 	if err != nil {
 		panic(err)
 	}

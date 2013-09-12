@@ -1,9 +1,10 @@
-package main
+package rendering
 
 import (
 	"github.com/go-gl/gl"
 	"github.com/krux02/mathgl"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
+	"github.com/krux02/turnt-octo-wallhack/world"
 	"math/rand"
 	"sort"
 )
@@ -96,7 +97,7 @@ type PalmTreesInstanceData struct {
 	sortedYInv []int
 }
 
-func NewPalmTreesInstanceData(world *HeightMap, count int) *PalmTreesInstanceData {
+func NewPalmTreesInstanceData(world *world.HeightMap, count int) *PalmTreesInstanceData {
 
 	pt := &PalmTreesInstanceData{
 		make([]PalmTree, count),
@@ -154,7 +155,7 @@ type PalmTrees struct {
 	Count   int
 }
 
-func NewPalmTrees(world *HeightMap, count int) *PalmTrees {
+func NewPalmTrees(world *world.HeightMap, count int) *PalmTrees {
 	pt := NewPalmTreesInstanceData(world, count)
 
 	Prog := helpers.MakeProgram("Sprite.vs", "Sprite.fs")

@@ -6,6 +6,9 @@ import (
 	glfw "github.com/go-gl/glfw3"
 	"github.com/krux02/mathgl"
 	"github.com/krux02/turnt-octo-wallhack/particles"
+	"github.com/krux02/turnt-octo-wallhack/rendering"
+	"github.com/krux02/turnt-octo-wallhack/world"
+	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/tw"
 	"os"
 	"unsafe"
@@ -15,10 +18,10 @@ type GameState struct {
 	Window         *glfw.Window
 	Camera         *Camera
 	Proj           mathgl.Mat4f
-	HeightMap      *HeightMap
-	PalmTrees      *PalmTrees
+	HeightMap      *world.HeightMap
+	PalmTrees      *rendering.PalmTrees
 	ParticleSystem *particles.ParticleSystem
-	WordlRenderer  *WorldRenderer
+	WordlRenderer  *rendering.WorldRenderer
 	Player         Player
 	Fps            float32
 	Options        BoolOptions
@@ -32,8 +35,6 @@ type BoolOptions struct {
 	DisablePlayerPhysics,
 	Wireframe bool
 }
-
-const vertexStride = int(unsafe.Sizeof(Vertex{}))
 
 const w = 64
 const h = 64
@@ -79,15 +80,15 @@ func main() {
 	initDebugContext()
 
 	// heights := NewHeightMapFramFile("test.png")
-	heights := NewHeightMap(w, h)
+	heights := world.NewHeightMap(w, h)
 	heights.DiamondSquare(w)
 	min_h, max_h := heights.Bounds()
 
-	wr := NewWorldRenderer(heights)
+	wr := rendering.NewWorldRenderer(heights)
 
 	gl.ClearColor(0., 0., 0.4, 0.)
 
-	InitScreenQuad()
+	rendering.InitScreenQuad()
 
 	releaseTextures := initTextures()
 	defer releaseTextures()
@@ -114,7 +115,7 @@ func main() {
 		nil,
 		mathgl.Perspective(90, 4.0/3.0, 0.01, 1000),
 		heights,
-		NewPalmTrees(heights, 25000),
+		rendering.NewPalmTrees(heights, 25000),
 		ps,
 		wr,
 		&MyPlayer{Camera{mathgl.Vec3f{5, 5, 10}, mathgl.QuatIdentf()}, PlayerInput{}, mathgl.Vec3f{}},
@@ -130,7 +131,7 @@ func main() {
 	bar.AddVarRW("DisableTreeRender", tw.TYPE_BOOL8, unsafe.Pointer(&opt.DisableTreeRender), "")
 	bar.AddVarRW("DisablePlayerPhysics", tw.TYPE_BOOL8, unsafe.Pointer(&opt.DisablePlayerPhysics), "")
 	bar.AddVarRW("Wireframe", tw.TYPE_BOOL8, unsafe.Pointer(&opt.Wireframe), "")
-	bar.AddButton("save image", func() { SaveImage("test.png", heights.ExportImage()) }, "")
+	bar.AddButton("save image", func() { helpers.SaveImage("test.png", heights.ExportImage()) }, "")
 
 	window.SetSizeCallback(func(window *glfw.Window, width int, height int) {
 		gl.Viewport(0, 0, width, height)
