@@ -22,7 +22,6 @@ func initTextures() func() {
 	gl.ActiveTexture(gl.TEXTURE1)
 	detailTexture, err := LoadTexture2D("textures/GravelCobbleS.jpg")
 	if err != nil {
-		fmt.Println("cant load GravelCobble.jpg")
 		fmt.Println(err)
 	} else {
 		textures = append(textures, detailTexture)
@@ -54,6 +53,22 @@ func initTextures() func() {
 		fmt.Println(err)
 	} else {
 		textures = append(textures, palmTexture)
+		gl.GenerateMipmap(gl.TEXTURE_2D)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+	}
+
+	// texture 4 is filled by the heightmap
+	// texture 5 is used by tw
+
+	gl.ActiveTexture(gl.TEXTURE6)
+	firebullTexture, err := LoadTexture2D("textures/fireball.png")
+	if err != nil {
+		panic("fireball.png")
+	} else {
+		textures = append(textures, firebullTexture)
 		gl.GenerateMipmap(gl.TEXTURE_2D)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)

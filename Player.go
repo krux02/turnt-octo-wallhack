@@ -48,7 +48,7 @@ func (p *MyPlayer) Update(gamestate *GameState) {
 	}
 	move = p.Camera.direction.Rotate(move)
 
-	if !gamestate.PlayerPhysics {
+	if gamestate.Options.DisablePlayerPhysics {
 		move = move.Mul(0.1)
 		p.velocety = move
 		p.Camera.MoveAbsolute(move)

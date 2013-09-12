@@ -10,4 +10,4 @@ void main() {
 	color = texture(PalmTree, v_texCoord);
 	if(color.a < 0.5)
 		discard;
-}
+}		

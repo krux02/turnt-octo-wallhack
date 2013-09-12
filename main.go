@@ -11,20 +11,25 @@ import (
 )
 
 type GameState struct {
-	Window          *glfw.Window
-	Camera          *Camera
-	Proj            mathgl.Mat4f
-	HeightMap       *HeightMap
-	PalmTrees       *PalmTrees
-	ParticleSystem  *ParticleSystem
-	WordlRenderer   *WorldRenderer
-	Player          Player
-	Fps             float32
-	ParticleRender  bool
-	ParticlePhysics bool
-	WorldRender     bool
-	TreeRender      bool
-	PlayerPhysics   bool
+	Window         *glfw.Window
+	Camera         *Camera
+	Proj           mathgl.Mat4f
+	HeightMap      *HeightMap
+	PalmTrees      *PalmTrees
+	ParticleSystem *ParticleSystem
+	WordlRenderer  *WorldRenderer
+	Player         Player
+	Fps            float32
+	Options        BoolOptions
+}
+
+type BoolOptions struct {
+	DisableParticleRender,
+	DisableParticlePhysics,
+	DisableWorldRender,
+	DisableTreeRender,
+	DisablePlayerPhysics,
+	Wireframe bool
 }
 
 const vertexStride = int(unsafe.Sizeof(Vertex{}))
@@ -87,6 +92,8 @@ func main() {
 	defer releaseTextures()
 	gl.ActiveTexture(gl.TEXTURE4)
 	heights.Texture()
+
+
 	gl.ActiveTexture(gl.TEXTURE5)
 
 	ps := NewParticleSystem(100000, mathgl.Vec3f{32, 32, 32}, 0.1, 500)
@@ -98,8 +105,6 @@ func main() {
 	ps.TransformLoc.Heights.Uniform1i(4)
 	ps.TransformLoc.LowerBound.Uniform3f(0, 0, min_h)
 	ps.TransformLoc.UpperBound.Uniform3f(w, h, max_h)
-
-	gl.PointSize(4)
 
 	//gl.Enable(gl.CULL_FACE)
 
@@ -113,38 +118,18 @@ func main() {
 		wr,
 		&MyPlayer{Camera{mathgl.Vec3f{5, 5, 10}, mathgl.QuatIdentf()}, PlayerInput{}, mathgl.Vec3f{}},
 		0,
-		true,
-		true,
-		true,
-		true,
-		true,
+		BoolOptions{},
 	}
 	gamestate.Camera = gamestate.Player.GetCamera()
+	opt := &gamestate.Options
 
-	bar.AddVarRW("ParticleRender", tw.TYPE_BOOL8, unsafe.Pointer(&gamestate.ParticleRender), "")
-	bar.AddVarRW("ParticlePhysics", tw.TYPE_BOOL8, unsafe.Pointer(&gamestate.ParticlePhysics), "")
-	bar.AddVarRW("WorldRender", tw.TYPE_BOOL8, unsafe.Pointer(&gamestate.WorldRender), "")
-	bar.AddVarRW("TreeRender", tw.TYPE_BOOL8, unsafe.Pointer(&gamestate.TreeRender), "")
-	bar.AddVarRW("PlayerPhysics", tw.TYPE_BOOL8, unsafe.Pointer(&gamestate.PlayerPhysics), "")
+	bar.AddVarRW("DisableParticleRender", tw.TYPE_BOOL8, unsafe.Pointer(&opt.DisableParticleRender), "")
+	bar.AddVarRW("DisableParticlePhysics", tw.TYPE_BOOL8, unsafe.Pointer(&opt.DisableParticlePhysics), "")
+	bar.AddVarRW("DisableWorldRender", tw.TYPE_BOOL8, unsafe.Pointer(&opt.DisableWorldRender), "")
+	bar.AddVarRW("DisableTreeRender", tw.TYPE_BOOL8, unsafe.Pointer(&opt.DisableTreeRender), "")
+	bar.AddVarRW("DisablePlayerPhysics", tw.TYPE_BOOL8, unsafe.Pointer(&opt.DisablePlayerPhysics), "")
+	bar.AddVarRW("Wireframe", tw.TYPE_BOOL8, unsafe.Pointer(&opt.Wireframe), "")
 	bar.AddButton("save image", func() { SaveImage("test.png", heights.ExportImage()) }, "")
-
-	wireframe := false
-
-	setCallback := func(value unsafe.Pointer) {
-		if( *(*bool)(value) ) {
-			gl.PolygonMode( gl.FRONT_AND_BACK, gl.LINE );
-			wireframe = true
-		} else {
-			gl.PolygonMode( gl.FRONT_AND_BACK, gl.FILL );
-			wireframe = false
-		}
-	}
-
-	getCallback := func(value unsafe.Pointer) {
-		*(*bool)(value) = wireframe
-	}
-
-	bar.AddVarCB("wireframe", tw.TYPE_BOOL8, setCallback, getCallback, nil, "")
 
 	window.SetSizeCallback(func(window *glfw.Window, width int, height int) {
 		gl.Viewport(0, 0, width, height)
@@ -157,54 +142,4 @@ func main() {
 	InitInput(&gamestate)
 
 	MainLoop(&gamestate)
-}
-
-func MainLoop(gamestate *GameState) {
-	var frames int
-	time := glfw.GetTime()
-
-	window := gamestate.Window
-
-	for !window.ShouldClose() && window.GetKey(glfw.KeyEscape) != glfw.Press {
-		currentTime := glfw.GetTime()
-
-		if currentTime > time+1 {
-			gamestate.Fps = float32(frames)
-			frames = 0
-			time = currentTime
-		}
-
-		Input(gamestate)
-
-		gamestate.Player.Update(gamestate)
-
-		Proj := gamestate.Proj
-		View := gamestate.Camera.View()
-		ProjView := Proj.Mul4(View)
-
-		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-
-		gl.Disable(gl.BLEND)
-
-		if gamestate.WorldRender {
-			gamestate.WordlRenderer.Render(gamestate.HeightMap, Proj, View, currentTime, highlight)
-		}
-		if gamestate.TreeRender {
-			gamestate.PalmTrees.Render(Proj, View)
-		}
-		if gamestate.ParticlePhysics {
-			gamestate.ParticleSystem.DoStep(currentTime)
-		}
-		if gamestate.ParticleRender {
-			gamestate.ParticleSystem.Render(&ProjView)
-		}
-		//RenderScreenQuad()
-
-		// gl.DepthMask(true)
-
-		tw.Draw()
-
-		window.SwapBuffers()
-		glfw.PollEvents()
-	}
 }

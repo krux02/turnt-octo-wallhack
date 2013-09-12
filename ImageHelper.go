@@ -14,13 +14,13 @@ import (
 func LoadTexture1D(name string) (gl.Texture, error) {
 	file, err := os.Open(name)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(name, err)
 		return 0, err
 	}
 	defer file.Close()
 	m, _, err := image.Decode(file)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(name, err)
 		return 0, err
 	}
 
@@ -53,13 +53,14 @@ func LoadTexture1D(name string) (gl.Texture, error) {
 func LoadTexture2D(name string) (gl.Texture, error) {
 	file, err := os.Open(name)
 	if err != nil {
-		fmt.Println(err)
+
+		fmt.Println(name, err)
 		return 0, err
 	}
 	defer file.Close()
 	m, _, err := image.Decode(file)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(name, err)
 		return 0, err
 	}
 
@@ -85,11 +86,13 @@ func ReadToGray16(filename string) (*image.Gray16, error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		fmt.Println("cant open file")
+		fmt.Println(filename, err)
 		return nil, err
 	}
 	m, _, err := image.Decode(file)
 	if err != nil {
 		fmt.Println("cant decode file")
+		fmt.Println(filename, err)
 		return nil, err
 	}
 
