@@ -1,10 +1,11 @@
-package main
+package particles
 
 import (
 	"fmt"
 	"github.com/go-gl/gl"
 	"github.com/go-gl/glh"
 	"github.com/krux02/mathgl"
+	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"io/ioutil"
 	"math"
 	"math/rand"
@@ -63,10 +64,10 @@ func NewParticleSystem(numParticles int, Origin mathgl.Vec3f, initialSpeed, MaxL
 	}
 
 	buffer1.Bind(gl.ARRAY_BUFFER)
-	gl.BufferData(gl.ARRAY_BUFFER, ByteSizeOfSlice(vertices), vertices, gl.STREAM_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(vertices), vertices, gl.STREAM_DRAW)
 
 	buffer2.Bind(gl.ARRAY_BUFFER)
-	gl.BufferData(gl.ARRAY_BUFFER, ByteSizeOfSlice(vertices), uintptr(0), gl.STREAM_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(vertices), uintptr(0), gl.STREAM_DRAW)
 
 	shapeData := CreateShapeDataBuffer()
 
@@ -86,12 +87,12 @@ func NewParticleSystem(numParticles int, Origin mathgl.Vec3f, initialSpeed, MaxL
 	TransformProg.Use()
 
 	TransformLoc := ProgramLocations{}
-	BindLocations(TransformProg, &TransformLoc)
+	helpers.BindLocations(TransformProg, &TransformLoc)
 
-	renderProgram := MakeProgram("Particle.vs", "Particle.fs")
+	renderProgram := helpers.MakeProgram("Particle.vs", "Particle.fs")
 	renderProgram.Use()
 	RenderLoc := RenderProgramLocations{}
-	BindLocations(renderProgram, &RenderLoc)
+	helpers.BindLocations(renderProgram, &RenderLoc)
 
 	vaoTff1 := gl.GenVertexArray()
 	vaoTff2 := gl.GenVertexArray()
@@ -128,31 +129,31 @@ func (ps *ParticleSystem) SetVaos() {
 
 	ps.VaoTff1.Bind()
 	ps.Data1.Bind(gl.ARRAY_BUFFER)
-	SetAttribPointers(&ps.TransformLoc, &ParticleVertex{}, true)
+	helpers.SetAttribPointers(&ps.TransformLoc, &ParticleVertex{}, true)
 	ps.Data2.BindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0)
 
 	ps.VaoTff2.Bind()
 	ps.Data2.Bind(gl.ARRAY_BUFFER)
-	SetAttribPointers(&ps.TransformLoc, &ParticleVertex{}, true)
+	helpers.SetAttribPointers(&ps.TransformLoc, &ParticleVertex{}, true)
 	ps.Data1.BindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0)
 
 	ps.RenderProg.Use()
 
 	ps.VaoRender1.Bind()
 	ps.Data1.Bind(gl.ARRAY_BUFFER)
-	SetAttribPointers(&ps.RenderLoc, &ParticleVertex{}, true)
+	helpers.SetAttribPointers(&ps.RenderLoc, &ParticleVertex{}, true)
 	ps.RenderLoc.Pos1.AttribDivisor(1)
 	ps.RenderLoc.Lifetime.AttribDivisor(1)
 	ps.ShapeData.Bind(gl.ARRAY_BUFFER)
-	SetAttribPointers(&ps.RenderLoc, &ParticleShapeVertex{}, true)
+	helpers.SetAttribPointers(&ps.RenderLoc, &ParticleShapeVertex{}, true)
 
 	ps.VaoRender2.Bind()
 	ps.Data2.Bind(gl.ARRAY_BUFFER)
-	SetAttribPointers(&ps.RenderLoc, &ParticleVertex{}, true)
+	helpers.SetAttribPointers(&ps.RenderLoc, &ParticleVertex{}, true)
 	ps.RenderLoc.Pos1.AttribDivisor(1)
 	ps.RenderLoc.Lifetime.AttribDivisor(1)
 	ps.ShapeData.Bind(gl.ARRAY_BUFFER)
-	SetAttribPointers(&ps.RenderLoc, &ParticleShapeVertex{}, true)
+	helpers.SetAttribPointers(&ps.RenderLoc, &ParticleShapeVertex{}, true)
 }
 
 func (ps *ParticleSystem) SetUniforms() {
@@ -208,7 +209,7 @@ func CreateShapeDataBuffer() gl.Buffer {
 
 	particleShapeBuffer := gl.GenBuffer()
 	particleShapeBuffer.Bind(gl.ARRAY_BUFFER)
-	gl.BufferData(gl.ARRAY_BUFFER, ByteSizeOfSlice(particleShape), particleShape, gl.STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(particleShape), particleShape, gl.STATIC_DRAW)
 
 	return particleShapeBuffer
 }

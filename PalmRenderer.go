@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/go-gl/gl"
 	"github.com/krux02/mathgl"
+	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"math/rand"
 	"sort"
 )
@@ -42,7 +43,7 @@ func CreateVertexDataBuffer() gl.Buffer {
 
 	palmShapeBuffer := gl.GenBuffer()
 	palmShapeBuffer.Bind(gl.ARRAY_BUFFER)
-	gl.BufferData(gl.ARRAY_BUFFER, ByteSizeOfSlice(palmShape), palmShape, gl.STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(palmShape), palmShape, gl.STATIC_DRAW)
 
 	return palmShapeBuffer
 }
@@ -51,7 +52,7 @@ func (pt *PalmTreesInstanceData) CreateInstanceDataBuffer() gl.Buffer {
 	fmt.Println("CreateInstanceDataBuffer:")
 	vertices := gl.GenBuffer()
 	vertices.Bind(gl.ARRAY_BUFFER)
-	gl.BufferData(gl.ARRAY_BUFFER, ByteSizeOfSlice(pt.positions), pt.positions, gl.STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(pt.positions), pt.positions, gl.STATIC_DRAW)
 
 	// fmt.Println(pt.positions)
 	return vertices
@@ -61,7 +62,7 @@ func (pt *PalmTreesInstanceData) CreateIndexDataBuffer() gl.Buffer {
 	fmt.Println("CreateIndexDataBuffer:")
 	indices := gl.GenBuffer()
 	indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
-	size := ByteSizeOfSlice(pt.positions)
+	size := helpers.ByteSizeOfSlice(pt.positions)
 	gl.BufferData(gl.ARRAY_BUFFER, 4*size, nil, gl.STATIC_DRAW)
 	gl.BufferSubData(gl.ARRAY_BUFFER, 0*size, size, pt.sortedX)
 	gl.BufferSubData(gl.ARRAY_BUFFER, 1*size, size, pt.sortedY)
@@ -156,23 +157,23 @@ type PalmTrees struct {
 func NewPalmTrees(world *HeightMap, count int) *PalmTrees {
 	pt := NewPalmTreesInstanceData(world, count)
 
-	Prog := MakeProgram("Sprite.vs", "Sprite.fs")
+	Prog := helpers.MakeProgram("Sprite.vs", "Sprite.fs")
 	Prog.Use()
 
 	vao := gl.GenVertexArray()
 	vao.Bind()
 
 	Loc := TreeRenderLocatins{}
-	BindLocations(Prog, &Loc)
+	helpers.BindLocations(Prog, &Loc)
 
 	fmt.Println(Loc)
 	Loc.PalmTree.Uniform1i(3)
 
 	vertexDataBuffer := CreateVertexDataBuffer()
-	SetAttribPointers(&Loc, &PalmShape{}, true)
+	helpers.SetAttribPointers(&Loc, &PalmShape{}, true)
 
 	instanceDataBuffer := pt.CreateInstanceDataBuffer()
-	SetAttribPointers(&Loc, &PalmTree{}, true)
+	helpers.SetAttribPointers(&Loc, &PalmTree{}, true)
 	Loc.Position_ws.AttribDivisor(1)
 
 	buffers := PalmTreesBuffers{vao, instanceDataBuffer, vertexDataBuffer}

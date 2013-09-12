@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/go-gl/gl"
 	"github.com/krux02/mathgl"
+	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"unsafe"
 )
 
@@ -10,7 +11,7 @@ var progB gl.Program
 var vao_B gl.VertexArray
 
 func InitScreenQuad() {
-	progB = MakeProgram("screenQuad.vs", "ScreenQuad.fs")
+	progB = helpers.MakeProgram("screenQuad.vs", "ScreenQuad.fs")
 
 	progB.Use()
 

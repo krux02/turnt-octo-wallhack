@@ -2,6 +2,7 @@ package main
 
 import "github.com/go-gl/gl"
 import "github.com/krux02/mathgl"
+import "github.com/krux02/turnt-octo-wallhack/helpers"
 import "math"
 
 // import "fmt"
@@ -30,24 +31,24 @@ func NewWorldRenderer(heightMap *HeightMap) *WorldRenderer {
 	indices := heightMap.Triangulate()
 	min_h, max_h := heightMap.Bounds()
 
-	prog := MakeProgram("World.vs", "World.fs")
+	prog := helpers.MakeProgram("World.vs", "World.fs")
 	prog.Use()
 
 	vao_A := gl.GenVertexArray()
 	vao_A.Bind()
 
 	Loc := WorldRenderLocations{}
-	BindLocations(prog, &Loc)
+	helpers.BindLocations(prog, &Loc)
 
 	indexBuffer := gl.GenBuffer()
 	indexBuffer.Bind(gl.ELEMENT_ARRAY_BUFFER)
-	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, ByteSizeOfSlice(indices), indices, gl.STATIC_DRAW)
+	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, helpers.ByteSizeOfSlice(indices), indices, gl.STATIC_DRAW)
 
 	verticesBuffer := gl.GenBuffer()
 	verticesBuffer.Bind(gl.ARRAY_BUFFER)
-	gl.BufferData(gl.ARRAY_BUFFER, ByteSizeOfSlice(vertices), vertices, gl.STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(vertices), vertices, gl.STATIC_DRAW)
 
-	SetAttribPointers(&Loc, &Vertex{}, true)
+	helpers.SetAttribPointers(&Loc, &Vertex{}, true)
 
 	Loc.U_color.Uniform1i(0)
 	Loc.U_texture.Uniform1i(1)

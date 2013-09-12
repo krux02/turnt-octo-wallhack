@@ -5,6 +5,7 @@ import (
 	"github.com/go-gl/gl"
 	glfw "github.com/go-gl/glfw3"
 	"github.com/krux02/mathgl"
+	"github.com/krux02/turnt-octo-wallhack/particles"
 	"github.com/krux02/tw"
 	"os"
 	"unsafe"
@@ -16,7 +17,7 @@ type GameState struct {
 	Proj           mathgl.Mat4f
 	HeightMap      *HeightMap
 	PalmTrees      *PalmTrees
-	ParticleSystem *ParticleSystem
+	ParticleSystem *particles.ParticleSystem
 	WordlRenderer  *WorldRenderer
 	Player         Player
 	Fps            float32
@@ -96,7 +97,7 @@ func main() {
 
 	gl.ActiveTexture(gl.TEXTURE5)
 
-	ps := NewParticleSystem(100000, mathgl.Vec3f{32, 32, 32}, 0.1, 500)
+	ps := particles.NewParticleSystem(100000, mathgl.Vec3f{32, 32, 32}, 0.1, 500)
 
 	gl.Enable(gl.DEPTH_TEST)
 
