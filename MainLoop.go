@@ -4,6 +4,7 @@ import (
 	"github.com/go-gl/gl"
 	glfw "github.com/go-gl/glfw3"
 	"github.com/krux02/tw"
+	"fmt"
 )
 
 func MainLoop(gamestate *GameState) {
@@ -19,7 +20,9 @@ func MainLoop(gamestate *GameState) {
 			gamestate.Fps = float32(frames)
 			frames = 0
 			time = currentTime
+			fmt.Printf("\r%f       ", gamestate.Fps)
 		}
+		frames += 1
 
 		Input(gamestate)
 

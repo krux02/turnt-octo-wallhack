@@ -37,7 +37,6 @@ func (camera *Camera) View() mathgl.Mat4f {
 	direction := camera.direction.Rotate(mathgl.Vec3f{0, 0, -1})
 	center := camera.position.Add(direction)
 	up := camera.direction.Rotate(mathgl.Vec3f{0, 1, 0})
-	//fmt.Printf("%v %v %v\n", direction, center, up)
 	return mathgl.LookAtV(camera.position, center, up)
 }
 

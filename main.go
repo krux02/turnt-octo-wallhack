@@ -66,17 +66,6 @@ func main() {
 
 	window.SetInputMode(glfw.StickyKeys, gl.TRUE)
 
-	speed := 0.0
-
-	tw.Init(tw.OPENGL_CORE, nil)
-	defer tw.Terminate()
-	bar := tw.NewBar("TweakBar")
-	tw.Define(" GLOBAL help='This example shows how to integrate AntTweakBar with GLFW and OpenGL.' ")
-	bar.AddVarRW("speed", tw.TYPE_DOUBLE, unsafe.Pointer(&speed), " label='Rot speed' min=0 max=2 step=0.01 keyIncr=s keyDecr=S help='Rotation speed (turns/second)' ")
-
-	var fps float32
-	bar.AddVarRO("fps", tw.TYPE_FLOAT, unsafe.Pointer(&fps), "")
-
 	initDebugContext()
 
 	// heights := NewHeightMapFramFile("test.png")
@@ -125,6 +114,12 @@ func main() {
 	gamestate.Camera = gamestate.Player.GetCamera()
 	opt := &gamestate.Options
 
+	tw.Init(tw.OPENGL_CORE, nil)
+	defer tw.Terminate()
+	bar := tw.NewBar("TweakBar")
+	tw.Define(" GLOBAL help='This example shows how to integrate AntTweakBar with GLFW and OpenGL.' ")
+	// bar.AddVarRW("speed", tw.TYPE_DOUBLE, unsafe.Pointer(&speed), " label='Rot speed' min=0 max=2 step=0.01 keyIncr=s keyDecr=S help='Rotation speed (turns/second)' ")
+	bar.AddVarRO("fps", tw.TYPE_FLOAT, unsafe.Pointer(&gamestate.Fps), "")
 	bar.AddVarRW("DisableParticleRender", tw.TYPE_BOOL8, unsafe.Pointer(&opt.DisableParticleRender), "")
 	bar.AddVarRW("DisableParticlePhysics", tw.TYPE_BOOL8, unsafe.Pointer(&opt.DisableParticlePhysics), "")
 	bar.AddVarRW("DisableWorldRender", tw.TYPE_BOOL8, unsafe.Pointer(&opt.DisableWorldRender), "")
