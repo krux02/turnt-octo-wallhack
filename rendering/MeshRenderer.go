@@ -1,16 +1,21 @@
 package rendering
 
-import "github.com/krux02/turnt-octo-wallhack/world"
-import "github.com/krux02/turnt-octo-wallhack/helpers"
-import "github.com/go-gl/gl"
+import (
+	"fmt"
+	"github.com/go-gl/gl"
+	mgl "github.com/krux02/mathgl"
+	"github.com/krux02/turnt-octo-wallhack/helpers"
+	"github.com/krux02/turnt-octo-wallhack/world"
+)
 
 type MeshRenderer struct {
-	Program  gl.Program
-	RenLoc   MeshRenderLocations
+	Program gl.Program
+	RenLoc  MeshRenderLocations
 }
 
 type MeshRenderLocations struct {
-	Position,Normal gl.AttribLocation
+	Position, Normal  gl.AttribLocation
+	Proj, View, Model gl.UniformLocation
 }
 
 type MeshRenderData struct {
@@ -20,10 +25,10 @@ type MeshRenderData struct {
 	Numverts int
 }
 
-// creates and activates a new Program
 func NewMeshRenderer() (mr MeshRenderer) {
 	mr.Program = helpers.MakeProgram("World.vs", "World.fs")
 	mr.Program.Use()
+	fmt.Println("MeshRenderLocation")
 	helpers.BindLocations(mr.Program, &mr.RenLoc)
 	return
 }
@@ -48,5 +53,21 @@ func (this *MeshRenderer) CreateMeshRenderData(mesh *world.Mesh) (md MeshRenderD
 	return
 }
 
-func (this *MeshRenderer) Render(meshData *MeshRenderData) {
+func (this *MeshRenderer) Render(meshData *MeshRenderData, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f) {
+	// ViewModel := View.Mul4(Model)
+	// ProjViewModel := Proj.Mul4(ViewModel)
+
+	this.Program.Use()
+	meshData.VAO.Bind()
+
+	gl.Disable(gl.BLEND)
+
+	Loc := this.RenLoc
+	Loc.View.UniformMatrix4f(false, (*[16]float32)(&View))
+	Loc.Model.UniformMatrix4f(false, (*[16]float32)(&Model))
+	Loc.Proj.UniformMatrix4f(false, (*[16]float32)(&Proj))
+
+	numverts := meshData.Numverts
+
+	gl.DrawElements(gl.TRIANGLES, numverts, gl.UNSIGNED_SHORT, uintptr(0))
 }

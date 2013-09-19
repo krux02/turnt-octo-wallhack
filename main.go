@@ -12,6 +12,7 @@ import (
 	"github.com/krux02/turnt-octo-wallhack/world"
 	"github.com/krux02/tw"
 	"os"
+	"runtime"
 	"unsafe"
 )
 
@@ -20,9 +21,11 @@ type GameState struct {
 	Camera         *Camera
 	Proj           mathgl.Mat4f
 	World          *world.World
+	Portal         *rendering.MeshRenderData
 	PalmTrees      *rendering.PalmTrees
 	ParticleSystem *particles.ParticleSystem
 	WordlRenderer  *rendering.WorldRenderer
+	MeshRenderer   *rendering.MeshRenderer
 	Player         Player
 	Fps            float32
 	Options        BoolOptions
@@ -45,6 +48,8 @@ func errorCallback(err glfw.ErrorCode, desc string) {
 }
 
 func main() {
+	runtime.LockOSThread()
+
 	glfw.Init()
 	defer glfw.Terminate()
 
@@ -54,7 +59,7 @@ func main() {
 	glfw.WindowHint(glfw.OpenglProfile, glfw.OpenglCoreProfile)
 	glfw.WindowHint(glfw.OpenglDebugContext, gl.TRUE)
 
-	window, err := glfw.CreateWindow(1024, 768, "gogog", nil, nil)
+	window, err := glfw.CreateWindow(1024, 768, "Turnt Octo Wallhack", nil, nil)
 	if window == nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 		return
@@ -69,12 +74,9 @@ func main() {
 
 	debugContext.InitDebugContext()
 
-	// heights := NewHeightMapFramFile("test.png")
 	heights := world.NewHeightMap(w, h)
 	heights.DiamondSquare(w)
 	min_h, max_h := heights.Bounds()
-
-	
 
 	gl.ClearColor(0., 0., 0.4, 0.)
 
@@ -104,14 +106,19 @@ func main() {
 
 	//gl.Enable(gl.CULL_FACE)
 
+	meshRenderer := rendering.NewMeshRenderer()
+	portalData := meshRenderer.CreateMeshRenderData(World.Object)
+
 	gamestate := GameState{
 		window,
 		nil,
 		mathgl.Perspective(90, 4.0/3.0, 0.01, 1000),
 		&World,
+		&portalData,
 		rendering.NewPalmTrees(heights, 25000),
 		ps,
 		wr,
+		&meshRenderer,
 		&MyPlayer{Camera{mathgl.Vec3f{5, 5, 10}, mathgl.QuatIdentf()}, PlayerInput{}, mathgl.Vec3f{}},
 		0,
 		BoolOptions{},

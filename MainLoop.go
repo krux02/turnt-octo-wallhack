@@ -1,10 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"github.com/go-gl/gl"
 	glfw "github.com/go-gl/glfw3"
+	mgl "github.com/krux02/mathgl"
 	"github.com/krux02/tw"
-	"fmt"
 )
 
 func MainLoop(gamestate *GameState) {
@@ -54,6 +55,15 @@ func MainLoop(gamestate *GameState) {
 		if !gamestate.Options.DisableParticleRender {
 			gamestate.ParticleSystem.Render(Proj, View)
 		}
+
+		Model := mgl.Mat4f{
+			1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1,
+		}
+
+		gamestate.MeshRenderer.Render(gamestate.Portal, Proj, View, Model)
 
 		tw.Draw()
 		window.SwapBuffers()
