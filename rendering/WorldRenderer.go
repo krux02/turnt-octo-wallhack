@@ -13,12 +13,12 @@ type Vertex struct {
 }
 
 type WorldRenderer struct {
-	Program       gl.Program
-	WorldRenLoc   WorldRenderLocations
-	WorldVAO      gl.VertexArray
-	Indices       gl.Buffer
-	Vertices      gl.Buffer
-	WorldNumverts int
+	Program  gl.Program
+	RenLoc   WorldRenderLocations
+	VAO      gl.VertexArray
+	Indices  gl.Buffer
+	Vertices gl.Buffer
+	Numverts int
 }
 
 type WorldRenderLocations struct {
@@ -45,66 +45,61 @@ func Vertices(m *world.HeightMap) []Vertex {
 	return vertices
 }
 
-func NewWorldRenderer(heightMap *world.HeightMap) *WorldRenderer {
+func NewWorldRenderer(heightMap *world.HeightMap) (this *WorldRenderer) {
 	vertices := Vertices(heightMap)
 	indices := heightMap.Triangulate()
 	min_h, max_h := heightMap.Bounds()
 
-	prog := helpers.MakeProgram("World.vs", "World.fs")
-	prog.Use()
+	this = new(WorldRenderer)
 
-	vao_A := gl.GenVertexArray()
-	vao_A.Bind()
+	this.Program = helpers.MakeProgram("World.vs", "World.fs")
+	this.Program.Use()
 
-	Loc := WorldRenderLocations{}
-	helpers.BindLocations(prog, &Loc)
+	helpers.BindLocations(this.Program, &this.RenLoc)
 
-	indexBuffer := gl.GenBuffer()
-	indexBuffer.Bind(gl.ELEMENT_ARRAY_BUFFER)
+	this.VAO = gl.GenVertexArray()
+	this.VAO.Bind()
+
+	this.Indices = gl.GenBuffer()
+	this.Indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
 	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, helpers.ByteSizeOfSlice(indices), indices, gl.STATIC_DRAW)
 
-	verticesBuffer := gl.GenBuffer()
-	verticesBuffer.Bind(gl.ARRAY_BUFFER)
+	this.Vertices = gl.GenBuffer()
+	this.Vertices.Bind(gl.ARRAY_BUFFER)
 	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(vertices), vertices, gl.STATIC_DRAW)
 
-	helpers.SetAttribPointers(&Loc, &Vertex{}, true)
+	helpers.SetAttribPointers(&this.RenLoc, &Vertex{}, true)
 
-	Loc.U_color.Uniform1i(0)
-	Loc.U_texture.Uniform1i(1)
-	Loc.U_slope.Uniform1i(2)
-	Loc.U_screenRect.Uniform1i(3)
-	Loc.Min_h.Uniform1f(min_h)
-	Loc.Max_h.Uniform1f(max_h)
+	this.RenLoc.U_color.Uniform1i(0)
+	this.RenLoc.U_texture.Uniform1i(1)
+	this.RenLoc.U_slope.Uniform1i(2)
+	this.RenLoc.U_screenRect.Uniform1i(3)
+	this.RenLoc.Min_h.Uniform1f(min_h)
+	this.RenLoc.Max_h.Uniform1f(max_h)
 
-	return &WorldRenderer{
-		prog,
-		Loc,
-		vao_A,
-		indexBuffer,
-		verticesBuffer,
-		len(indices),
-	}
+	this.Numverts = len(indices)
+
+	return
 }
 
 func (wr *WorldRenderer) Delete() {
 	wr.Program.Delete()
-	wr.WorldVAO.Delete()
+	wr.VAO.Delete()
 	wr.Indices.Delete()
 	wr.Vertices.Delete()
 }
 
 func (wr *WorldRenderer) Render(world *world.HeightMap, Proj mathgl.Mat4f, View mathgl.Mat4f, time float64, highlight int) {
 	wr.Program.Use()
-	wr.WorldVAO.Bind()
+	wr.VAO.Bind()
 
-	Loc := wr.WorldRenLoc
+	Loc := wr.RenLoc
 	Loc.Time.Uniform1f(float32(time))
 	Loc.SeaLevel.Uniform1f(float32(math.Sin(time*0.1)*10 - 5))
 	Loc.Highlight.Uniform1f(float32(highlight))
 
-	numverts := wr.WorldNumverts
+	numverts := wr.Numverts
 
-	
 	ProjView := Proj.Mul4(View)
 
 	w := world.W
@@ -115,8 +110,8 @@ func (wr *WorldRenderer) Render(world *world.HeightMap, Proj mathgl.Mat4f, View 
 			Model := mathgl.Translate3D(float64(i*w), float64(j*h), 0)
 			ProjViewModel := ProjView.Mul4(Model)
 
-			wr.WorldRenLoc.Matrix.UniformMatrix4f(false, (*[16]float32)(&ProjViewModel))
-			wr.WorldRenLoc.Model.UniformMatrix4f(false, (*[16]float32)(&Model))
+			wr.RenLoc.Matrix.UniformMatrix4f(false, (*[16]float32)(&ProjViewModel))
+			wr.RenLoc.Model.UniformMatrix4f(false, (*[16]float32)(&Model))
 
 			gl.DrawElements(gl.TRIANGLES, numverts, gl.UNSIGNED_INT, uintptr(0))
 		}

@@ -5,10 +5,11 @@ import (
 	"github.com/go-gl/gl"
 	glfw "github.com/go-gl/glfw3"
 	"github.com/krux02/mathgl"
+	"github.com/krux02/turnt-octo-wallhack/debugContext"
+	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/particles"
 	"github.com/krux02/turnt-octo-wallhack/rendering"
 	"github.com/krux02/turnt-octo-wallhack/world"
-	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/tw"
 	"os"
 	"unsafe"
@@ -18,7 +19,7 @@ type GameState struct {
 	Window         *glfw.Window
 	Camera         *Camera
 	Proj           mathgl.Mat4f
-	HeightMap      *world.HeightMap
+	World          *world.World
 	PalmTrees      *rendering.PalmTrees
 	ParticleSystem *particles.ParticleSystem
 	WordlRenderer  *rendering.WorldRenderer
@@ -66,16 +67,18 @@ func main() {
 
 	window.SetInputMode(glfw.StickyKeys, gl.TRUE)
 
-	initDebugContext()
+	debugContext.InitDebugContext()
 
 	// heights := NewHeightMapFramFile("test.png")
 	heights := world.NewHeightMap(w, h)
 	heights.DiamondSquare(w)
 	min_h, max_h := heights.Bounds()
 
-	wr := rendering.NewWorldRenderer(heights)
+	
 
 	gl.ClearColor(0., 0., 0.4, 0.)
+
+	wr := rendering.NewWorldRenderer(heights)
 
 	rendering.InitScreenQuad()
 
@@ -84,6 +87,8 @@ func main() {
 	gl.ActiveTexture(gl.TEXTURE4)
 	heights.Texture()
 
+	Portal := world.LoadMesh("meshes/window.obj")
+	World := world.World{heights, Portal}
 
 	gl.ActiveTexture(gl.TEXTURE5)
 
@@ -103,7 +108,7 @@ func main() {
 		window,
 		nil,
 		mathgl.Perspective(90, 4.0/3.0, 0.01, 1000),
-		heights,
+		&World,
 		rendering.NewPalmTrees(heights, 25000),
 		ps,
 		wr,

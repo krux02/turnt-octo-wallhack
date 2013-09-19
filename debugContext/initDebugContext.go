@@ -1,6 +1,4 @@
-
-
-package main
+package debugContext
 
 /*
 #cgo linux LDFLAGS: -lGL -lGLEW
@@ -14,7 +12,7 @@ import (
 	"unsafe"
 )
 
-func initDebugContext() bool {
+func InitDebugContext() bool {
 	return C.initDebugContext() == 1
 }
 

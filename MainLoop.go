@@ -43,7 +43,7 @@ func MainLoop(gamestate *GameState) {
 		}
 
 		if !gamestate.Options.DisableWorldRender {
-			gamestate.WordlRenderer.Render(gamestate.HeightMap, Proj, View, currentTime, highlight)
+			gamestate.WordlRenderer.Render(gamestate.World.HeightMap, Proj, View, currentTime, highlight)
 		}
 		if !gamestate.Options.DisableTreeRender {
 			gamestate.PalmTrees.Render(Proj, View)

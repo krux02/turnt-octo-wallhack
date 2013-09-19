@@ -57,7 +57,7 @@ func (p *MyPlayer) Update(gamestate *GameState) {
 		p.velocety = p.velocety.Add(move)
 		p.Camera.MoveAbsolute(p.velocety)
 
-		groundHeight := gamestate.HeightMap.Get2f(p.Position()[0], p.Position()[1])
+		groundHeight := gamestate.World.HeightMap.Get2f(p.Position()[0], p.Position()[1])
 
 		height := p.Camera.position[2]
 		minHeight := groundHeight + 1.5

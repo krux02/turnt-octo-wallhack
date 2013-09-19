@@ -14,10 +14,9 @@ type MeshVertex struct {
 }
 
 type Mesh struct {
-	vertices []MeshVertex
-	indices []MeshIndex
+	Vertices []MeshVertex
+	Indices []MeshIndex
 }
-
 
 func LoadMesh(filename string) *Mesh {
 	scene := ai.ImportFile(filename, 0)
@@ -47,3 +46,5 @@ func LoadMesh(filename string) *Mesh {
 
 	return &Mesh{ meshVertices, meshIndices }
 }
+
+
