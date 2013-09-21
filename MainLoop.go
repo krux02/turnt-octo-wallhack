@@ -5,7 +5,9 @@ import (
 	"github.com/go-gl/gl"
 	glfw "github.com/go-gl/glfw3"
 	mgl "github.com/krux02/mathgl"
+	"github.com/krux02/turnt-octo-wallhack/world"
 	"github.com/krux02/tw"
+	"math"
 )
 
 func MainLoop(gamestate *GameState) {
@@ -21,7 +23,6 @@ func MainLoop(gamestate *GameState) {
 			gamestate.Fps = float32(frames)
 			frames = 0
 			time = currentTime
-			fmt.Printf("\r%f       ", gamestate.Fps)
 		}
 		frames += 1
 
@@ -31,7 +32,7 @@ func MainLoop(gamestate *GameState) {
 
 		Proj := gamestate.Proj
 		View := gamestate.Camera.View()
-		// ProjView := Proj.Mul4(View)
+		Rot2D := gamestate.Camera.Rotation2D()
 
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
@@ -47,7 +48,7 @@ func MainLoop(gamestate *GameState) {
 			gamestate.WordlRenderer.Render(gamestate.World.HeightMap, Proj, View, currentTime, highlight)
 		}
 		if !gamestate.Options.DisableTreeRender {
-			gamestate.PalmTrees.Render(Proj, View)
+			gamestate.PalmTrees.Render(Proj, View, Rot2D)
 		}
 		if !gamestate.Options.DisableParticlePhysics {
 			gamestate.ParticleSystem.DoStep(currentTime)
@@ -56,17 +57,74 @@ func MainLoop(gamestate *GameState) {
 			gamestate.ParticleSystem.Render(Proj, View)
 		}
 
-		Model := mgl.Mat4f{
-			1, 0, 0, 0,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1,
-		}
+		rotation := mgl.HomogRotate3D(currentTime, mgl.Vec3f{0, 0, 1})
+		portal := gamestate.World.Portal
 
-		gamestate.MeshRenderer.Render(gamestate.Portal, Proj, View, Model)
+		boxVertices := portal.MakeBoxVertices()
+
+		pv := Proj.Mul4(View)
+
+		for i, pos := range gamestate.PortalPositions {
+			Model := mgl.Translate3D(float64(pos[0]), float64(pos[1]), float64(pos[2])).Mul4(rotation)
+			gamestate.MeshRenderer.Render(gamestate.Portal, Proj, View, Model)
+
+			pvm := pv.Mul4(Model)
+
+			meshMin := mgl.Vec4f{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32}
+			meshMax := mgl.Vec4f{-math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32}
+
+			for _, v := range boxVertices {
+				v = pvm.Mul4x1(v)
+				v = v.Mul(1 / v[3])
+
+				meshMin = world.Min(meshMin, v)
+				meshMax = world.Max(meshMax, v)
+			}
+
+			if meshMin[0] < 1 && meshMin[1] < 1 && meshMin[2] < 1 &&
+				meshMax[0] > -1 && meshMax[1] > -1 && meshMax[2] > -1 {
+				w, h := gamestate.Window.GetSize()
+				
+
+				p1x,p1y := convertToPixelCoords(mgl.Vec2f{meshMin[0],meshMin[1]}, w, h)
+				p2x,p2y := convertToPixelCoords(mgl.Vec2f{meshMax[0],meshMax[1]}, w, h)
+				pw,ph := p2x-p1x,p2y-p1y
+				fmt.Printf("%d min: %v,\tmax: %v\n", i, [2]int{p1x,p1y}, [2]int{pw,ph})
+
+				//gl.Viewport(p1x, p1y, pw, ph)
+				gl.Enable(gl.SCISSOR_TEST);
+				gl.Scissor(p1x, p1y, pw, ph)
+				gl.ClearColor(1, 0, 0, 1)
+				gl.Clear(gl.COLOR_BUFFER_BIT)
+				gl.ClearColor(0, 0, 0, 1)
+				//gl.Viewport(0,0,w,h)
+				gl.Scissor(0,0,w,h)
+				gl.Disable(gl.SCISSOR_TEST);
+			}
+		}
 
 		tw.Draw()
 		window.SwapBuffers()
 		glfw.PollEvents()
 	}
+}
+
+
+func convertToPixelCoords(pos mgl.Vec2f, w,h int) (x,y int) {
+	x = int(float32(w) * (pos[0] + 1) / 2)
+	y = int(float32(h) * (pos[1] + 1) / 2)
+
+	if x < 0 {
+		x = 0
+	}
+	if x >= w {
+		x = w-1
+	}
+	if y < 0 {
+		y = 0
+	}
+	if y >= h {
+		y = h-1
+	}
+	return
 }

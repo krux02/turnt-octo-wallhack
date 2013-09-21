@@ -59,6 +59,17 @@ func BindLocations(prog gl.Program, locations interface{}) {
 	}
 }
 
+func PrintLocations(locations interface{}) {
+	value := reflect.ValueOf(locations).Elem()
+	typ := reflect.TypeOf(locations).Elem()
+	fmt.Printf("%s:\n",typ.Name())
+	for i := 0; i < value.NumField(); i++ {
+		fieldValue := value.Field(i)
+		fieldName := typ.Field(i).Name
+		fmt.Printf("\t%s:\t%d\n", fieldName, fieldValue.Int())
+	}
+}
+
 func LocationMap(locations interface{}) (map[string]gl.AttribLocation, map[string]gl.UniformLocation) {
 	attribs := make(map[string]gl.AttribLocation)
 	uniforms := make(map[string]gl.UniformLocation)
@@ -124,10 +135,11 @@ func SetAttribPointers(locations interface{}, vertexData interface{}, log bool) 
 			Loc.EnableArray()
 			Loc.AttribPointer(size, typ, false, stride, offset)
 			if log {
-				fmt.Printf("Loc: %d, size: %d, type: %d, stride: %d, offset: %d\n", Loc, size, typ, stride, offset)
+
+				fmt.Printf("%s: Loc: %d, size: %d, type: %d, stride: %d, offset: %d\n", structElement.Name, Loc, size, typ, stride, offset)
 			}
 		} else if log {
-			fmt.Printf("Loc: %d, !!!\n", Loc)
+			fmt.Printf("%s: Loc: %d, !!!\n", structElement.Name, Loc)
 		}
 	}
 }

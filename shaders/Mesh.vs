@@ -11,5 +11,6 @@ uniform mat4 Model;
 
 void main() {
 	gl_Position = Proj * View * Model * Vertex_ms;
+
 	Normal_ws = Model * Normal_ms;
 }

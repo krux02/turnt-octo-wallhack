@@ -6,8 +6,8 @@ import (
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 )
 
-func initTextures() func() {
-	textures := make([]gl.Texture, 0, 6)
+func initTextures() (textures []gl.Texture) {
+	textures = make([]gl.Texture, 0, 6)
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	colorTexture, err := helpers.LoadTexture1D("textures/gradient.png")
@@ -34,7 +34,7 @@ func initTextures() func() {
 	}
 
 	gl.ActiveTexture(gl.TEXTURE2)
-	slopeTexture, err := helpers.LoadTexture2D("textures/GravelCobble0003_2_S.jpg")
+	slopeTexture, err := helpers.LoadTexture2D("textures/Cliffs0149_18_S.png")
 	if err != nil {
 		fmt.Println("cant load GravelCobble0003_2_S.jpg")
 		fmt.Println(err)
@@ -77,7 +77,5 @@ func initTextures() func() {
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
 	}
 
-	return func() {
-		gl.DeleteTextures(textures)
-	}
+	return 
 }

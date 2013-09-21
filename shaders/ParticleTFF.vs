@@ -2,6 +2,7 @@
 
 in vec3 Pos1;
 in vec3 Pos2;
+in vec3 StartDir;
 in float Lifetime;
 
 out vec3 v_Pos1;
@@ -54,7 +55,8 @@ void main() {
 	}
 	else {
 		v_Pos1 = Origin;
-		v_Pos2 = Origin+RandomDirs[gl_VertexID % 64]+RandomDirs[(gl_VertexID/64) % 64];
+		//v_Pos2 = Origin+RandomDirs[gl_VertexID % 64];
+		v_Pos2 = Origin+StartDir;
 		v_Lifetime = MaxLifetime;
 	}
 }

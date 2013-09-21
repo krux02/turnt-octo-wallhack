@@ -2,44 +2,43 @@ package rendering
 
 import (
 	"github.com/go-gl/gl"
-	"github.com/krux02/mathgl"
+	mgl "github.com/krux02/mathgl"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/world"
 	"math/rand"
-	"sort"
 )
 
 import "fmt"
 
 type TreeRenderLocatins struct {
 	Vertex_os, TexCoord, Position_ws gl.AttribLocation
-	Proj, View, PalmTree             gl.UniformLocation
+	Proj, View, PalmTree, Rot2D      gl.UniformLocation
 }
 
 // global information for all trees
 type PalmShape struct {
-	Vertex_os mathgl.Vec4f
-	TexCoord  mathgl.Vec2f
+	Vertex_os mgl.Vec4f
+	TexCoord  mgl.Vec2f
 }
 
 // instance data for each tree
 type PalmTree struct {
-	Position_ws mathgl.Vec4f
+	Position_ws mgl.Vec4f
 }
 
 type PalmTreeFullVertex struct {
-	Vertex_ws mathgl.Vec4f
-	TexCoord  mathgl.Vec2f
+	Vertex_ws mgl.Vec4f
+	TexCoord  mgl.Vec2f
 }
 
 func CreateVertexDataBuffer() gl.Buffer {
 	fmt.Println("CreateVertexDataBuffer:")
 
 	palmShape := []PalmShape{
-		PalmShape{mathgl.Vec4f{-1, 0, 0, 1}, mathgl.Vec2f{0, 1}},
-		PalmShape{mathgl.Vec4f{-1, 2, 0, 1}, mathgl.Vec2f{0, 0}},
-		PalmShape{mathgl.Vec4f{1, 2, 0, 1}, mathgl.Vec2f{1, 0}},
-		PalmShape{mathgl.Vec4f{1, 0, 0, 1}, mathgl.Vec2f{1, 1}},
+		PalmShape{mgl.Vec4f{0, 1, 2, 1}, mgl.Vec2f{1, 0}},
+		PalmShape{mgl.Vec4f{0, 1, 0, 1}, mgl.Vec2f{1, 1}},
+		PalmShape{mgl.Vec4f{0, -1, 0, 1}, mgl.Vec2f{0, 1}},
+		PalmShape{mgl.Vec4f{0, -1, 2, 1}, mgl.Vec2f{0, 0}},
 	}
 
 	palmShapeBuffer := gl.GenBuffer()
@@ -59,85 +58,37 @@ func (pt *PalmTreesInstanceData) CreateInstanceDataBuffer() gl.Buffer {
 	return vertices
 }
 
-func (pt *PalmTreesInstanceData) CreateIndexDataBuffer() gl.Buffer {
-	fmt.Println("CreateIndexDataBuffer:")
-	indices := gl.GenBuffer()
-	indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
-	size := helpers.ByteSizeOfSlice(pt.positions)
-	gl.BufferData(gl.ARRAY_BUFFER, 4*size, nil, gl.STATIC_DRAW)
-	gl.BufferSubData(gl.ARRAY_BUFFER, 0*size, size, pt.sortedX)
-	gl.BufferSubData(gl.ARRAY_BUFFER, 1*size, size, pt.sortedY)
-	gl.BufferSubData(gl.ARRAY_BUFFER, 2*size, size, pt.sortedXInv)
-	gl.BufferSubData(gl.ARRAY_BUFFER, 3*size, size, pt.sortedYInv)
-	return indices
-}
-
 type TreeSorter struct {
 	indices []int
 	by      func(a, b int) bool
 }
 
-func (ts *TreeSorter) Len() int {
-	return len(ts.indices)
-}
-
-func (ts *TreeSorter) Less(i, j int) bool {
-	return ts.by(ts.indices[i], ts.indices[j])
-}
-
-func (ts *TreeSorter) Swap(i, j int) {
-	ts.indices[i], ts.indices[j] = ts.indices[j], ts.indices[i]
-}
-
 type PalmTreesInstanceData struct {
-	positions  []PalmTree
-	sortedX    []int
-	sortedY    []int
-	sortedXInv []int
-	sortedYInv []int
+	positions []PalmTree
 }
 
 func NewPalmTreesInstanceData(world *world.HeightMap, count int) *PalmTreesInstanceData {
 
 	pt := &PalmTreesInstanceData{
 		make([]PalmTree, count),
-		make([]int, count),
-		make([]int, count),
-		make([]int, count),
-		make([]int, count),
 	}
 
 	for i := 0; i < count; i++ {
-		x := rand.Float32() * float32(world.W)
-		y := rand.Float32() * float32(world.H)
+
+		var x, y float32
+		for true {
+			x = rand.Float32() * float32(world.W)
+			y = rand.Float32() * float32(world.H)
+			n := world.Normalf(x, y)
+			if n.Dot(mgl.Vec3f{0, 0, 1}) > 0.65 {
+				break
+			}
+		}
+
 		z := world.Get2f(x, y)
-		pt.positions[i] = PalmTree{mathgl.Vec4f{x, y, z, 1}}
-		pt.sortedX[i] = i
-		pt.sortedY[i] = i
-		pt.sortedXInv[i] = i
-		pt.sortedYInv[i] = i
-	}
 
-	sorterX := &TreeSorter{
-		pt.sortedX,
-		func(a, b int) bool {
-			return pt.positions[a].Position_ws[0] < pt.positions[b].Position_ws[0]
-		},
+		pt.positions[i] = PalmTree{mgl.Vec4f{x, y, z, 1}}
 	}
-	sort.Sort(sorterX)
-	sorterX.indices = pt.sortedXInv
-	sort.Sort(sort.Reverse(sorterX))
-
-	sorterY := &TreeSorter{
-		pt.sortedY,
-		func(a, b int) bool {
-			return pt.positions[a].Position_ws[1] < pt.positions[b].Position_ws[1]
-		},
-	}
-
-	sort.Sort(sorterY)
-	sorterY.indices = pt.sortedYInv
-	sort.Sort(sort.Reverse(sorterY))
 
 	return pt
 }
@@ -182,7 +133,7 @@ func NewPalmTrees(world *world.HeightMap, count int) *PalmTrees {
 	return &PalmTrees{Prog, Loc, buffers, count}
 }
 
-func (pt *PalmTrees) Render(Proj, View mathgl.Mat4f) {
+func (pt *PalmTrees) Render(Proj, View mgl.Mat4f, Rot2D mgl.Mat3f) {
 	gl.Disable(gl.BLEND)
 	//gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
@@ -191,6 +142,7 @@ func (pt *PalmTrees) Render(Proj, View mathgl.Mat4f) {
 
 	pt.Loc.Proj.UniformMatrix4f(false, (*[16]float32)(&Proj))
 	pt.Loc.View.UniformMatrix4f(false, (*[16]float32)(&View))
+	pt.Loc.Rot2D.UniformMatrix3f(false, (*[9]float32)(&Rot2D))
 
 	gl.DrawArraysInstanced(gl.TRIANGLE_FAN, 0, 4, pt.Count)
 }

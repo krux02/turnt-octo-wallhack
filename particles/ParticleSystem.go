@@ -4,26 +4,29 @@ import (
 	"fmt"
 	"github.com/go-gl/gl"
 	"github.com/go-gl/glh"
-	"github.com/krux02/mathgl"
+	mgl "github.com/krux02/mathgl"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"io/ioutil"
 	"math"
 	"math/rand"
 )
 
+type NonTransformBuffer struct {
+	StartDir mgl.Vec3f
+}
+
 type ParticleVertex struct {
-	Pos1     mathgl.Vec3f
-	Pos2     mathgl.Vec3f
-	Lifetime float32
+	Pos1, Pos2 mgl.Vec3f
+	Lifetime   float32
 }
 
 type ParticleShapeVertex struct {
-	Vertex_os mathgl.Vec4f
-	TexCoord  mathgl.Vec2f
+	Vertex_os mgl.Vec4f
+	TexCoord  mgl.Vec2f
 }
 
 type ProgramLocations struct {
-	Pos1, Pos2, Lifetime            gl.AttribLocation
+	Pos1, Pos2, Lifetime, StartDir  gl.AttribLocation
 	Origin, Gravity, MaxLifetime    gl.UniformLocation
 	Heights, LowerBound, UpperBound gl.UniformLocation
 	RandomDirs                      gl.UniformLocation
@@ -43,25 +46,37 @@ type ParticleSystem struct {
 	Data1                                    gl.Buffer
 	Data2                                    gl.Buffer
 	ShapeData                                gl.Buffer
+	NonTransformBuffer                       gl.Buffer
 	NumParticles                             int
-	Origin                                   mathgl.Vec3f
+	Origin                                   mgl.Vec3f
 	Gravity                                  float32
 	InitialSpeed                             float32
 	MaxLifetime                              float32
 }
 
-func NewParticleSystem(numParticles int, Origin mathgl.Vec3f, initialSpeed, MaxLifetime float32) *ParticleSystem {
+func NewParticleSystem(numParticles int, Origin mgl.Vec3f, initialSpeed, MaxLifetime float32) *ParticleSystem {
 	vertices := make([]ParticleVertex, numParticles)
-	buffer1, buffer2 := gl.GenBuffer(), gl.GenBuffer()
-
+	directions := make([]NonTransformBuffer, numParticles)
+	
 	for i, _ := range vertices {
-		dir := mathgl.Vec3f{rand.Float32()*2 - 1, rand.Float32()*2 - 1, rand.Float32()*2 - 1}
+		dir := mgl.Vec3f{rand.Float32()*2 - 1, rand.Float32()*2 - 1, rand.Float32()*2 - 1}
 		for dir.Len() > 1 {
-			dir = mathgl.Vec3f{rand.Float32()*2 - 1, rand.Float32()*2 - 1, rand.Float32()*2 - 1}
+			dir = mgl.Vec3f{rand.Float32()*2 - 1, rand.Float32()*2 - 1, rand.Float32()*2 - 1}
 		}
 		dir = dir.Mul(initialSpeed)
-		vertices[i] = ParticleVertex{Origin, Origin.Sub(dir), rand.Float32() * MaxLifetime}
+		vertices[i] = ParticleVertex{
+			Pos1: Origin,
+			Pos2: Origin.Sub(dir),
+			Lifetime: rand.Float32() * MaxLifetime,
+		}
+		directions[i] = NonTransformBuffer{dir}
 	}
+
+
+	buffer1, buffer2, nonTransformBuffer := gl.GenBuffer(), gl.GenBuffer(), gl.GenBuffer()
+
+	nonTransformBuffer.Bind(gl.ARRAY_BUFFER)
+	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(directions), directions, gl.STATIC_DRAW)
 
 	buffer1.Bind(gl.ARRAY_BUFFER)
 	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(vertices), vertices, gl.STREAM_DRAW)
@@ -99,40 +114,46 @@ func NewParticleSystem(numParticles int, Origin mathgl.Vec3f, initialSpeed, MaxL
 	vaoRender1 := gl.GenVertexArray()
 	vaoRender2 := gl.GenVertexArray()
 
-	ps := new(ParticleSystem)
-	ps.TransformProg = TransformProg
-	ps.TransformLoc = TransformLoc
-	ps.RenderProg = renderProgram
-	ps.RenderLoc = RenderLoc
-	ps.VaoTff1 = vaoTff1
-	ps.VaoTff2 = vaoTff2
-	ps.VaoRender1 = vaoRender1
-	ps.VaoRender2 = vaoRender2
-	ps.Data1 = buffer1
-	ps.Data2 = buffer2
-	ps.ShapeData = shapeData
-	ps.NumParticles = numParticles
-	ps.Origin = Origin
-	ps.Gravity = -9.81 / 200
-	ps.InitialSpeed = initialSpeed
-	ps.MaxLifetime = MaxLifetime
+	ps := ParticleSystem{
+		TransformProg:      TransformProg,
+		TransformLoc:       TransformLoc,
+		RenderProg:         renderProgram,
+		RenderLoc:          RenderLoc,
+		VaoTff1:            vaoTff1,
+		VaoTff2:            vaoTff2,
+		VaoRender1:         vaoRender1,
+		VaoRender2:         vaoRender2,
+		Data1:              buffer1,
+		Data2:              buffer2,
+		ShapeData:          shapeData,
+		NonTransformBuffer: nonTransformBuffer,
+		NumParticles:       numParticles,
+		Origin:             Origin,
+		Gravity:            -9.81 / 200,
+		InitialSpeed:       initialSpeed,
+		MaxLifetime:        MaxLifetime,
+	}
 
 	TransformProg.Use()
 	ps.SetUniforms()
 	ps.SetVaos()
 
-	return ps
+	return &ps
 }
 
 func (ps *ParticleSystem) SetVaos() {
 	ps.TransformProg.Use()
 
 	ps.VaoTff1.Bind()
+	ps.NonTransformBuffer.Bind(gl.ARRAY_BUFFER)
+	helpers.SetAttribPointers(&ps.TransformLoc, &NonTransformBuffer{}, true)
 	ps.Data1.Bind(gl.ARRAY_BUFFER)
 	helpers.SetAttribPointers(&ps.TransformLoc, &ParticleVertex{}, true)
 	ps.Data2.BindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0)
 
 	ps.VaoTff2.Bind()
+	ps.NonTransformBuffer.Bind(gl.ARRAY_BUFFER)
+	helpers.SetAttribPointers(&ps.TransformLoc, &NonTransformBuffer{}, true)
 	ps.Data2.Bind(gl.ARRAY_BUFFER)
 	helpers.SetAttribPointers(&ps.TransformLoc, &ParticleVertex{}, true)
 	ps.Data1.BindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0)
@@ -163,9 +184,9 @@ func (ps *ParticleSystem) SetUniforms() {
 
 	dirs := make([]float32, 64*3)
 	for i := 0; i < 64; i++ {
-		dir := mathgl.Vec3f{rand.Float32()*2 - 1, rand.Float32()*2 - 1, rand.Float32()*2 - 1}
+		dir := mgl.Vec3f{rand.Float32()*2 - 1, rand.Float32()*2 - 1, rand.Float32()*2 - 1}
 		for dir.Len() > 1 {
-			dir = mathgl.Vec3f{rand.Float32()*2 - 1, rand.Float32()*2 - 1, rand.Float32()*2 - 1}
+			dir = mgl.Vec3f{rand.Float32()*2 - 1, rand.Float32()*2 - 1, rand.Float32()*2 - 1}
 		}
 		dirs[i*3+0] = dir[0]
 		dirs[i*3+1] = dir[1]
@@ -197,14 +218,16 @@ func (ps *ParticleSystem) DoStep(time float64) {
 	ps.VaoTff1, ps.VaoTff2 = ps.VaoTff2, ps.VaoTff1
 }
 
+const R = 0.12345
+
 func CreateShapeDataBuffer() gl.Buffer {
 	fmt.Println("CreateShapeDataBuffer:")
 
 	particleShape := []ParticleShapeVertex{
-		ParticleShapeVertex{mathgl.Vec4f{-1, -1, 0, 1}, mathgl.Vec2f{0, 1}},
-		ParticleShapeVertex{mathgl.Vec4f{-1, 1, 0, 1}, mathgl.Vec2f{0, 0}},
-		ParticleShapeVertex{mathgl.Vec4f{1, 1, 0, 1}, mathgl.Vec2f{1, 0}},
-		ParticleShapeVertex{mathgl.Vec4f{1, -1, 0, 1}, mathgl.Vec2f{1, 1}},
+		ParticleShapeVertex{mgl.Vec4f{-R, -R, 0, 1}, mgl.Vec2f{0, 1}},
+		ParticleShapeVertex{mgl.Vec4f{R, -R, 0, 1}, mgl.Vec2f{1, 1}},
+		ParticleShapeVertex{mgl.Vec4f{R, R, 0, 1}, mgl.Vec2f{1, 0}},
+		ParticleShapeVertex{mgl.Vec4f{-R, R, 0, 1}, mgl.Vec2f{0, 0}},
 	}
 
 	particleShapeBuffer := gl.GenBuffer()
@@ -214,7 +237,7 @@ func CreateShapeDataBuffer() gl.Buffer {
 	return particleShapeBuffer
 }
 
-func (ps *ParticleSystem) Render(Proj mathgl.Mat4f, View mathgl.Mat4f) {
+func (ps *ParticleSystem) Render(Proj mgl.Mat4f, View mgl.Mat4f) {
 	gl.PointSize(64)
 
 	ps.VaoRender1.Bind()

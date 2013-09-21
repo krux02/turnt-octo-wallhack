@@ -1,7 +1,7 @@
 package rendering
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/go-gl/gl"
 	mgl "github.com/krux02/mathgl"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
@@ -14,8 +14,8 @@ type MeshRenderer struct {
 }
 
 type MeshRenderLocations struct {
-	Position, Normal  gl.AttribLocation
-	Proj, View, Model gl.UniformLocation
+	Vertex_ms, Normal_ms gl.AttribLocation
+	Proj, View, Model    gl.UniformLocation
 }
 
 type MeshRenderData struct {
@@ -26,10 +26,10 @@ type MeshRenderData struct {
 }
 
 func NewMeshRenderer() (mr MeshRenderer) {
-	mr.Program = helpers.MakeProgram("World.vs", "World.fs")
+	mr.Program = helpers.MakeProgram("Mesh.vs", "Mesh.fs")
 	mr.Program.Use()
-	fmt.Println("MeshRenderLocation")
 	helpers.BindLocations(mr.Program, &mr.RenLoc)
+	helpers.PrintLocations(&mr.RenLoc)
 	return
 }
 
@@ -41,6 +41,7 @@ func (this *MeshRenderer) CreateMeshRenderData(mesh *world.Mesh) (md MeshRenderD
 	md.Indices = gl.GenBuffer()
 	md.Indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
 	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, helpers.ByteSizeOfSlice(mesh.Indices), mesh.Indices, gl.STATIC_DRAW)
+
 
 	md.Vertices = gl.GenBuffer()
 	md.Vertices.Bind(gl.ARRAY_BUFFER)
@@ -54,9 +55,6 @@ func (this *MeshRenderer) CreateMeshRenderData(mesh *world.Mesh) (md MeshRenderD
 }
 
 func (this *MeshRenderer) Render(meshData *MeshRenderData, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f) {
-	// ViewModel := View.Mul4(Model)
-	// ProjViewModel := Proj.Mul4(ViewModel)
-
 	this.Program.Use()
 	meshData.VAO.Bind()
 

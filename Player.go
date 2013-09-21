@@ -3,6 +3,7 @@ package main
 import (
 	// "fmt"
 	"github.com/krux02/mathgl"
+	// "math"
 )
 
 type PlayerInput struct {
@@ -36,7 +37,6 @@ func (p *MyPlayer) Position() mathgl.Vec3f {
 }
 
 func (p *MyPlayer) Update(gamestate *GameState) {
-
 	rot := p.input.rotate
 	p.Camera.Yaw(rot[0])
 	p.Camera.Pitch(rot[1])
@@ -67,6 +67,21 @@ func (p *MyPlayer) Update(gamestate *GameState) {
 			diff := minHeight - height
 			p.velocety[2] += diff
 			p.Camera.position[2] += diff
+		}
+
+		w := float32(gamestate.World.HeightMap.W)
+		h := float32(gamestate.World.HeightMap.H)
+
+		if p.Camera.position[0] < 0 {
+			p.Camera.position[0] += w
+		} else if p.Camera.position[0] >= w {
+			p.Camera.position[0] -= w
+		}
+
+		if p.Camera.position[1] < 0 {
+			p.Camera.position[1] += h
+		} else if p.Camera.position[1] >= h {
+			p.Camera.position[1] -= h
 		}
 
 		p.velocety = p.velocety.Mul(0.95)

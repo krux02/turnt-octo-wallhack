@@ -153,6 +153,27 @@ func (m *HeightMap) Normal(x int, y int) mathgl.Vec3f {
 	return n1.Add(n2).Add(n3).Add(n4).Normalize()
 }
 
+func (m *HeightMap) Normalf(x float32, y float32) (n mathgl.Vec3f) {
+	x0 := int(math.Floor(float64(x)))
+	x1 := x0 + 1
+	y0 := int(math.Floor(float64(y)))
+	y1 := y0 + 1
+
+	n00 := m.Normal(x0, y0)
+	n10 := m.Normal(x1, y0)
+	n01 := m.Normal(x0, y1)
+	n11 := m.Normal(x1, y1)
+
+	w := x-float32(x0)
+	h := y-float32(y0)
+
+	n0 := n00.Mul(1-w).Add(n10.Mul(w))
+	n1 := n01.Mul(1-w).Add(n11.Mul(w))
+
+	n = n0.Mul(1-h).Add(n1.Mul(h))
+	return
+}
+
 func (m *HeightMap) Triangulate() []int32 {
 	w, h := m.W, m.H
 

@@ -8,13 +8,17 @@ import "math"
 
 // import "fmt"
 
-type Vertex struct {
+type WorldVertex struct {
 	Vertex_ms, Normal_ms mathgl.Vec3f
 }
 
 type WorldRenderer struct {
 	Program  gl.Program
 	RenLoc   WorldRenderLocations
+	Data     WorldRenderData
+}
+
+type WorldRenderData struct {
 	VAO      gl.VertexArray
 	Indices  gl.Buffer
 	Vertices gl.Buffer
@@ -27,8 +31,8 @@ type WorldRenderLocations struct {
 	Min_h, Max_h, U_color, U_texture, U_slope, U_screenRect gl.UniformLocation
 }
 
-func Vertices(m *world.HeightMap) []Vertex {
-	vertices := make([]Vertex, (m.W+1)*(m.H+1))
+func Vertices(m *world.HeightMap) []WorldVertex {
+	vertices := make([]WorldVertex, (m.W+1)*(m.H+1))
 
 	i := 0
 
@@ -37,7 +41,7 @@ func Vertices(m *world.HeightMap) []Vertex {
 			h := m.Get(x, y)
 			pos := mathgl.Vec3f{float32(x), float32(y), h}
 			nor := m.Normal(x, y)
-			vertices[i] = Vertex{pos, nor}
+			vertices[i] = WorldVertex{pos, nor}
 			i += 1
 		}
 	}
@@ -57,18 +61,21 @@ func NewWorldRenderer(heightMap *world.HeightMap) (this *WorldRenderer) {
 
 	helpers.BindLocations(this.Program, &this.RenLoc)
 
-	this.VAO = gl.GenVertexArray()
-	this.VAO.Bind()
 
-	this.Indices = gl.GenBuffer()
-	this.Indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
+	this.Data.VAO = gl.GenVertexArray()
+	this.Data.VAO.Bind()
+
+	this.Data.Indices = gl.GenBuffer()
+	this.Data.Indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
 	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, helpers.ByteSizeOfSlice(indices), indices, gl.STATIC_DRAW)
 
-	this.Vertices = gl.GenBuffer()
-	this.Vertices.Bind(gl.ARRAY_BUFFER)
+	this.Data.Vertices = gl.GenBuffer()
+	this.Data.Vertices.Bind(gl.ARRAY_BUFFER)
 	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(vertices), vertices, gl.STATIC_DRAW)
 
-	helpers.SetAttribPointers(&this.RenLoc, &Vertex{}, true)
+	helpers.SetAttribPointers(&this.RenLoc, &WorldVertex{}, true)
+
+	this.Data.Numverts = len(indices)
 
 	this.RenLoc.U_color.Uniform1i(0)
 	this.RenLoc.U_texture.Uniform1i(1)
@@ -77,28 +84,28 @@ func NewWorldRenderer(heightMap *world.HeightMap) (this *WorldRenderer) {
 	this.RenLoc.Min_h.Uniform1f(min_h)
 	this.RenLoc.Max_h.Uniform1f(max_h)
 
-	this.Numverts = len(indices)
+	
 
 	return
 }
 
 func (wr *WorldRenderer) Delete() {
 	wr.Program.Delete()
-	wr.VAO.Delete()
-	wr.Indices.Delete()
-	wr.Vertices.Delete()
+	wr.Data.VAO.Delete()
+	wr.Data.Indices.Delete()
+	wr.Data.Vertices.Delete()
 }
 
 func (wr *WorldRenderer) Render(world *world.HeightMap, Proj mathgl.Mat4f, View mathgl.Mat4f, time float64, highlight int) {
 	wr.Program.Use()
-	wr.VAO.Bind()
+	wr.Data.VAO.Bind()
 
 	Loc := wr.RenLoc
 	Loc.Time.Uniform1f(float32(time))
 	Loc.SeaLevel.Uniform1f(float32(math.Sin(time*0.1)*10 - 5))
 	Loc.Highlight.Uniform1f(float32(highlight))
 
-	numverts := wr.Numverts
+	numverts := wr.Data.Numverts
 
 	ProjView := Proj.Mul4(View)
 

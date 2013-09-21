@@ -27,7 +27,7 @@ void main() {
 	vertexColor.r = clamp(2*Lifetime/MaxLifetime,0,1);
 	vertexColor.g = clamp(2*Lifetime/MaxLifetime,1,2)-1;
 	vertexColor.b = 0;
-	vertexColor.a = 0.5;
+	vertexColor.a = 1;
 }
 
 
