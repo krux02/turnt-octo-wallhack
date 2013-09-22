@@ -6,6 +6,7 @@ import (
 	"github.com/go-gl/glh"
 	mgl "github.com/krux02/mathgl"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
+	"github.com/krux02/turnt-octo-wallhack/world"
 	"io/ioutil"
 	"math"
 	"math/rand"
@@ -54,10 +55,10 @@ type ParticleSystem struct {
 	MaxLifetime                              float32
 }
 
-func NewParticleSystem(numParticles int, Origin mgl.Vec3f, initialSpeed, MaxLifetime float32) *ParticleSystem {
+func NewParticleSystem(w *world.World, numParticles int, Origin mgl.Vec3f, initialSpeed, MaxLifetime float32) *ParticleSystem {
 	vertices := make([]ParticleVertex, numParticles)
 	directions := make([]NonTransformBuffer, numParticles)
-	
+
 	for i, _ := range vertices {
 		dir := mgl.Vec3f{rand.Float32()*2 - 1, rand.Float32()*2 - 1, rand.Float32()*2 - 1}
 		for dir.Len() > 1 {
@@ -65,13 +66,12 @@ func NewParticleSystem(numParticles int, Origin mgl.Vec3f, initialSpeed, MaxLife
 		}
 		dir = dir.Mul(initialSpeed)
 		vertices[i] = ParticleVertex{
-			Pos1: Origin,
-			Pos2: Origin.Sub(dir),
+			Pos1:     Origin,
+			Pos2:     Origin.Sub(dir),
 			Lifetime: rand.Float32() * MaxLifetime,
 		}
 		directions[i] = NonTransformBuffer{dir}
 	}
-
 
 	buffer1, buffer2, nonTransformBuffer := gl.GenBuffer(), gl.GenBuffer(), gl.GenBuffer()
 
@@ -134,9 +134,19 @@ func NewParticleSystem(numParticles int, Origin mgl.Vec3f, initialSpeed, MaxLife
 		MaxLifetime:        MaxLifetime,
 	}
 
+	min_h, max_h := w.HeightMap.Bounds()
+	W := float32(w.HeightMap.W)
+	H := float32(w.HeightMap.H)
+
 	TransformProg.Use()
 	ps.SetUniforms()
 	ps.SetVaos()
+
+	TransformProg.Use()
+
+	ps.TransformLoc.Heights.Uniform1i(4)
+	ps.TransformLoc.LowerBound.Uniform3f(0, 0, min_h)
+	ps.TransformLoc.UpperBound.Uniform3f(W, H, max_h)
 
 	return &ps
 }

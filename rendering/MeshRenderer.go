@@ -25,7 +25,8 @@ type MeshRenderData struct {
 	Numverts int
 }
 
-func NewMeshRenderer() (mr MeshRenderer) {
+func NewMeshRenderer() (mr *MeshRenderer) {
+	mr = new(MeshRenderer)
 	mr.Program = helpers.MakeProgram("Mesh.vs", "Mesh.fs")
 	mr.Program.Use()
 	helpers.BindLocations(mr.Program, &mr.RenLoc)
@@ -41,7 +42,6 @@ func (this *MeshRenderer) CreateMeshRenderData(mesh *world.Mesh) (md MeshRenderD
 	md.Indices = gl.GenBuffer()
 	md.Indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
 	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, helpers.ByteSizeOfSlice(mesh.Indices), mesh.Indices, gl.STATIC_DRAW)
-
 
 	md.Vertices = gl.GenBuffer()
 	md.Vertices.Bind(gl.ARRAY_BUFFER)
@@ -69,3 +69,4 @@ func (this *MeshRenderer) Render(meshData *MeshRenderData, Proj mgl.Mat4f, View 
 
 	gl.DrawElements(gl.TRIANGLES, numverts, gl.UNSIGNED_SHORT, uintptr(0))
 }
+
