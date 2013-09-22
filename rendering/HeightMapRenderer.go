@@ -96,34 +96,25 @@ func (wr *HeightMapRenderer) Delete() {
 	wr.Data.Vertices.Delete()
 }
 
-func (wr *HeightMapRenderer) Render(world *world.HeightMap, Proj mathgl.Mat4f, View mathgl.Mat4f, time float64, highlight int) {
+func (wr *HeightMapRenderer) Render(Proj mathgl.Mat4f, View mathgl.Mat4f, Model mathgl.Mat4f, time float64) {
 	wr.Program.Use()
 	wr.Data.VAO.Bind()
 
 	Loc := wr.RenLoc
 	Loc.Time.Uniform1f(float32(time))
 	Loc.SeaLevel.Uniform1f(float32(math.Sin(time*0.1)*10 - 5))
-	Loc.Highlight.Uniform1f(float32(highlight))
+	Loc.Highlight.Uniform1f(1)
 
 	numverts := wr.Data.Numverts
 
 	ProjView := Proj.Mul4(View)
+	ProjViewModel := ProjView.Mul4(Model)
 
-	w := world.W
-	h := world.H
+	wr.RenLoc.Matrix.UniformMatrix4f(false, (*[16]float32)(&ProjViewModel))
+	wr.RenLoc.Model.UniformMatrix4f(false, (*[16]float32)(&Model))
 
-	for i := -2; i <= 2; i++ {
-		for j := -2; j <= 2; j++ {
-			Model := mathgl.Translate3D(float64(i*w), float64(j*h), 0)
-			ProjViewModel := ProjView.Mul4(Model)
-
-			wr.RenLoc.Matrix.UniformMatrix4f(false, (*[16]float32)(&ProjViewModel))
-			wr.RenLoc.Model.UniformMatrix4f(false, (*[16]float32)(&Model))
-
-			gl.DrawElements(gl.TRIANGLES, numverts, gl.UNSIGNED_INT, uintptr(0))
-		}
-	}
-
+	gl.DrawElements(gl.TRIANGLES, numverts, gl.UNSIGNED_INT, uintptr(0))
+	
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE)
 	gl.Enable(gl.BLEND)
 }

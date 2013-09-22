@@ -10,15 +10,6 @@ import (
 	"runtime"
 )
 
-type BoolOptions struct {
-	DisableParticleRender,
-	DisableParticlePhysics,
-	DisableWorldRender,
-	DisableTreeRender,
-	DisablePlayerPhysics,
-	Wireframe bool
-}
-
 func errorCallback(err glfw.ErrorCode, desc string) {
 	fmt.Printf("%v: %v\n", err, desc)
 }

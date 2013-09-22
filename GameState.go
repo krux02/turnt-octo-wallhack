@@ -8,6 +8,7 @@ import (
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/rendering"
 	"github.com/krux02/turnt-octo-wallhack/world"
+	"github.com/krux02/turnt-octo-wallhack/settings"
 	"github.com/krux02/tw"
 	"unsafe"
 )
@@ -22,7 +23,7 @@ type GameState struct {
 	WorldRenderer *rendering.WorldRenderer
 	Player        Player
 	Fps           float32
-	Options       BoolOptions
+	Options       settings.BoolOptions
 }
 
 func NewGameState(window *glfw.Window) (gamestate *GameState) {
@@ -53,7 +54,7 @@ func NewGameState(window *glfw.Window) (gamestate *GameState) {
 		WorldRenderer: wr,
 		Player:        &MyPlayer{Camera{mgl.Vec3f{5, 5, 10}, mgl.QuatIdentf()}, PlayerInput{}, mgl.Vec3f{}},
 		Fps:           0,
-		Options:       BoolOptions{},
+		Options:       settings.BoolOptions{},
 	}
 
 	gamestate.Camera = gamestate.Player.GetCamera()
