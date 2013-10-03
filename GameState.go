@@ -4,7 +4,7 @@ import (
 	// "fmt"
 	"github.com/go-gl/gl"
 	glfw "github.com/go-gl/glfw3"
-	mgl "github.com/krux02/mathgl"
+	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/rendering"
 	"github.com/krux02/turnt-octo-wallhack/world"
@@ -73,7 +73,7 @@ func NewGameState(window *glfw.Window) (gamestate *GameState) {
 
 	window.SetSizeCallback(func(window *glfw.Window, width, height int) {
 		gl.Viewport(0, 0, width, height)
-		gamestate.Proj = mgl.Perspective(90, float64(width)/float64(height), 0.1, 1000)
+		gamestate.Proj = mgl.Perspective(90, float32(width)/float32(height), 0.1, 1000)
 		tw.WindowSize(width, height)
 	})
 

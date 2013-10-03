@@ -3,7 +3,7 @@ package rendering
 import (
 	"github.com/go-gl/gl"
 	glfw "github.com/go-gl/glfw3"
-	mgl "github.com/krux02/mathgl"
+	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/krux02/turnt-octo-wallhack/particles"
 	"github.com/krux02/turnt-octo-wallhack/settings"
 	"github.com/krux02/turnt-octo-wallhack/world"
@@ -32,7 +32,7 @@ func NewWorldRenderer(w *world.World) *WorldRenderer {
 
 func (this *WorldRenderer) Render(w *world.World, options *settings.BoolOptions, Proj mgl.Mat4f, View mgl.Mat4f, Rot2D mgl.Mat3f, window *glfw.Window) {
 	currentTime := glfw.GetTime()
-	rotation := mgl.HomogRotate3D(currentTime, mgl.Vec3f{0, 0, 1})
+	rotation := mgl.HomogRotate3D(float32(currentTime), mgl.Vec3f{0, 0, 1})
 
 	W := w.HeightMap.W
 	H := w.HeightMap.H
@@ -43,7 +43,7 @@ func (this *WorldRenderer) Render(w *world.World, options *settings.BoolOptions,
 
 	for i := -1; i <= 1; i++ {
 		for j := -1; j <= 1; j++ {
-			Offset := mgl.Translate3D(float64(i*W), float64(j*H), 0)
+			Offset := mgl.Translate3D(float32(i*W), float32(j*H), 0)
 
 			if options.Wireframe {
 				gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
@@ -66,7 +66,7 @@ func (this *WorldRenderer) Render(w *world.World, options *settings.BoolOptions,
 
 			for _, portal := range w.Portals {
 				pos := portal.Position
-				Model := mgl.Translate3D(float64(pos[0]), float64(pos[1]), float64(pos[2])).Mul4(rotation)
+				Model := mgl.Translate3D(pos[0], pos[1], pos[2]).Mul4(rotation)
 				this.MeshRenderer.Render(&this.Portal, Proj, View.Mul4(Offset), Model)
 
 				// pvm := pv.Mul4(Model)

@@ -2,7 +2,7 @@ package rendering
 
 import (
 	"github.com/go-gl/gl"
-	"github.com/krux02/mathgl"
+	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"unsafe"
 )
@@ -24,13 +24,13 @@ func InitScreenQuad() {
 	a_positionBuffer := gl.GenBuffer()
 	a_positionBuffer.Bind(gl.ARRAY_BUFFER)
 
-	arr := []mathgl.Vec4f{
-		mathgl.Vec4f{-1, -1, 0, 1},
-		mathgl.Vec4f{3, -1, 0, 1},
-		mathgl.Vec4f{-1, 3, 0, 1},
+	arr := []mgl.Vec4f{
+		mgl.Vec4f{-1, -1, 0, 1},
+		mgl.Vec4f{3, -1, 0, 1},
+		mgl.Vec4f{-1, 3, 0, 1},
 	}
 
-	gl.BufferData(gl.ARRAY_BUFFER, len(arr)*int(unsafe.Sizeof(mathgl.Vec4f{})), arr, gl.STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, len(arr)*int(unsafe.Sizeof(mgl.Vec4f{})), arr, gl.STATIC_DRAW)
 	a_positionLoc.AttribPointer(4, gl.FLOAT, false, 0, uintptr(0))
 
 	progB.GetUniformLocation("u_screenRect").Uniform1i(3)

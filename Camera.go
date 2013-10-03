@@ -5,7 +5,7 @@ import "C"
 
 import (
 	"fmt"
-	mgl "github.com/krux02/mathgl"
+	mgl "github.com/Jragonmiris/mathgl"
 	"math"
 )
 
@@ -44,7 +44,7 @@ func (camera *Camera) View() mgl.Mat4f {
 func (camera *Camera) Rotation2D() (Rot2D mgl.Mat3f) {
 	direction := camera.direction.Rotate(mgl.Vec3f{0, 0, -1})
 	angle := math.Atan2(float64(direction[1]), float64(direction[0]))
-	Rot2D = mgl.Rotate3DZ(angle/math.Pi*180)
+	Rot2D = mgl.Rotate3DZ(float32(angle/math.Pi*180))
 	return
 }
 

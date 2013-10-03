@@ -1,7 +1,7 @@
 package world
 
 import (
-	mgl "github.com/krux02/mathgl"
+	mgl "github.com/Jragonmiris/mathgl"
 )
 
 type World struct {

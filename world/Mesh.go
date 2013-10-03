@@ -3,7 +3,7 @@ package world
 import (
 	"fmt"
 	ai "github.com/krux02/assimp"
-	mgl "github.com/krux02/mathgl"
+	mgl "github.com/Jragonmiris/mathgl"
 	"math"
 )
 

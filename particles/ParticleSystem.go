@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/go-gl/gl"
 	"github.com/go-gl/glh"
-	mgl "github.com/krux02/mathgl"
+	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/world"
 	"io/ioutil"

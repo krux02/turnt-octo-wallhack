@@ -1,7 +1,7 @@
 package rendering
 
 import "github.com/go-gl/gl"
-import "github.com/krux02/mathgl"
+import mgl "github.com/Jragonmiris/mathgl"
 import "github.com/krux02/turnt-octo-wallhack/helpers"
 import "github.com/krux02/turnt-octo-wallhack/world"
 import "math"
@@ -9,7 +9,7 @@ import "math"
 // import "fmt"
 
 type WorldVertex struct {
-	Vertex_ms, Normal_ms mathgl.Vec3f
+	Vertex_ms, Normal_ms mgl.Vec3f
 }
 
 type HeightMapRenderer struct {
@@ -39,7 +39,7 @@ func Vertices(m *world.HeightMap) []WorldVertex {
 	for y := 0; y <= m.H; y++ {
 		for x := 0; x <= m.W; x++ {
 			h := m.Get(x, y)
-			pos := mathgl.Vec3f{float32(x), float32(y), h}
+			pos := mgl.Vec3f{float32(x), float32(y), h}
 			nor := m.Normal(x, y)
 			vertices[i] = WorldVertex{pos, nor}
 			i += 1
@@ -96,7 +96,7 @@ func (wr *HeightMapRenderer) Delete() {
 	wr.Data.Vertices.Delete()
 }
 
-func (wr *HeightMapRenderer) Render(Proj mathgl.Mat4f, View mathgl.Mat4f, Model mathgl.Mat4f, time float64) {
+func (wr *HeightMapRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, time float64) {
 	wr.Program.Use()
 	wr.Data.VAO.Bind()
 

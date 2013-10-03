@@ -1,7 +1,7 @@
 package world
 
 import "math/rand"
-import "github.com/krux02/mathgl"
+import mgl "github.com/Jragonmiris/mathgl"
 import "github.com/krux02/turnt-octo-wallhack/helpers"
 import "github.com/go-gl/gl"
 import "math"
@@ -128,7 +128,7 @@ func (m *HeightMap) DiamondSquare(factor float32) {
 	}
 }
 
-func (m *HeightMap) Normal(x int, y int) mathgl.Vec3f {
+func (m *HeightMap) Normal(x int, y int) mgl.Vec3f {
 	l := x - 1
 	r := x + 1
 	b := y - 1
@@ -140,10 +140,10 @@ func (m *HeightMap) Normal(x int, y int) mathgl.Vec3f {
 	bh := m.Get(x, b) - hi
 	th := m.Get(x, t) - hi
 
-	v1 := mathgl.Vec3f{1, 0, rh}.Normalize()
-	v2 := mathgl.Vec3f{0, 1, th}.Normalize()
-	v3 := mathgl.Vec3f{-1, 0, lh}.Normalize()
-	v4 := mathgl.Vec3f{0, -1, bh}.Normalize()
+	v1 := mgl.Vec3f{1, 0, rh}.Normalize()
+	v2 := mgl.Vec3f{0, 1, th}.Normalize()
+	v3 := mgl.Vec3f{-1, 0, lh}.Normalize()
+	v4 := mgl.Vec3f{0, -1, bh}.Normalize()
 
 	n1 := v1.Cross(v2).Normalize()
 	n2 := v2.Cross(v3).Normalize()
@@ -153,7 +153,7 @@ func (m *HeightMap) Normal(x int, y int) mathgl.Vec3f {
 	return n1.Add(n2).Add(n3).Add(n4).Normalize()
 }
 
-func (m *HeightMap) Normalf(x float32, y float32) (n mathgl.Vec3f) {
+func (m *HeightMap) Normalf(x float32, y float32) (n mgl.Vec3f) {
 	x0 := int(math.Floor(float64(x)))
 	x1 := x0 + 1
 	y0 := int(math.Floor(float64(y)))
@@ -202,15 +202,15 @@ func (m *HeightMap) Triangulate() []int32 {
 		// v3h := m.Vertices()[v3].Vertex_ms[2]
 		// v4h := m.Vertices()[v4].Vertex_ms[2]
 
-		// vec1 := mathgl.Vec3f{0, v1h, 0}
-		// vec2 := mathgl.Vec3f{1, 0.5*v2h + 0.5*v3h, 0}
-		// vec3 := mathgl.Vec3f{2, v4h, 0}
+		// vec1 := mgl.Vec3f{0, v1h, 0}
+		// vec2 := mgl.Vec3f{1, 0.5*v2h + 0.5*v3h, 0}
+		// vec3 := mgl.Vec3f{2, v4h, 0}
 
 		// cross1 := vec1.Sub(vec2).Cross(vec3.Sub(vec2))
 
-		// vec1 = mathgl.Vec3f{0, v2h, 0}
-		// vec2 = mathgl.Vec3f{1, 0.5*v1h + 0.5*v4h, 0}
-		// vec3 = mathgl.Vec3f{2, v3h, 0}
+		// vec1 = mgl.Vec3f{0, v2h, 0}
+		// vec2 = mgl.Vec3f{1, 0.5*v1h + 0.5*v4h, 0}
+		// vec3 = mgl.Vec3f{2, v3h, 0}
 
 		// cross2 := vec1.Sub(vec2).Cross(vec3.Sub(vec2))
 

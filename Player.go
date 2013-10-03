@@ -2,26 +2,26 @@ package main
 
 import (
 	// "fmt"
-	"github.com/krux02/mathgl"
+	mgl "github.com/Jragonmiris/mathgl"
 	// "math"
 )
 
 type PlayerInput struct {
-	move   mathgl.Vec3f
-	rotate mathgl.Vec3f
+	move   mgl.Vec3f
+	rotate mgl.Vec3f
 }
 
 type Player interface {
 	SetInput(input PlayerInput)
 	GetCamera() *Camera
-	Position() mathgl.Vec3f
+	Position() mgl.Vec3f
 	Update(gamestate *GameState)
 }
 
 type MyPlayer struct {
 	Camera   Camera
 	input    PlayerInput
-	velocety mathgl.Vec3f
+	velocety mgl.Vec3f
 }
 
 func (p *MyPlayer) SetInput(input PlayerInput) {
@@ -32,7 +32,7 @@ func (p *MyPlayer) GetCamera() *Camera {
 	return &p.Camera
 }
 
-func (p *MyPlayer) Position() mathgl.Vec3f {
+func (p *MyPlayer) Position() mgl.Vec3f {
 	return p.Camera.position
 }
 

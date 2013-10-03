@@ -2,7 +2,7 @@ package rendering
 
 import (
 	"github.com/go-gl/gl"
-	mgl "github.com/krux02/mathgl"
+	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/world"
 	"math/rand"

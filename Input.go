@@ -1,16 +1,16 @@
 package main
 
 import glfw "github.com/go-gl/glfw3"
-import "github.com/krux02/mathgl"
+import mgl "github.com/Jragonmiris/mathgl"
 import "github.com/krux02/tw"
 import "math"
 // import "fmt"
 
 var drag glfw.MouseButton = -1
-var lastMousePos = mathgl.Vec2f{0, 0}
+var lastMousePos = mgl.Vec2f{0, 0}
 var highlight = 0
 
-var currentMousePos func() mathgl.Vec2f
+var currentMousePos func() mgl.Vec2f
 var updateLastMousePos func()
 
 func InitInput(gamestate *GameState) {
@@ -55,9 +55,9 @@ func InitInput(gamestate *GameState) {
 		tw.EventKeyGLFW(int(key), int(state)) // falsch, glfw3 hat scancodes
 	}
 
-	currentMousePos = func() mathgl.Vec2f {
+	currentMousePos = func() mgl.Vec2f {
 		mx, my := window.GetCursorPosition()
-		return mathgl.Vec2f{float32(mx), float32(my)}
+		return mgl.Vec2f{float32(mx), float32(my)}
 	}
 
 	updateLastMousePos = func() {
