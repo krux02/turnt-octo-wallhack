@@ -2,8 +2,8 @@ package rendering
 
 import (
 	//"fmt"
-	"github.com/go-gl/gl"
 	mgl "github.com/Jragonmiris/mathgl"
+	"github.com/go-gl/gl"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/world"
 )
@@ -69,4 +69,3 @@ func (this *MeshRenderer) Render(meshData *MeshRenderData, Proj mgl.Mat4f, View 
 
 	gl.DrawElements(gl.TRIANGLES, numverts, gl.UNSIGNED_SHORT, uintptr(0))
 }
-

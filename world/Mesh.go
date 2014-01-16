@@ -2,8 +2,8 @@ package world
 
 import (
 	"fmt"
-	ai "github.com/krux02/assimp"
 	mgl "github.com/Jragonmiris/mathgl"
+	ai "github.com/krux02/assimp"
 	"math"
 )
 
@@ -43,7 +43,7 @@ func Max(v1, v2 mgl.Vec4f) (min mgl.Vec4f) {
 
 func LoadMesh(filename string) (mesh *Mesh) {
 	scene := ai.ImportFile(filename, 0)
-	scene.ApplyPostProcessing(ai.Process_Triangulate)
+	//scene.ApplyPostProcessing(ai.Process_Triangulate)
 	meshes := scene.Meshes()
 	if len(meshes) != 1 {
 		panic("not a single mesh")
@@ -74,12 +74,12 @@ func LoadMesh(filename string) (mesh *Mesh) {
 }
 
 func (m *Mesh) BoundingBox() (min mgl.Vec4f, max mgl.Vec4f) {
-	min = mgl.Vec4f{math.MaxFloat32,math.MaxFloat32,math.MaxFloat32,math.MaxFloat32}
-	max = mgl.Vec4f{-math.MaxFloat32,-math.MaxFloat32,-math.MaxFloat32,-math.MaxFloat32}
+	min = mgl.Vec4f{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32}
+	max = mgl.Vec4f{-math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32}
 
 	for _, v := range m.Vertices {
-		min = Min(min,v.Vertex_ms)
-		max = Max(max,v.Vertex_ms)
+		min = Min(min, v.Vertex_ms)
+		max = Max(max, v.Vertex_ms)
 	}
 	return
 }
@@ -103,5 +103,3 @@ func (m *Mesh) MakeBoxVertices() (verts [8]mgl.Vec4f) {
 	}
 	return
 }
-
-

@@ -1,13 +1,13 @@
 package rendering
 
 import (
+	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
 	glfw "github.com/go-gl/glfw3"
-	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/krux02/turnt-octo-wallhack/particles"
 	"github.com/krux02/turnt-octo-wallhack/settings"
 	"github.com/krux02/turnt-octo-wallhack/world"
-	// "math"
+	"math"
 )
 
 type WorldRenderer struct {
@@ -60,48 +60,59 @@ func (this *WorldRenderer) Render(w *world.World, options *settings.BoolOptions,
 				this.ParticleSystem.Render(Proj, View.Mul4(Offset))
 			}
 
-			// portal := w.Portals[0].Mesh
-			// boxVertices := portal.MakeBoxVertices()
-			// pv := Proj.Mul4(View)
+			portal := w.Portals[0].Mesh
+			boxVertices := portal.MakeBoxVertices()
+			pv := Proj.Mul4(View)
+
+			var dist float32 = 1e38
+			var pos4f = View.Inv().Mul4x1(mgl.Vec4f{0, 0, 0, 1})
+			var pos3f = mgl.Vec3f{pos4f[0], pos4f[1], pos4f[2]}
+			var nearestPortal world.Portal
+
+			for _, portal := range w.Portals {
+				newDist := pos3f.Sub(portal.Position).Len()
+				if newDist < dist {
+					dist = newDist
+					nearestPortal = portal
+				}
+			}
 
 			for _, portal := range w.Portals {
 				pos := portal.Position
 				Model := mgl.Translate3D(pos[0], pos[1], pos[2]).Mul4(rotation)
 				this.MeshRenderer.Render(&this.Portal, Proj, View.Mul4(Offset), Model)
 
-				// pvm := pv.Mul4(Model)
-
-				// meshMin := mgl.Vec4f{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32}
-				// meshMax := mgl.Vec4f{-math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32}
-
-				// for _, v := range boxVertices {
-				// 	v = pvm.Mul4x1(v)
-				// 	v = v.Mul(1 / v[3])
-
-				// 	meshMin = world.Min(meshMin, v)
-				// 	meshMax = world.Max(meshMax, v)
-				// }
-
-				// if meshMin[0] < 1 && meshMin[1] < 1 && meshMin[2] < 1 &&
-				// 	meshMax[0] > -1 && meshMax[1] > -1 && meshMax[2] > -1 {
-
-				// 	w, h := window.GetSize()
-				// 	p1x, p1y := convertToPixelCoords(mgl.Vec2f{meshMin[0], meshMin[1]}, w, h)
-				// 	p2x, p2y := convertToPixelCoords(mgl.Vec2f{meshMax[0], meshMax[1]}, w, h)
-				// 	pw, ph := p2x-p1x, p2y-p1y
-
-				// 	if p1x != 0 || p1y != 0 || pw != w-1 || ph != h-1 {
-				// 		//gl.Viewport(p1x, p1y, pw, ph)
-				// 		gl.Enable(gl.SCISSOR_TEST)
-				// 		gl.Scissor(p1x, p1y, pw, ph)
-				// 		gl.ClearColor(1, 0, 0, 1)
-				// 		gl.Clear(gl.COLOR_BUFFER_BIT)
-				// 		gl.ClearColor(0, 0, 0, 1)
-				// 		//gl.Viewport(0,0,w,h)
-				// 		gl.Scissor(0, 0, w, h)
-				// 		gl.Disable(gl.SCISSOR_TEST)
-				// 	}
-				// }
+				pvm := pv.Mul4(Model)
+				meshMin := mgl.Vec4f{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32}
+				meshMax := mgl.Vec4f{-math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32}
+				for _, v := range boxVertices {
+					v = pvm.Mul4x1(v)
+					v = v.Mul(1 / v[3])
+					meshMin = world.Min(meshMin, v)
+					meshMax = world.Max(meshMax, v)
+				}
+				if meshMin[0] < 1 && meshMin[1] < 1 && meshMin[2] < 1 &&
+					meshMax[0] > -1 && meshMax[1] > -1 && meshMax[2] > -1 {
+					w, h := window.GetSize()
+					p1x, p1y := convertToPixelCoords(mgl.Vec2f{meshMin[0], meshMin[1]}, w, h)
+					p2x, p2y := convertToPixelCoords(mgl.Vec2f{meshMax[0], meshMax[1]}, w, h)
+					pw, ph := p2x-p1x, p2y-p1y
+					if p1x != 0 || p1y != 0 || pw != w-1 || ph != h-1 {
+						//gl.Viewport(p1x, p1y, pw, ph)
+						gl.Enable(gl.SCISSOR_TEST)
+						gl.Scissor(p1x, p1y, pw, ph)
+						if portal == nearestPortal {
+							gl.ClearColor(0, 1, 1, 1)
+						} else {
+							gl.ClearColor(1, 0, 0, 1)
+						}
+						gl.Clear(gl.COLOR_BUFFER_BIT)
+						gl.ClearColor(0, 0, 0, 1)
+						//gl.Viewport(0,0,w,h)
+						gl.Scissor(0, 0, w, h)
+						gl.Disable(gl.SCISSOR_TEST)
+					}
+				}
 			}
 		}
 	}
