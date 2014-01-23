@@ -19,6 +19,19 @@ type Mesh struct {
 	Indices  []MeshIndex
 }
 
+func QuadMesh() (mesh *Mesh) {
+	mesh = &Mesh{
+		[]MeshVertex{
+			MeshVertex{mgl.Vec4f{-1, -1, 0, 1}, mgl.Vec4f{0, 0, 1, 0}},
+			MeshVertex{mgl.Vec4f{1, -1, 0, 1}, mgl.Vec4f{0, 0, 1, 0}},
+			MeshVertex{mgl.Vec4f{1, 1, 0, 1}, mgl.Vec4f{0, 0, 1, 0}},
+			MeshVertex{mgl.Vec4f{-1, 1, 0, 1}, mgl.Vec4f{0, 0, 1, 0}},
+		},
+		[]MeshIndex{0, 1, 2, 2, 3, 0},
+	}
+	return
+}
+
 func Min(v1, v2 mgl.Vec4f) (min mgl.Vec4f) {
 	for i := 0; i < 4; i++ {
 		if v1[i] < v2[i] {
@@ -43,10 +56,10 @@ func Max(v1, v2 mgl.Vec4f) (min mgl.Vec4f) {
 
 func LoadMesh(filename string) (mesh *Mesh) {
 	scene := ai.ImportFile(filename, 0)
-	//scene.ApplyPostProcessing(ai.Process_Triangulate)
+	scene.ApplyPostProcessing(ai.Process_Triangulate)
 	meshes := scene.Meshes()
 	if len(meshes) != 1 {
-		panic("not a single mesh")
+		panic(fmt.Sprintf("not a single mesh, found %d meshes", len(meshes)))
 	}
 	aimesh := meshes[0]
 

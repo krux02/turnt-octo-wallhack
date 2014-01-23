@@ -26,6 +26,8 @@ func main() {
 	glfw.WindowHint(glfw.OpenglProfile, glfw.OpenglCoreProfile)
 	glfw.WindowHint(glfw.OpenglDebugContext, gl.TRUE)
 
+	glfw.SwapInterval(60)
+
 	window, err := glfw.CreateWindow(1024, 768, "Turnt Octo Wallhack", nil, nil)
 	if window == nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err.Error())

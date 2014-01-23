@@ -1,57 +1,77 @@
-package main
+package rendering
 
 //#include <string.h>
 import "C"
 
 import (
-	"fmt"
+	//"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
 	"math"
 )
 
-func stringMat4f(m mgl.Mat4f) {
-	s1 := fmt.Sprintf("%2.2f\t%2.2f\t%2.2f\t%2.2f\n", m[0], m[4], m[8], m[12])
-	s2 := fmt.Sprintf("%2.2f\t%2.2f\t%2.2f\t%2.2f\n", m[1], m[5], m[9], m[13])
-	s3 := fmt.Sprintf("%2.2f\t%2.2f\t%2.2f\t%2.2f\n", m[2], m[6], m[10], m[14])
-	s4 := fmt.Sprintf("%2.2f\t%2.2f\t%2.2f\t%2.2f\n", m[3], m[7], m[11], m[15])
-	fmt.Sprintf("%s%s%s%s", s1, s2, s3, s4)
-}
-
 type Camera struct {
-	position  mgl.Vec3f
-	direction mgl.Quatf
+	Position  mgl.Vec3f
+	Direction mgl.Quatf
 }
 
-func NewCamera(eye mgl.Vec3f, center mgl.Vec3f, up mgl.Vec3f) *Camera {
-	return nil
+func NewCameraV(eye mgl.Vec3f, center mgl.Vec3f, up mgl.Vec3f) *Camera {
+	return NewCameraM(mgl.LookAtV(eye, center, up))
+}
+
+func NewCameraM(view mgl.Mat4f) (camera *Camera) {
+	m00 := view[0]
+	m10 := view[1]
+	m20 := view[2]
+
+	m01 := view[4]
+	m11 := view[5]
+	m21 := view[6]
+
+	m02 := view[8]
+	m12 := view[9]
+	m22 := view[10]
+
+	m03 := view[12]
+	m13 := view[13]
+	m23 := view[14]
+
+	qw := float32(math.Sqrt(float64(1+m00+m11+m22))) / 2
+	qx := (m21 - m12) / (4 * qw)
+	qy := (m02 - m20) / (4 * qw)
+	qz := (m10 - m01) / (4 * qw)
+
+	dir := mgl.Quatf{qw, mgl.Vec3f{qx, qy, qz}}.Inverse()
+	pos := dir.Rotate(mgl.Vec3f{-m03, -m13, -m23})
+
+	camera = &Camera{pos, dir}
+	return
 }
 
 func (camera *Camera) MoveAbsolute(dist mgl.Vec3f) {
-	camera.position = camera.position.Add(dist)
+	camera.Position = camera.Position.Add(dist)
 }
 
 func (camera *Camera) MoveRelative(dist mgl.Vec3f) {
-	camera.MoveAbsolute(camera.direction.Rotate(dist))
+	camera.MoveAbsolute(camera.Direction.Rotate(dist))
 }
 
 func (camera *Camera) View() mgl.Mat4f {
-	direction := camera.direction.Rotate(mgl.Vec3f{0, 0, -1})
-	center := camera.position.Add(direction)
-	up := camera.direction.Rotate(mgl.Vec3f{0, 1, 0})
-	return mgl.LookAtV(camera.position, center, up)
+	Tx := camera.Position[0]
+	Ty := camera.Position[1]
+	Tz := camera.Position[2]
+	return camera.Direction.Inverse().Mat4().Mul4(mgl.Translate3D(-Tx, -Ty, -Tz))
 }
 
 func (camera *Camera) Rotation2D() (Rot2D mgl.Mat3f) {
-	direction := camera.direction.Rotate(mgl.Vec3f{0, 0, -1})
-	angle := math.Atan2(float64(direction[1]), float64(direction[0]))
-	Rot2D = mgl.Rotate3DZ(float32(angle/math.Pi*180))
+	Direction := camera.Direction.Rotate(mgl.Vec3f{0, 0, -1})
+	angle := math.Atan2(float64(Direction[1]), float64(Direction[0]))
+	Rot2D = mgl.Rotate3DZ(float32(angle / math.Pi * 180))
 	return
 }
 
 func (camera *Camera) Rotate(angle float32, axis mgl.Vec3f) {
 	quat2 := mgl.QuatRotatef(angle, axis)
-	camera.direction = camera.direction.Mul(quat2).Normalize()
-	//camera.direction = MyMult(camera.direction, quat2).Normalize()
+	camera.Direction = camera.Direction.Mul(quat2).Normalize()
 }
 
 func (camera *Camera) Yaw(yaw float32) {

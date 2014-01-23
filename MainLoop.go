@@ -1,7 +1,7 @@
 package main
 
 import (
-	// "fmt"
+	//	"fmt"
 	"github.com/go-gl/gl"
 	glfw "github.com/go-gl/glfw3"
 	"github.com/krux02/tw"
@@ -32,7 +32,7 @@ func MainLoop(gamestate *GameState) {
 
 		gl.Disable(gl.BLEND)
 
-		gamestate.WorldRenderer.Render(gamestate.World, &gamestate.Options, gamestate.Proj, gamestate.Camera.View(), gamestate.Camera.Rotation2D(), window)
+		gamestate.WorldRenderer.Render(gamestate.World, &gamestate.Options, gamestate.Proj, gamestate.Camera.View(), window, 1)
 
 		tw.Draw()
 		window.SwapBuffers()

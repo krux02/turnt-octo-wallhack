@@ -3,6 +3,7 @@ package main
 import (
 	// "fmt"
 	mgl "github.com/Jragonmiris/mathgl"
+	"github.com/krux02/turnt-octo-wallhack/rendering"
 	// "math"
 )
 
@@ -13,13 +14,13 @@ type PlayerInput struct {
 
 type Player interface {
 	SetInput(input PlayerInput)
-	GetCamera() *Camera
+	GetCamera() *rendering.Camera
 	Position() mgl.Vec3f
 	Update(gamestate *GameState)
 }
 
 type MyPlayer struct {
-	Camera   Camera
+	Camera   rendering.Camera
 	input    PlayerInput
 	velocety mgl.Vec3f
 }
@@ -28,12 +29,12 @@ func (p *MyPlayer) SetInput(input PlayerInput) {
 	p.input = input
 }
 
-func (p *MyPlayer) GetCamera() *Camera {
+func (p *MyPlayer) GetCamera() *rendering.Camera {
 	return &p.Camera
 }
 
 func (p *MyPlayer) Position() mgl.Vec3f {
-	return p.Camera.position
+	return p.Camera.Position
 }
 
 func (p *MyPlayer) Update(gamestate *GameState) {
@@ -46,7 +47,7 @@ func (p *MyPlayer) Update(gamestate *GameState) {
 	if move.Len() > 0 {
 		move = move.Normalize()
 	}
-	move = p.Camera.direction.Rotate(move)
+	move = p.Camera.Direction.Rotate(move)
 
 	if gamestate.Options.DisablePlayerPhysics {
 		move = move.Mul(0.1)
@@ -59,29 +60,29 @@ func (p *MyPlayer) Update(gamestate *GameState) {
 
 		groundHeight := gamestate.World.HeightMap.Get2f(p.Position()[0], p.Position()[1])
 
-		height := p.Camera.position[2]
+		height := p.Camera.Position[2]
 		minHeight := groundHeight + 1.5
 		maxHeight := groundHeight + 20
 
 		if height < minHeight {
 			diff := minHeight - height
 			p.velocety[2] += diff
-			p.Camera.position[2] += diff
+			p.Camera.Position[2] += diff
 		}
 
 		w := float32(gamestate.World.HeightMap.W)
 		h := float32(gamestate.World.HeightMap.H)
 
-		if p.Camera.position[0] < 0 {
-			p.Camera.position[0] += w
-		} else if p.Camera.position[0] >= w {
-			p.Camera.position[0] -= w
+		if p.Camera.Position[0] < 0 {
+			p.Camera.Position[0] += w
+		} else if p.Camera.Position[0] >= w {
+			p.Camera.Position[0] -= w
 		}
 
-		if p.Camera.position[1] < 0 {
-			p.Camera.position[1] += h
-		} else if p.Camera.position[1] >= h {
-			p.Camera.position[1] -= h
+		if p.Camera.Position[1] < 0 {
+			p.Camera.Position[1] += h
+		} else if p.Camera.Position[1] >= h {
+			p.Camera.Position[1] -= h
 		}
 
 		p.velocety = p.velocety.Mul(0.95)

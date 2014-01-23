@@ -2,9 +2,9 @@ package particles
 
 import (
 	"fmt"
+	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
 	"github.com/go-gl/glh"
-	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/world"
 	"io/ioutil"
@@ -265,6 +265,7 @@ func (ps *ParticleSystem) Render(Proj mgl.Mat4f, View mgl.Mat4f) {
 	gl.DepthMask(false)
 	gl.DrawArraysInstanced(gl.TRIANGLE_FAN, 0, 4, ps.NumParticles)
 	gl.DepthMask(true)
+	gl.Disable(gl.BLEND)
 }
 
 func (ps *ParticleSystem) Delete() {

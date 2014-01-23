@@ -2,20 +2,20 @@ package main
 
 import (
 	// "fmt"
+	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
 	glfw "github.com/go-gl/glfw3"
-	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/rendering"
-	"github.com/krux02/turnt-octo-wallhack/world"
 	"github.com/krux02/turnt-octo-wallhack/settings"
+	"github.com/krux02/turnt-octo-wallhack/world"
 	"github.com/krux02/tw"
 	"unsafe"
 )
 
 type GameState struct {
 	Window        *glfw.Window
-	Camera        *Camera
+	Camera        *rendering.Camera
 	Proj          mgl.Mat4f
 	Textures      []gl.Texture
 	Bar           *tw.Bar
@@ -52,13 +52,14 @@ func NewGameState(window *glfw.Window) (gamestate *GameState) {
 		Bar:           bar,
 		World:         World,
 		WorldRenderer: wr,
-		Player:        &MyPlayer{Camera{mgl.Vec3f{5, 5, 10}, mgl.QuatIdentf()}, PlayerInput{}, mgl.Vec3f{}},
+		Player:        &MyPlayer{rendering.Camera{mgl.Vec3f{5, 5, 10}, mgl.QuatIdentf()}, PlayerInput{}, mgl.Vec3f{}},
 		Fps:           0,
 		Options:       settings.BoolOptions{},
 	}
 
 	gamestate.Camera = gamestate.Player.GetCamera()
 	opt := &gamestate.Options
+	opt.DisableTreeRender = true
 
 	tw.Define(" GLOBAL help='This example shows how to integrate AntTweakBar with GLFW and OpenGL.' ")
 	bar.AddVarRO("fps", tw.TYPE_FLOAT, unsafe.Pointer(&gamestate.Fps), "")

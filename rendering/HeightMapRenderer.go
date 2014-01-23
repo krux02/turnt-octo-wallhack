@@ -13,9 +13,9 @@ type WorldVertex struct {
 }
 
 type HeightMapRenderer struct {
-	Program  gl.Program
-	RenLoc   WorldRenderLocations
-	Data     WorldRenderData
+	Program gl.Program
+	RenLoc  WorldRenderLocations
+	Data    WorldRenderData
 }
 
 type WorldRenderData struct {
@@ -61,7 +61,6 @@ func NewHeightMapRenderer(heightMap *world.HeightMap) (this *HeightMapRenderer) 
 
 	helpers.BindLocations(this.Program, &this.RenLoc)
 
-
 	this.Data.VAO = gl.GenVertexArray()
 	this.Data.VAO.Bind()
 
@@ -83,8 +82,6 @@ func NewHeightMapRenderer(heightMap *world.HeightMap) (this *HeightMapRenderer) 
 	this.RenLoc.U_screenRect.Uniform1i(3)
 	this.RenLoc.Min_h.Uniform1f(min_h)
 	this.RenLoc.Max_h.Uniform1f(max_h)
-
-	
 
 	return
 }
@@ -114,7 +111,4 @@ func (wr *HeightMapRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Ma
 	wr.RenLoc.Model.UniformMatrix4f(false, (*[16]float32)(&Model))
 
 	gl.DrawElements(gl.TRIANGLES, numverts, gl.UNSIGNED_INT, uintptr(0))
-	
-	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE)
-	gl.Enable(gl.BLEND)
 }
