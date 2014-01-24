@@ -29,6 +29,7 @@ type WorldRenderLocations struct {
 	Vertex_ms, Normal_ms                                    gl.AttribLocation
 	Matrix, Model, Time, SeaLevel, Highlight                gl.UniformLocation
 	Min_h, Max_h, U_color, U_texture, U_slope, U_screenRect gl.UniformLocation
+	U_clippingPlane                                         gl.UniformLocation
 }
 
 func Vertices(m *world.HeightMap) []WorldVertex {
@@ -93,7 +94,7 @@ func (wr *HeightMapRenderer) Delete() {
 	wr.Data.Vertices.Delete()
 }
 
-func (wr *HeightMapRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, time float64) {
+func (wr *HeightMapRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, time float64, clippingPlane mgl.Vec4f) {
 	wr.Program.Use()
 	wr.Data.VAO.Bind()
 
@@ -101,6 +102,7 @@ func (wr *HeightMapRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Ma
 	Loc.Time.Uniform1f(float32(time))
 	Loc.SeaLevel.Uniform1f(float32(math.Sin(time*0.1)*10 - 5))
 	Loc.Highlight.Uniform1f(1)
+	Loc.U_clippingPlane.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
 
 	numverts := wr.Data.Numverts
 

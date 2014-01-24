@@ -70,25 +70,26 @@ func (p *MyPlayer) Update(gamestate *GameState) {
 			p.Camera.Position[2] += diff
 		}
 
-		w := float32(gamestate.World.HeightMap.W)
-		h := float32(gamestate.World.HeightMap.H)
+		/*
+			w := float32(gamestate.World.HeightMap.W)
+			h := float32(gamestate.World.HeightMap.H)
+			if p.Camera.Position[0] < 0 {
+				p.Camera.Position[0] += w
+			} else if p.Camera.Position[0] >= w {
+				p.Camera.Position[0] -= w
+			}
 
-		if p.Camera.Position[0] < 0 {
-			p.Camera.Position[0] += w
-		} else if p.Camera.Position[0] >= w {
-			p.Camera.Position[0] -= w
-		}
-
-		if p.Camera.Position[1] < 0 {
-			p.Camera.Position[1] += h
-		} else if p.Camera.Position[1] >= h {
-			p.Camera.Position[1] -= h
-		}
+			if p.Camera.Position[1] < 0 {
+				p.Camera.Position[1] += h
+			} else if p.Camera.Position[1] >= h {
+				p.Camera.Position[1] -= h
+			}
+		*/
 
 		p.velocety = p.velocety.Mul(0.95)
 
-		if height > maxHeight {
-			p.velocety[2] -= 0.02
+		if height > maxHeight && p.velocety[2] > -0.0 {
+			p.velocety[2] -= 0.001
 		}
 
 		groundFactor := (height - groundHeight) / 20

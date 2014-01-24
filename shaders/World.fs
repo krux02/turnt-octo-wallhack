@@ -11,15 +11,22 @@ uniform sampler2D U_slope;
 uniform vec3 lightDir = vec3(-0.57735);
 uniform vec3 ambientColor = vec3(0.5);
 uniform vec3 sunColor = vec3(1);
+uniform vec4 U_clippingPlane;
 
 in vec4 v_color;
-in vec3 pos_ws;
+in vec4 pos_ws;
 in vec3 normal_ws;
 // Ouput data
 out vec3 color;
 
 void main()
 {
+	if( dot(pos_ws, U_clippingPlane) < 0 ) {
+		discard;
+	}
+	
+	
+	
 	float sunIntensity = dot(-lightDir,normal_ws);
 	vec3 light = max((sunIntensity * sunColor),ambientColor);
 	
@@ -33,8 +40,10 @@ void main()
 	color = colorA*vec3(fractionA/len)+colorB*vec3(fractionB/len)+colorC*vec3(fractionC/len);
 	
 	color =  light * mix(v_color.xyz, color, v_color.w);
+	
+	
 
-	if( gl_PrimitiveID == Highlight ) {
-		color = vec3(1) - color;
-	}
+	//if( gl_PrimitiveID == Highlight ) {
+	//	color = vec3(1) - color;
+	//}
 }

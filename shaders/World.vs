@@ -15,19 +15,18 @@ uniform vec2 waveDir = vec2(0.707107);
 uniform float waveAmplitudeScale = 0.35;
 
 out vec4 v_color;
-out vec3 pos_ws;
+out vec4 pos_ws;
 out vec3 normal_ws;
 
 void main() {
-	float wavePos = dot((Model*vec4(Vertex_ms,1)).xy, waveDir)+Time;
+	pos_ws = Model*vec4(Vertex_ms,1);
+	float wavePos = dot(pos_ws.xy, waveDir)+Time;
 	float s = sin(wavePos);
 	float c = cos(wavePos);
 	float waveHeight = s * waveAmplitudeScale + SeaLevel;
 
 	vec3 waveNormal = normalize(vec3(waveDir * vec2(-c*waveAmplitudeScale),1));
 	vec3 waveColor = mix(waveColor1, waveColor2, (s+1)/2);
-
-	pos_ws = Vertex_ms;
 	
 	float mixValue = clamp(pos_ws.z-waveHeight, 0, 1);
 	v_color = vec4(waveColor,mixValue);

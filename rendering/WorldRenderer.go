@@ -31,7 +31,7 @@ func NewWorldRenderer(w *world.World) *WorldRenderer {
 	}
 }
 
-func (this *WorldRenderer) Render(ww *world.World, options *settings.BoolOptions, Proj mgl.Mat4f, View mgl.Mat4f, window *glfw.Window, max_recursion int) {
+func (this *WorldRenderer) Render(ww *world.World, options *settings.BoolOptions, Proj mgl.Mat4f, View mgl.Mat4f, window *glfw.Window, max_recursion int, clippingPlane mgl.Vec4f) {
 
 	camera := NewCameraM(View)
 	Rot2D := camera.Rotation2D()
@@ -66,7 +66,7 @@ func (this *WorldRenderer) Render(ww *world.World, options *settings.BoolOptions
 				gl.PolygonMode(gl.FRONT_AND_BACK, gl.FILL)
 			}
 			if !options.DisableWorldRender {
-				this.HeightMapRenderer.Render(Proj, View, OffsetM, currentTime)
+				this.HeightMapRenderer.Render(Proj, View, OffsetM, currentTime, clippingPlane)
 			}
 			if !options.DisableTreeRender {
 				this.PalmTrees.Render(Proj, View.Mul4(OffsetM), Rot2D)
@@ -128,12 +128,25 @@ func (this *WorldRenderer) Render(ww *world.World, options *settings.BoolOptions
 
 					//gl.Viewport(0,0,w,h)
 
+					// calculation View matrix that shows the target portal from the same angle as view shows the source portal
 					pos2 := portal.Target.Position
 					Model2 := mgl.Translate3D(pos2[0], pos2[1], pos2[2]).Mul4(rotation)
 					View2 := View.Mul4(Model).Mul4(Model2.Inv())
+
+					camDir := camera.DirVec()
+					pDir := Model.Mul4x1(mgl.Vec4f{0, 1, 0, 0})
+					portalDir := mgl.Vec3f{pDir[0], pDir[1], pDir[2]}
+
+					if camDir.Dot(portalDir) > 0 {
+						clippingPlane = Model2.Mul4x1(mgl.Vec4f{0, 1, 0, 0})
+					} else {
+						clippingPlane = Model2.Mul4x1(mgl.Vec4f{0, -1, 0, 0})
+					}
+					clippingPlane[3] = -clippingPlane.Dot(mgl.Vec4f{pos2[0], pos2[1], pos2[2], 0})
+
 					//camera2 := NewCameraM(View2)
 
-					this.Render(ww, options, Proj, View2, window, max_recursion-1)
+					this.Render(ww, options, Proj, View2, window, max_recursion-1, clippingPlane)
 
 					gl.Scissor(0, 0, w, h)
 					gl.Disable(gl.SCISSOR_TEST)

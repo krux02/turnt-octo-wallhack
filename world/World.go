@@ -17,8 +17,8 @@ func NewWorld() (world *World) {
 
 	PortalPositions := []mgl.Vec3f{mgl.Vec3f{10, 10, 15}, mgl.Vec3f{30, 30, 10}, mgl.Vec3f{60, 60, 9}}
 
-	//PortalMesh := LoadMesh("meshes/Portal.blend")
-	PortalMesh := QuadMesh()
+	PortalMesh := LoadMesh("meshes/Portal.blend")
+	// PortalMesh := QuadMesh()
 
 	Portals := make([]Portal, len(PortalPositions))
 	for i, pos := range PortalPositions {

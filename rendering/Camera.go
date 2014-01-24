@@ -85,3 +85,8 @@ func (camera *Camera) Pitch(pitch float32) {
 func (camera *Camera) Roll(roll float32) {
 	camera.Rotate(roll, mgl.Vec3f{0, 0, 1})
 }
+
+func (camera *Camera) DirVec() (dir mgl.Vec3f) {
+	dir = camera.Direction.Rotate(mgl.Vec3f{0, 0, -1})
+	return
+}
