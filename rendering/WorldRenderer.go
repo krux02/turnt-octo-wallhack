@@ -1,7 +1,7 @@
 package rendering
 
 import (
-	//	"fmt"
+	//"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
 	glfw "github.com/go-gl/glfw3"
@@ -37,12 +37,13 @@ func (this *WorldRenderer) Render(ww *world.World, options *settings.BoolOptions
 	Rot2D := camera.Rotation2D()
 
 	currentTime := glfw.GetTime()
-	rotation := mgl.HomogRotate3D(float32(currentTime), mgl.Vec3f{0, 0, 1})
+	//rotation := mgl.HomogRotate3D(float32(currentTime), mgl.Vec3f{0, 0, 1})
+	rotation := options.Rotation.Mat4()
 
 	W := ww.HeightMap.W
 	H := ww.HeightMap.H
 
-	if !options.DisableParticlePhysics {
+	if !options.NoParticlePhysics {
 		this.ParticleSystem.DoStep(currentTime)
 	}
 
@@ -65,13 +66,13 @@ func (this *WorldRenderer) Render(ww *world.World, options *settings.BoolOptions
 			} else {
 				gl.PolygonMode(gl.FRONT_AND_BACK, gl.FILL)
 			}
-			if !options.DisableWorldRender {
+			if !options.NoWorldRender {
 				this.HeightMapRenderer.Render(Proj, View, OffsetM, currentTime, clippingPlane)
 			}
-			if !options.DisableTreeRender {
+			if !options.NoTreeRender {
 				this.PalmTrees.Render(Proj, View.Mul4(OffsetM), Rot2D)
 			}
-			if !options.DisableParticleRender {
+			if !options.NoParticleRender {
 				this.ParticleSystem.Render(Proj, View.Mul4(OffsetM))
 			}
 		}
@@ -133,11 +134,13 @@ func (this *WorldRenderer) Render(ww *world.World, options *settings.BoolOptions
 					Model2 := mgl.Translate3D(pos2[0], pos2[1], pos2[2]).Mul4(rotation)
 					View2 := View.Mul4(Model).Mul4(Model2.Inv())
 
-					camDir := camera.DirVec()
-					pDir := Model.Mul4x1(mgl.Vec4f{0, 1, 0, 0})
-					portalDir := mgl.Vec3f{pDir[0], pDir[1], pDir[2]}
+					normal_os := mgl.Vec4f{0, 1, 0, 0}
+					normal_ws := Model.Mul4x1(normal_os)
+					// normal_cs := View.Mul4x1(normal_ws)
+					view_dir := portal.Position.Sub(camera.Position)
+					sign := view_dir.Dot(mgl.Vec3f{normal_ws[0], normal_ws[1], normal_ws[2]})
 
-					if camDir.Dot(portalDir) > 0 {
+					if sign > 0 {
 						clippingPlane = Model2.Mul4x1(mgl.Vec4f{0, 1, 0, 0})
 					} else {
 						clippingPlane = Model2.Mul4x1(mgl.Vec4f{0, -1, 0, 0})

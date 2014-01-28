@@ -32,6 +32,19 @@ func QuadMesh() (mesh *Mesh) {
 	return
 }
 
+func PortalRect() (mesh *Mesh) {
+	mesh = &Mesh{
+		[]MeshVertex{
+			MeshVertex{mgl.Vec4f{-1, 0, -2, 1}, mgl.Vec4f{0, 1, 0, 0}},
+			MeshVertex{mgl.Vec4f{-1, 0, 2, 1}, mgl.Vec4f{0, 1, 0, 0}},
+			MeshVertex{mgl.Vec4f{1, 0, 2, 1}, mgl.Vec4f{0, 1, 0, 0}},
+			MeshVertex{mgl.Vec4f{1, 0, -2, 1}, mgl.Vec4f{0, 1, 0, 0}},
+		},
+		[]MeshIndex{0, 1, 2, 2, 3, 0},
+	}
+	return
+}
+
 func Min(v1, v2 mgl.Vec4f) (min mgl.Vec4f) {
 	for i := 0; i < 4; i++ {
 		if v1[i] < v2[i] {

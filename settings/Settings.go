@@ -1,10 +1,13 @@
 package settings
 
+import mgl "github.com/Jragonmiris/mathgl"
+
 type BoolOptions struct {
-	DisableParticleRender,
-	DisableParticlePhysics,
-	DisableWorldRender,
-	DisableTreeRender,
-	DisablePlayerPhysics,
+	NoParticleRender,
+	NoParticlePhysics,
+	NoWorldRender,
+	NoTreeRender,
+	NoPlayerPhysics,
 	Wireframe bool
+	Rotation mgl.Quatf
 }

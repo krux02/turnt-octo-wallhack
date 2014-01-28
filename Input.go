@@ -4,6 +4,7 @@ import glfw "github.com/go-gl/glfw3"
 import mgl "github.com/Jragonmiris/mathgl"
 import "github.com/krux02/tw"
 import "math"
+
 // import "fmt"
 
 var drag glfw.MouseButton = -1
@@ -87,12 +88,12 @@ func Input(gamestate *GameState) {
 	inp := PlayerInput{}
 
 	switch drag {
-	case 0:
+	case 1:
 		if delta.Len() > 0 {
 			inp.rotate[0] -= delta[1]
 			inp.rotate[1] -= delta[0]
 		}
-	case 1:
+	case 2:
 		if delta.Len() > 0 {
 			inp.rotate[1] -= delta[0]
 			inp.rotate[2] -= delta[1]

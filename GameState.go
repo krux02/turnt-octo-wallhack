@@ -59,16 +59,19 @@ func NewGameState(window *glfw.Window) (gamestate *GameState) {
 
 	gamestate.Camera = gamestate.Player.GetCamera()
 	opt := &gamestate.Options
-	opt.DisableTreeRender = true
+	opt.NoTreeRender = true
+	opt.NoParticlePhysics = true
+	opt.NoParticleRender = true
 
 	tw.Define(" GLOBAL help='This example shows how to integrate AntTweakBar with GLFW and OpenGL.' ")
 	bar.AddVarRO("fps", tw.TYPE_FLOAT, unsafe.Pointer(&gamestate.Fps), "")
-	bar.AddVarRW("DisableParticleRender", tw.TYPE_BOOL8, unsafe.Pointer(&opt.DisableParticleRender), "")
-	bar.AddVarRW("DisableParticlePhysics", tw.TYPE_BOOL8, unsafe.Pointer(&opt.DisableParticlePhysics), "")
-	bar.AddVarRW("DisableWorldRender", tw.TYPE_BOOL8, unsafe.Pointer(&opt.DisableWorldRender), "")
-	bar.AddVarRW("DisableTreeRender", tw.TYPE_BOOL8, unsafe.Pointer(&opt.DisableTreeRender), "")
-	bar.AddVarRW("DisablePlayerPhysics", tw.TYPE_BOOL8, unsafe.Pointer(&opt.DisablePlayerPhysics), "")
+	bar.AddVarRW("NoParticleRender", tw.TYPE_BOOL8, unsafe.Pointer(&opt.NoParticleRender), "")
+	bar.AddVarRW("NoParticlePhysics", tw.TYPE_BOOL8, unsafe.Pointer(&opt.NoParticlePhysics), "")
+	bar.AddVarRW("NoWorldRender", tw.TYPE_BOOL8, unsafe.Pointer(&opt.NoWorldRender), "")
+	bar.AddVarRW("NoTreeRender", tw.TYPE_BOOL8, unsafe.Pointer(&opt.NoTreeRender), "")
+	bar.AddVarRW("NoPlayerPhysics", tw.TYPE_BOOL8, unsafe.Pointer(&opt.NoPlayerPhysics), "")
 	bar.AddVarRW("Wireframe", tw.TYPE_BOOL8, unsafe.Pointer(&opt.Wireframe), "")
+	bar.AddVarRW("Rotation", tw.TYPE_QUAT4F, unsafe.Pointer(&opt.Rotation), "")
 
 	bar.AddButton("save image", func() { helpers.SaveImage("test.png", World.HeightMap.ExportImage()) }, "")
 

@@ -59,6 +59,7 @@ func (this *MeshRenderer) Render(meshData *MeshRenderData, Proj mgl.Mat4f, View 
 	meshData.VAO.Bind()
 
 	gl.Disable(gl.BLEND)
+	gl.Disable(gl.CULL_FACE)
 
 	Loc := this.RenLoc
 	Loc.View.UniformMatrix4f(false, (*[16]float32)(&View))
