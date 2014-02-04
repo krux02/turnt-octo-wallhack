@@ -1,7 +1,7 @@
 package main
 
 import (
-	// "fmt"
+	"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
 	glfw "github.com/go-gl/glfw3"
@@ -71,7 +71,12 @@ func NewGameState(window *glfw.Window) (gamestate *GameState) {
 	bar.AddVarRW("NoTreeRender", tw.TYPE_BOOL8, unsafe.Pointer(&opt.NoTreeRender), "")
 	bar.AddVarRW("NoPlayerPhysics", tw.TYPE_BOOL8, unsafe.Pointer(&opt.NoPlayerPhysics), "")
 	bar.AddVarRW("Wireframe", tw.TYPE_BOOL8, unsafe.Pointer(&opt.Wireframe), "")
-	bar.AddVarRW("Rotation", tw.TYPE_QUAT4F, unsafe.Pointer(&opt.Rotation), "")
+
+	N := len(gamestate.World.Portals)
+	for i := 0; i < N; i++ {
+		ptr := &gamestate.World.Portals[i].Orientation
+		bar.AddVarRW(fmt.Sprintf("Rotation %d", i), tw.TYPE_QUAT4F, unsafe.Pointer(ptr), "")
+	}
 
 	bar.AddButton("save image", func() { helpers.SaveImage("test.png", World.HeightMap.ExportImage()) }, "")
 

@@ -9,5 +9,5 @@ type BoolOptions struct {
 	NoTreeRender,
 	NoPlayerPhysics,
 	Wireframe bool
-	Rotation mgl.Quatf
+	portalOrientations []*mgl.Quatf
 }

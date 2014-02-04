@@ -38,7 +38,7 @@ func (this *WorldRenderer) Render(ww *world.World, options *settings.BoolOptions
 
 	currentTime := glfw.GetTime()
 	//rotation := mgl.HomogRotate3D(float32(currentTime), mgl.Vec3f{0, 0, 1})
-	rotation := options.Rotation.Mat4()
+	//rotation := options.Rotation.Mat4()
 
 	W := ww.HeightMap.W
 	H := ww.HeightMap.H
@@ -98,6 +98,7 @@ func (this *WorldRenderer) Render(ww *world.World, options *settings.BoolOptions
 	// drawing  portals
 	for _, portal := range allPortals {
 		pos := portal.Position
+		rotation := portal.Orientation.Mat4()
 		Model := mgl.Translate3D(pos[0], pos[1], pos[2]).Mul4(rotation)
 		this.MeshRenderer.Render(&this.Portal, Proj, View, Model)
 
@@ -128,10 +129,9 @@ func (this *WorldRenderer) Render(ww *world.World, options *settings.BoolOptions
 					gl.ClearColor(0, 0, 0, 1)
 
 					//gl.Viewport(0,0,w,h)
-
 					// calculation View matrix that shows the target portal from the same angle as view shows the source portal
 					pos2 := portal.Target.Position
-					Model2 := mgl.Translate3D(pos2[0], pos2[1], pos2[2]).Mul4(rotation)
+					Model2 := mgl.Translate3D(pos2[0], pos2[1], pos2[2]).Mul4(portal.Target.Orientation.Mat4())
 					View2 := View.Mul4(Model).Mul4(Model2.Inv())
 
 					normal_os := mgl.Vec4f{0, 1, 0, 0}
