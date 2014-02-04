@@ -1,7 +1,7 @@
 package rendering
 
 import (
-	//"fmt"
+	// "fmt"
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
 	glfw "github.com/go-gl/glfw3"
@@ -18,9 +18,12 @@ type WorldRenderer struct {
 	Portal            PortalRenderData
 	PalmTrees         *PalmTrees
 	ParticleSystem    *particles.ParticleSystem
+	Framebuffer       *FrameBuffer
+	ScreenQuad        *ScreenQuadRenderer
 }
 
 func NewWorldRenderer(w *world.World) *WorldRenderer {
+
 	portalData := w.Portals[0].Mesh
 	mr := NewMeshRenderer()
 	pr := NewPortalRenderer()
@@ -31,10 +34,26 @@ func NewWorldRenderer(w *world.World) *WorldRenderer {
 		Portal:            pr.CreateRenderData(portalData),
 		PalmTrees:         NewPalmTrees(w.HeightMap, 5000),
 		ParticleSystem:    particles.NewParticleSystem(w, 10000, mgl.Vec3f{32, 32, 32}, 1, 250),
+		Framebuffer:       NewFrameBuffer(),
+		ScreenQuad:        NewScreenQuadRenderer(),
 	}
 }
 
+func (this *WorldRenderer) Delete() {
+	this.HeightMapRenderer.Delete()
+	this.MeshRenderer.Delete()
+	this.PortalRenderer.Delete()
+	// TODO delete portal data
+	this.PalmTrees.Delete()
+	this.ParticleSystem.Delete()
+	this.Framebuffer.Delete()
+	this.ScreenQuad.Delete()
+	*this = WorldRenderer{}
+}
+
 func (this *WorldRenderer) Render(ww *world.World, options *settings.BoolOptions, Proj mgl.Mat4f, View mgl.Mat4f, window *glfw.Window, max_recursion int, clippingPlane mgl.Vec4f) {
+
+	this.Framebuffer.Bind()
 
 	camera := NewCameraM(View)
 	Rot2D := camera.Rotation2D()
@@ -160,6 +179,10 @@ func (this *WorldRenderer) Render(ww *world.World, options *settings.BoolOptions
 			}
 		}
 	}
+
+	this.Framebuffer.Unbind()
+
+	this.ScreenQuad.Render()
 
 }
 

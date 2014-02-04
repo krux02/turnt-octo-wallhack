@@ -1,25 +1,31 @@
 package rendering
 
 import (
-	"github.com/go-gl/gl"
 	mgl "github.com/Jragonmiris/mathgl"
+	"github.com/go-gl/gl"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"unsafe"
 )
 
-var progB gl.Program
-var vao_B gl.VertexArray
+type ScreenQuadLocations struct {
+	U_screenRect gl.UniformLocation
+}
 
-func InitScreenQuad() {
-	progB = helpers.MakeProgram("screenQuad.vs", "ScreenQuad.fs")
+type ScreenQuadRenderer struct {
+	Prog   gl.Program
+	Vao    gl.VertexArray
+	Buffer gl.Buffer
+}
 
-	progB.Use()
+func NewScreenQuadRenderer() *ScreenQuadRenderer {
 
-	vao_B = gl.GenVertexArray()
+	prog := helpers.MakeProgram("ScreenQuad.vs", "ScreenQuad.fs")
+	prog.Use()
 
-	vao_B.Bind()
+	vao := gl.GenVertexArray()
+	vao.Bind()
 
-	a_positionLoc := progB.GetAttribLocation("a_position")
+	a_positionLoc := prog.GetAttribLocation("a_position")
 	a_positionLoc.EnableArray()
 	a_positionBuffer := gl.GenBuffer()
 	a_positionBuffer.Bind(gl.ARRAY_BUFFER)
@@ -33,18 +39,23 @@ func InitScreenQuad() {
 	gl.BufferData(gl.ARRAY_BUFFER, len(arr)*int(unsafe.Sizeof(mgl.Vec4f{})), arr, gl.STATIC_DRAW)
 	a_positionLoc.AttribPointer(4, gl.FLOAT, false, 0, uintptr(0))
 
-	progB.GetUniformLocation("u_screenRect").Uniform1i(3)
+	locations := ScreenQuadLocations{}
+	helpers.BindLocations(prog, &locations)
+
+	return &ScreenQuadRenderer{prog, vao, a_positionBuffer}
 }
 
-func RenderScreenQuad() {
-	progB.Use()
-	vao_B.Bind()
-	gl.Enable(gl.BLEND)
-	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+func (this *ScreenQuadRenderer) Delete() {
+	this.Prog.Delete()
+	this.Vao.Delete()
+	this.Buffer.Delete()
+	*this = ScreenQuadRenderer{}
+}
+
+func (this *ScreenQuadRenderer) Render() {
+	this.Prog.Use()
+	this.Vao.Bind()
+	//	gl.Enable(gl.BLEND)
+	//	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	gl.DrawArrays(gl.TRIANGLES, 0, 3)
-}
-
-func FreeScreenQuad() {
-	progB.Delete()
-	vao_B.Delete()
 }

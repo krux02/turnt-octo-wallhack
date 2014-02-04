@@ -34,6 +34,11 @@ func NewPortalRenderer() (mr *PortalRenderer) {
 	return
 }
 
+func (this *PortalRenderer) Delete() {
+	this.Program.Delete()
+	this.Program = 0
+}
+
 func (this *PortalRenderer) CreateRenderData(mesh *world.Mesh) (md PortalRenderData) {
 
 	md.VAO = gl.GenVertexArray()

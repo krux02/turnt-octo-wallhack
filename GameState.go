@@ -32,7 +32,6 @@ func NewGameState(window *glfw.Window) (gamestate *GameState) {
 	World := world.NewWorld()
 
 	wr := rendering.NewWorldRenderer(World)
-	rendering.InitScreenQuad()
 
 	textures := initTextures()
 	gl.ActiveTexture(gl.TEXTURE4)
@@ -64,6 +63,7 @@ func NewGameState(window *glfw.Window) (gamestate *GameState) {
 	opt.NoParticleRender = true
 
 	tw.Define(" GLOBAL help='This example shows how to integrate AntTweakBar with GLFW and OpenGL.' ")
+
 	bar.AddVarRO("fps", tw.TYPE_FLOAT, unsafe.Pointer(&gamestate.Fps), "")
 	bar.AddVarRW("NoParticleRender", tw.TYPE_BOOL8, unsafe.Pointer(&opt.NoParticleRender), "")
 	bar.AddVarRW("NoParticlePhysics", tw.TYPE_BOOL8, unsafe.Pointer(&opt.NoParticlePhysics), "")

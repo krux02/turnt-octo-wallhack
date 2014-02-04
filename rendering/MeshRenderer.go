@@ -34,6 +34,11 @@ func NewMeshRenderer() (mr *MeshRenderer) {
 	return
 }
 
+func (this *MeshRenderer) Delete() {
+	this.Program.Delete()
+	this.Program = 0
+}
+
 func (this *MeshRenderer) CreateRenderData(mesh *world.Mesh) (md MeshRenderData) {
 
 	md.VAO = gl.GenVertexArray()

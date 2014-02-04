@@ -34,7 +34,7 @@ func MainLoop(gamestate *GameState) {
 
 		gl.Disable(gl.BLEND)
 
-		gamestate.WorldRenderer.Render(gamestate.World, &gamestate.Options, gamestate.Proj, gamestate.Camera.View(), window, 1, mgl.Vec4f{3 / 5.0, 4 / 5.0, 0, math.MaxFloat32})
+		gamestate.WorldRenderer.Render(gamestate.World, &gamestate.Options, gamestate.Proj, gamestate.Camera.View(), window, 0, mgl.Vec4f{3 / 5.0, 4 / 5.0, 0, math.MaxFloat32})
 
 		tw.Draw()
 		window.SwapBuffers()

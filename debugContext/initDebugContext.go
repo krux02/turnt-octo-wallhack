@@ -33,7 +33,7 @@ const (
 	POINT_DISTANCE_ATTENUATION_ARB = C.GL_POINT_DISTANCE_ATTENUATION_ARB
 	POINT_SIZE_MAX_ARB             = C.GL_POINT_SIZE_MAX_ARB
 	POINT_SIZE_MIN_ARB             = C.GL_POINT_SIZE_MIN_ARB
-	POINT_SPRITE_ARB = C.GL_POINT_SPRITE_ARB
+	POINT_SPRITE_ARB               = C.GL_POINT_SPRITE_ARB
 )
 
 //export goDebugCallback
@@ -78,7 +78,11 @@ func goDebugCallback(source, _type, id, severity C.uint, length C.int, message *
 	}
 
 	fmt.Printf("id: %d\n", id)
-	panic(C.GoStringN(message, length))
+	if severity == 0x9146 {
+		panic(C.GoStringN(message, length))
+	} else {
+		fmt.Println(C.GoStringN(message, length))
+	}
 }
 
 type GLerror gl.GLenum

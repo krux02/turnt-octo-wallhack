@@ -1,8 +1,8 @@
 package rendering
 
 import (
-	"github.com/go-gl/gl"
 	mgl "github.com/Jragonmiris/mathgl"
+	"github.com/go-gl/gl"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/world"
 	"math/rand"
@@ -104,6 +104,14 @@ type PalmTrees struct {
 	Loc     TreeRenderLocatins
 	Buffers PalmTreesBuffers
 	Count   int
+}
+
+func (this *PalmTrees) Delete() {
+	this.Prog.Delete()
+	this.Buffers.InstanceDataBuffer.Delete()
+	this.Buffers.VertexDataBuffer.Delete()
+	this.Buffers.Vao.Delete()
+	*this = PalmTrees{}
 }
 
 func NewPalmTrees(world *world.HeightMap, count int) *PalmTrees {

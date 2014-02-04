@@ -14,8 +14,6 @@ void main() {
 	vec4 BaseColor2 = vec4(1,1,1,1);
 	BaseColor2.rgb -= BaseColor.rgb;
 	
-	
-	
 	if (gl_FrontFacing) {
 		float sunIntensity = dot(-lightDir,Normal_ws.xyz);
 		vec3 light = max((sunIntensity * sunColor),ambientColor);
