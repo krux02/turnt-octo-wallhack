@@ -20,19 +20,25 @@ func main() {
 	glfw.Init()
 	defer glfw.Terminate()
 
-	glfw.WindowHint(glfw.Samples, 4)
-	glfw.WindowHint(glfw.ContextVersionMajor, 3)
-	glfw.WindowHint(glfw.ContextVersionMinor, 0)
-	glfw.WindowHint(glfw.OpenglProfile, glfw.OpenglCoreProfile)
-	glfw.WindowHint(glfw.OpenglDebugContext, gl.TRUE)
+	/*
+		glfw.WindowHint(glfw.Samples, 4)
+		glfw.WindowHint(glfw.ContextVersionMajor, 3)
+		glfw.WindowHint(glfw.ContextVersionMinor, 3)
+		glfw.WindowHint(glfw.OpenglProfile, glfw.OpenglCoreProfile)
+		glfw.WindowHint(glfw.OpenglDebugContext, gl.TRUE)
+	*/
 
 	glfw.SwapInterval(60)
 
 	window, err := glfw.CreateWindow(1024, 768, "Turnt Octo Wallhack", nil, nil)
 	if window == nil {
+		fmt.Println("error")
 		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 		return
 	}
+
+	maj, min, rev := glfw.GetVersion()
+	fmt.Printf("glVersion %d.%d.%d\n", maj, min, rev)
 
 	window.MakeContextCurrent()
 
