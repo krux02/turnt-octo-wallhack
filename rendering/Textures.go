@@ -1,4 +1,4 @@
-package main
+package rendering
 
 import (
 	"fmt"
@@ -6,8 +6,12 @@ import (
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 )
 
-func initTextures() (textures []gl.Texture) {
-	textures = make([]gl.Texture, 0, 6)
+type Textures struct {
+	Textures []gl.Texture
+}
+
+func NewTextures() *Textures {
+	textures := make([]gl.Texture, 0, 6)
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	colorTexture, err := helpers.LoadTexture1D("textures/gradient.png")
@@ -77,5 +81,9 @@ func initTextures() (textures []gl.Texture) {
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
 	}
 
-	return 
+	return &Textures{textures}
+}
+
+func (this *Textures) Delete() {
+	gl.DeleteTextures(this.Textures)
 }

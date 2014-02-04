@@ -17,7 +17,6 @@ type GameState struct {
 	Window        *glfw.Window
 	Camera        *rendering.Camera
 	Proj          mgl.Mat4f
-	Textures      []gl.Texture
 	Bar           *tw.Bar
 	World         *world.World
 	WorldRenderer *rendering.WorldRenderer
@@ -33,7 +32,6 @@ func NewGameState(window *glfw.Window) (gamestate *GameState) {
 
 	wr := rendering.NewWorldRenderer(World)
 
-	textures := initTextures()
 	gl.ActiveTexture(gl.TEXTURE4)
 	World.HeightMap.Texture()
 	gl.ActiveTexture(gl.TEXTURE5)
@@ -47,7 +45,6 @@ func NewGameState(window *glfw.Window) (gamestate *GameState) {
 		Window:        window,
 		Camera:        nil,
 		Proj:          mgl.Perspective(90, 4.0/3.0, 0.01, 1000),
-		Textures:      textures,
 		Bar:           bar,
 		World:         World,
 		WorldRenderer: wr,
@@ -93,6 +90,6 @@ func NewGameState(window *glfw.Window) (gamestate *GameState) {
 }
 
 func (this *GameState) Delete() {
-	gl.DeleteTextures(this.Textures)
 	this.Bar.Delete()
+	this.WorldRenderer.Delete()
 }

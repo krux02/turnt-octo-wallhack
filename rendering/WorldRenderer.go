@@ -19,11 +19,12 @@ type WorldRenderer struct {
 	PalmTrees         *PalmTrees
 	ParticleSystem    *particles.ParticleSystem
 	Framebuffer       *FrameBuffer
+	Textures          *Textures
 	ScreenQuad        *ScreenQuadRenderer
 }
 
 func NewWorldRenderer(w *world.World) *WorldRenderer {
-
+	textures := NewTextures()
 	portalData := w.Portals[0].Mesh
 	mr := NewMeshRenderer()
 	pr := NewPortalRenderer()
@@ -35,6 +36,7 @@ func NewWorldRenderer(w *world.World) *WorldRenderer {
 		PalmTrees:         NewPalmTrees(w.HeightMap, 5000),
 		ParticleSystem:    particles.NewParticleSystem(w, 10000, mgl.Vec3f{32, 32, 32}, 1, 250),
 		Framebuffer:       NewFrameBuffer(),
+		Textures:          textures,
 		ScreenQuad:        NewScreenQuadRenderer(),
 	}
 }
@@ -43,10 +45,13 @@ func (this *WorldRenderer) Delete() {
 	this.HeightMapRenderer.Delete()
 	this.MeshRenderer.Delete()
 	this.PortalRenderer.Delete()
-	// TODO delete portal data
+	this.Portal.Indices.Delete()
+	this.Portal.Vertices.Delete()
+	this.Portal.VAO.Delete()
 	this.PalmTrees.Delete()
 	this.ParticleSystem.Delete()
 	this.Framebuffer.Delete()
+	this.Textures.Delete()
 	this.ScreenQuad.Delete()
 	*this = WorldRenderer{}
 }
