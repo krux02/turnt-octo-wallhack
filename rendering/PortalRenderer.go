@@ -8,33 +8,33 @@ import (
 	"github.com/krux02/turnt-octo-wallhack/world"
 )
 
-type MeshRenderer struct {
+type PortalRenderer struct {
 	Program gl.Program
-	RenLoc  MeshRenderLocations
+	RenLoc  PortalRenderLocations
 }
 
-type MeshRenderLocations struct {
+type PortalRenderLocations struct {
 	Vertex_ms, Normal_ms gl.AttribLocation
 	Proj, View, Model    gl.UniformLocation
 }
 
-type MeshRenderData struct {
+type PortalRenderData struct {
 	VAO      gl.VertexArray
 	Indices  gl.Buffer
 	Vertices gl.Buffer
 	Numverts int
 }
 
-func NewMeshRenderer() (mr *MeshRenderer) {
-	mr = new(MeshRenderer)
-	mr.Program = helpers.MakeProgram("Mesh.vs", "Mesh.fs")
+func NewPortalRenderer() (mr *PortalRenderer) {
+	mr = new(PortalRenderer)
+	mr.Program = helpers.MakeProgram("Portal.vs", "Portal.fs")
 	mr.Program.Use()
 	helpers.BindLocations(mr.Program, &mr.RenLoc)
 	helpers.PrintLocations(&mr.RenLoc)
 	return
 }
 
-func (this *MeshRenderer) CreateRenderData(mesh *world.Mesh) (md MeshRenderData) {
+func (this *PortalRenderer) CreateRenderData(mesh *world.Mesh) (md PortalRenderData) {
 
 	md.VAO = gl.GenVertexArray()
 	md.VAO.Bind()
@@ -54,7 +54,7 @@ func (this *MeshRenderer) CreateRenderData(mesh *world.Mesh) (md MeshRenderData)
 	return
 }
 
-func (this *MeshRenderer) Render(meshData *MeshRenderData, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f) {
+func (this *PortalRenderer) Render(meshData *PortalRenderData, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f) {
 	this.Program.Use()
 	meshData.VAO.Bind()
 

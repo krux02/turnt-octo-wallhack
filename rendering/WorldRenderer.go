@@ -14,7 +14,8 @@ import (
 type WorldRenderer struct {
 	HeightMapRenderer *HeightMapRenderer
 	MeshRenderer      *MeshRenderer
-	Portal            MeshRenderData
+	PortalRenderer    *PortalRenderer
+	Portal            PortalRenderData
 	PalmTrees         *PalmTrees
 	ParticleSystem    *particles.ParticleSystem
 }
@@ -22,10 +23,12 @@ type WorldRenderer struct {
 func NewWorldRenderer(w *world.World) *WorldRenderer {
 	portalData := w.Portals[0].Mesh
 	mr := NewMeshRenderer()
+	pr := NewPortalRenderer()
 	return &WorldRenderer{
 		HeightMapRenderer: NewHeightMapRenderer(w.HeightMap),
 		MeshRenderer:      mr,
-		Portal:            mr.CreateMeshRenderData(portalData),
+		PortalRenderer:    pr,
+		Portal:            pr.CreateRenderData(portalData),
 		PalmTrees:         NewPalmTrees(w.HeightMap, 5000),
 		ParticleSystem:    particles.NewParticleSystem(w, 10000, mgl.Vec3f{32, 32, 32}, 1, 250),
 	}
@@ -100,7 +103,7 @@ func (this *WorldRenderer) Render(ww *world.World, options *settings.BoolOptions
 		pos := portal.Position
 		rotation := portal.Orientation.Mat4()
 		Model := mgl.Translate3D(pos[0], pos[1], pos[2]).Mul4(rotation)
-		this.MeshRenderer.Render(&this.Portal, Proj, View, Model)
+		this.PortalRenderer.Render(&this.Portal, Proj, View, Model)
 
 		if max_recursion > 0 && (portal == nearestPortal) {
 			pvm := pv.Mul4(Model)
