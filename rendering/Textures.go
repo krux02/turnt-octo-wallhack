@@ -66,7 +66,7 @@ func NewTextures() *Textures {
 	}
 
 	// texture 4 is filled by the heightmap
-	// texture 5 is used by tw
+	// texture 5 is used by ant tweak bar
 
 	gl.ActiveTexture(gl.TEXTURE6)
 	firebullTexture, err := helpers.LoadTexture2D("textures/fireball.png")
@@ -80,6 +80,8 @@ func NewTextures() *Textures {
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
 	}
+
+	gl.ActiveTexture(gl.TEXTURE7)
 
 	return &Textures{textures}
 }

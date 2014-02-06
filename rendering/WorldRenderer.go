@@ -1,7 +1,7 @@
 package rendering
 
 import (
-	// "fmt"
+	//"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
 	glfw "github.com/go-gl/glfw3"
@@ -12,6 +12,7 @@ import (
 )
 
 type WorldRenderer struct {
+	Textures          *Textures
 	HeightMapRenderer *HeightMapRenderer
 	MeshRenderer      *MeshRenderer
 	PortalRenderer    *PortalRenderer
@@ -19,16 +20,16 @@ type WorldRenderer struct {
 	PalmTrees         *PalmTrees
 	ParticleSystem    *particles.ParticleSystem
 	Framebuffer       *FrameBuffer
-	Textures          *Textures
 	ScreenQuad        *ScreenQuadRenderer
 }
 
 func NewWorldRenderer(w *world.World) *WorldRenderer {
-	textures := NewTextures()
+
 	portalData := w.Portals[0].Mesh
 	mr := NewMeshRenderer()
 	pr := NewPortalRenderer()
 	return &WorldRenderer{
+		Textures:          NewTextures(),
 		HeightMapRenderer: NewHeightMapRenderer(w.HeightMap),
 		MeshRenderer:      mr,
 		PortalRenderer:    pr,
@@ -36,22 +37,19 @@ func NewWorldRenderer(w *world.World) *WorldRenderer {
 		PalmTrees:         NewPalmTrees(w.HeightMap, 5000),
 		ParticleSystem:    particles.NewParticleSystem(w, 10000, mgl.Vec3f{32, 32, 32}, 1, 250),
 		Framebuffer:       NewFrameBuffer(),
-		Textures:          textures,
 		ScreenQuad:        NewScreenQuadRenderer(),
 	}
 }
 
 func (this *WorldRenderer) Delete() {
+	this.Textures.Delete()
 	this.HeightMapRenderer.Delete()
 	this.MeshRenderer.Delete()
 	this.PortalRenderer.Delete()
-	this.Portal.Indices.Delete()
-	this.Portal.Vertices.Delete()
-	this.Portal.VAO.Delete()
+	// TODO delete portal data
 	this.PalmTrees.Delete()
 	this.ParticleSystem.Delete()
 	this.Framebuffer.Delete()
-	this.Textures.Delete()
 	this.ScreenQuad.Delete()
 	*this = WorldRenderer{}
 }
@@ -59,6 +57,8 @@ func (this *WorldRenderer) Delete() {
 func (this *WorldRenderer) Render(ww *world.World, options *settings.BoolOptions, Proj mgl.Mat4f, View mgl.Mat4f, window *glfw.Window, max_recursion int, clippingPlane mgl.Vec4f) {
 
 	this.Framebuffer.Bind()
+
+	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 	camera := NewCameraM(View)
 	Rot2D := camera.Rotation2D()
@@ -187,8 +187,10 @@ func (this *WorldRenderer) Render(ww *world.World, options *settings.BoolOptions
 
 	this.Framebuffer.Unbind()
 
-	this.ScreenQuad.Render()
+	gl.ActiveTexture(gl.TEXTURE7)
+	this.Framebuffer.RenderTexture.Bind(gl.TEXTURE_RECTANGLE)
 
+	this.ScreenQuad.Render()
 }
 
 func convertToPixelCoords(pos mgl.Vec2f, w, h int) (x, y int) {
