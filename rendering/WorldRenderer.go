@@ -65,7 +65,7 @@ func (this *WorldRenderer) Render(ww *world.World, options *settings.BoolOptions
 
 	//fmt.Println(this.Framebuffer[0].RenderTexture, this.Framebuffer[1].RenderTexture)
 
-	gl.ActiveTexture(gl.TEXTURE7)
+	gl.ActiveTexture(gl.TEXTURE9)
 	this.Framebuffer[0].RenderTexture.Bind(gl.TEXTURE_RECTANGLE)
 	this.ScreenQuad.Render()
 }
@@ -150,7 +150,7 @@ func (this *WorldRenderer) render(ww *world.World, options *settings.BoolOptions
 			pos := portal.Position
 			rotation := portal.Orientation.Mat4()
 			Model := mgl.Translate3D(pos[0], pos[1], pos[2]).Mul4(rotation)
-			this.PortalRenderer.Render(&this.Portal, Proj, View, Model)
+			this.PortalRenderer.Render(&this.Portal, Proj, View, Model, 7)
 		}
 	}
 
@@ -208,7 +208,7 @@ func (this *WorldRenderer) render(ww *world.World, options *settings.BoolOptions
 				this.render(ww, options, Proj, View2, window, recursion+1, clippingPlane, nearestPortal)
 
 				gl.ActiveTexture(gl.TEXTURE8)
-				this.Framebuffer[1].RenderTexture.Bind(gl.TEXTURE_RECTANGLE)
+				this.Framebuffer[recursion+1].RenderTexture.Bind(gl.TEXTURE_RECTANGLE)
 
 				//gl.ClearColor(0, 0, 0, 1)
 				//gl.Scissor(0, 0, w, h)
@@ -218,7 +218,7 @@ func (this *WorldRenderer) render(ww *world.World, options *settings.BoolOptions
 				pos := nearestPortal.Position
 				rotation := nearestPortal.Orientation.Mat4()
 				Model := mgl.Translate3D(pos[0], pos[1], pos[2]).Mul4(rotation)
-				this.PortalRenderer.Render(&this.Portal, Proj, View, Model)
+				this.PortalRenderer.Render(&this.Portal, Proj, View, Model, 8)
 			}
 		}
 	}

@@ -11,7 +11,7 @@ type Textures struct {
 }
 
 func NewTextures() *Textures {
-	textures := make([]gl.Texture, 0, 6)
+	textures := make([]gl.Texture, 0, 7)
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	colorTexture, err := helpers.LoadTexture1D("textures/gradient.png")
@@ -21,7 +21,6 @@ func NewTextures() *Textures {
 		textures = append(textures, colorTexture)
 		gl.TexParameteri(gl.TEXTURE_1D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 		gl.TexParameteri(gl.TEXTURE_1D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-		gl.ActiveTexture(gl.TEXTURE1)
 	}
 
 	gl.ActiveTexture(gl.TEXTURE1)
@@ -82,6 +81,14 @@ func NewTextures() *Textures {
 	}
 
 	gl.ActiveTexture(gl.TEXTURE7)
+	emptyRect := gl.GenTexture()
+	emptyRect.Bind(gl.TEXTURE_RECTANGLE)
+	gl.TexImage2D(gl.TEXTURE_RECTANGLE, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, []byte{0, 0, 0, 255})
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_R, gl.REPEAT)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
+	textures = append(textures, emptyRect)
 
 	return &Textures{textures}
 }

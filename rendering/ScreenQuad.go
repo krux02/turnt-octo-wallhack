@@ -58,6 +58,6 @@ func (this *ScreenQuadRenderer) Render() {
 	this.Vao.Bind()
 	//	gl.Enable(gl.BLEND)
 	//	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-	this.Locations.U_Image.Uniform1i(7)
+	this.Locations.U_Image.Uniform1i(9)
 	gl.DrawArrays(gl.TRIANGLES, 0, 3)
 }

@@ -59,7 +59,7 @@ func (this *PortalRenderer) CreateRenderData(mesh *world.Mesh) (md PortalRenderD
 	return
 }
 
-func (this *PortalRenderer) Render(meshData *PortalRenderData, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f) {
+func (this *PortalRenderer) Render(meshData *PortalRenderData, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, textureUnit int) {
 	this.Program.Use()
 	meshData.VAO.Bind()
 
@@ -70,7 +70,7 @@ func (this *PortalRenderer) Render(meshData *PortalRenderData, Proj mgl.Mat4f, V
 	Loc.View.UniformMatrix4f(false, (*[16]float32)(&View))
 	Loc.Model.UniformMatrix4f(false, (*[16]float32)(&Model))
 	Loc.Proj.UniformMatrix4f(false, (*[16]float32)(&Proj))
-	Loc.U_Image.Uniform1i(8)
+	Loc.U_Image.Uniform1i(textureUnit)
 
 	numverts := meshData.Numverts
 
