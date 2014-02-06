@@ -10,7 +10,7 @@ import (
 	"github.com/krux02/turnt-octo-wallhack/settings"
 	"github.com/krux02/turnt-octo-wallhack/world"
 	"math"
-	"math/rand"
+	//"math/rand"
 )
 
 type WorldRenderer struct {
@@ -66,15 +66,7 @@ func (this *WorldRenderer) Render(ww *world.World, options *settings.BoolOptions
 	//fmt.Println(this.Framebuffer[0].RenderTexture, this.Framebuffer[1].RenderTexture)
 
 	gl.ActiveTexture(gl.TEXTURE7)
-	if rand.Float32() > 0.5 {
-		this.Framebuffer[0].RenderTexture.Bind(gl.TEXTURE_RECTANGLE)
-	} else {
-		this.Framebuffer[1].RenderTexture.Bind(gl.TEXTURE_RECTANGLE)
-	}
-
-	//gl.ActiveTexture(gl.TEXTURE8)
-	//this.Framebuffer[1].RenderTexture.Bind(gl.TEXTURE_RECTANGLE)
-
+	this.Framebuffer[0].RenderTexture.Bind(gl.TEXTURE_RECTANGLE)
 	this.ScreenQuad.Render()
 }
 
@@ -82,7 +74,7 @@ func (this *WorldRenderer) render(ww *world.World, options *settings.BoolOptions
 	this.Framebuffer[recursion].Bind()
 	defer this.Framebuffer[recursion].Unbind()
 
-	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
+	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 	camera := NewCameraM(View)
 	Rot2D := camera.Rotation2D()
@@ -96,24 +88,6 @@ func (this *WorldRenderer) render(ww *world.World, options *settings.BoolOptions
 
 	if !options.NoParticlePhysics {
 		this.ParticleSystem.DoStep(currentTime)
-	}
-
-	// masking out the stencil buffer
-	if srcPortal != nil {
-		pos := srcPortal.Target.Position
-		rotation := srcPortal.Target.Orientation.Mat4()
-		Model := mgl.Translate3D(pos[0], pos[1], pos[2]).Mul4(rotation)
-
-		gl.StencilOp(gl.KEEP, gl.KEEP, gl.INCR)
-		gl.ColorMask(false, false, false, false)
-		gl.DepthMask(false)
-		this.PortalRenderer.Render(&this.Portal, Proj, View, Model)
-		gl.ColorMask(true, true, true, true)
-		gl.DepthMask(true)
-		gl.StencilOp(gl.KEEP, gl.KEEP, gl.KEEP)
-
-		gl.StencilFunc(gl.LESS, 0, 0xff)
-		defer gl.StencilFunc(gl.ALWAYS, 0, 0xff)
 	}
 
 	//allPortals := make([]*world.Portal, len(ww.Portals)*9)
@@ -232,10 +206,19 @@ func (this *WorldRenderer) render(ww *world.World, options *settings.BoolOptions
 
 				//gl.ClearColor(0, 1, 1, 1)
 				this.render(ww, options, Proj, View2, window, recursion+1, clippingPlane, nearestPortal)
-				//gl.ClearColor(0, 0, 0, 1)
 
+				gl.ActiveTexture(gl.TEXTURE8)
+				this.Framebuffer[1].RenderTexture.Bind(gl.TEXTURE_RECTANGLE)
+
+				//gl.ClearColor(0, 0, 0, 1)
 				//gl.Scissor(0, 0, w, h)
 				//gl.Disable(gl.SCISSOR_TEST)
+
+				this.Framebuffer[recursion].Bind()
+				pos := nearestPortal.Position
+				rotation := nearestPortal.Orientation.Mat4()
+				Model := mgl.Translate3D(pos[0], pos[1], pos[2]).Mul4(rotation)
+				this.PortalRenderer.Render(&this.Portal, Proj, View, Model)
 			}
 		}
 	}

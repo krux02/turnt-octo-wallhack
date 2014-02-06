@@ -14,8 +14,8 @@ type PortalRenderer struct {
 }
 
 type PortalRenderLocations struct {
-	Vertex_ms, Normal_ms gl.AttribLocation
-	Proj, View, Model    gl.UniformLocation
+	Vertex_ms, Normal_ms       gl.AttribLocation
+	Proj, View, Model, U_Image gl.UniformLocation
 }
 
 type PortalRenderData struct {
@@ -70,6 +70,7 @@ func (this *PortalRenderer) Render(meshData *PortalRenderData, Proj mgl.Mat4f, V
 	Loc.View.UniformMatrix4f(false, (*[16]float32)(&View))
 	Loc.Model.UniformMatrix4f(false, (*[16]float32)(&Model))
 	Loc.Proj.UniformMatrix4f(false, (*[16]float32)(&Proj))
+	Loc.U_Image.Uniform1i(8)
 
 	numverts := meshData.Numverts
 
