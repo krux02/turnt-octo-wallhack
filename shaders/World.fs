@@ -17,7 +17,7 @@ in vec4 v_color;
 in vec4 pos_ws;
 in vec3 normal_ws;
 // Ouput data
-out vec3 color;
+out vec4 color;
 
 void main()
 {
@@ -37,9 +37,9 @@ void main()
 	float fractionB = pow(abs(dot(normal_ws,vec3(0,1,0))),15);
 	float fractionC = pow(abs(dot(normal_ws,vec3(1,0,0))),15);
 	float len = fractionA+fractionB+fractionC;
-	color = colorA*vec3(fractionA/len)+colorB*vec3(fractionB/len)+colorC*vec3(fractionC/len);
-	
-	color =  light * mix(v_color.xyz, color, v_color.w);
+	color.rgb = colorA*vec3(fractionA/len)+colorB*vec3(fractionB/len)+colorC*vec3(fractionC/len);
+	color.rgb =  light * mix(v_color.xyz, color.rgb, v_color.w);
+	color.a = 1;
 	
 	
 

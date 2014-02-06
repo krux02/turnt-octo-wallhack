@@ -30,7 +30,6 @@ func LoadTexture1D(name string) (gl.Texture, error) {
 	draw.Draw(imageData, bounds, m, image.ZP, draw.Src)
 
 	texture := gl.GenTexture()
-	
 
 	if bounds.Dx() != 1 && bounds.Dy() != 1 {
 		panic(fmt.Sprintf("image %s must be one dimensionnal it is %s", name, bounds.String()))
@@ -109,4 +108,27 @@ func SaveImage(filename string, img image.Image) {
 	}
 
 	fmt.Println("file written", filename)
+}
+
+func SaveTexture(target gl.GLenum, level int, filename string) {
+	params := make([]int32, 1)
+	gl.GetTexLevelParameteriv(target, level, gl.TEXTURE_WIDTH, params)
+	width := int(params[0])
+	gl.GetTexLevelParameteriv(target, level, gl.TEXTURE_HEIGHT, params)
+	height := int(params[0])
+
+	img := image.NewRGBA(image.Rectangle{image.Point{0, 0}, image.Point{width, height}})
+	pixels := make([]uint8, width*height*4)
+	gl.GetTexImage(target, level, gl.RGBA, gl.UNSIGNED_BYTE, pixels)
+
+	// invert bottom/top
+	stride := width * 4
+	for i := 0; i < height; i++ {
+		j := height - i - 1
+		l := img.Pix[i*stride : (i+1)*stride]
+		r := pixels[j*stride : (j+1)*stride]
+		copy(l, r)
+	}
+
+	SaveImage(filename, img)
 }

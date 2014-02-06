@@ -25,6 +25,13 @@ func MakeProgram(vertFname, fragFname string) gl.Program {
 	vertSource := ReadShaderFile(vertFname)
 	fragSource := ReadShaderFile(fragFname)
 
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println(vertFname, fragFname)
+			panic(r)
+		}
+	}()
+
 	return glh.NewProgram(glh.Shader{gl.VERTEX_SHADER, vertSource}, glh.Shader{gl.FRAGMENT_SHADER, fragSource})
 }
 
@@ -62,7 +69,7 @@ func BindLocations(prog gl.Program, locations interface{}) {
 func PrintLocations(locations interface{}) {
 	value := reflect.ValueOf(locations).Elem()
 	typ := reflect.TypeOf(locations).Elem()
-	fmt.Printf("%s:\n",typ.Name())
+	fmt.Printf("%s:\n", typ.Name())
 	for i := 0; i < value.NumField(); i++ {
 		fieldValue := value.Field(i)
 		fieldName := typ.Field(i).Name

@@ -6,7 +6,7 @@ import (
 
 type World struct {
 	HeightMap *HeightMap
-	Portals   []Portal
+	Portals   []*Portal
 }
 
 const W, H = 64, 64
@@ -20,9 +20,9 @@ func NewWorld() (world *World) {
 	//PortalMesh := LoadMesh("meshes/Portal.blend")
 	PortalMesh := PortalRect()
 
-	Portals := make([]Portal, len(PortalPositions))
+	Portals := make([]*Portal, len(PortalPositions))
 	for i, pos := range PortalPositions {
-		Portals[i] = Portal{
+		Portals[i] = &Portal{
 			Position:    pos,
 			Orientation: mgl.QuatIdentf(),
 			Mesh:        PortalMesh,
@@ -30,7 +30,7 @@ func NewWorld() (world *World) {
 		}
 	}
 	for i := range Portals {
-		Portals[i].Target = &Portals[(i+1)%len(Portals)]
+		Portals[i].Target = Portals[(i+1)%len(Portals)]
 	}
 
 	world = &World{heights, Portals}
