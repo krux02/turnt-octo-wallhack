@@ -90,6 +90,9 @@ func NewTextures() *Textures {
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
 	textures = append(textures, emptyRect)
 
+	// texture 8 is used for framebuffer (behind portal)
+	// texture 7 is used to draw the framebuffer on the screen
+
 	return &Textures{textures}
 }
 

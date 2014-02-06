@@ -178,8 +178,8 @@ func (this *WorldRenderer) render(ww *world.World, options *settings.BoolOptions
 			pw, ph := p2x-p1x, p2y-p1y
 			if p1x != 0 || p1y != 0 || pw != w-1 || ph != h-1 {
 				//gl.Viewport(p1x, p1y, pw, ph)
-				//gl.Enable(gl.SCISSOR_TEST)
-				//gl.Scissor(p1x, p1y, pw, ph)
+				gl.Enable(gl.SCISSOR_TEST)
+				gl.Scissor(p1x, p1y, pw, ph)
 
 				//gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 				//
@@ -211,8 +211,8 @@ func (this *WorldRenderer) render(ww *world.World, options *settings.BoolOptions
 				this.Framebuffer[recursion+1].RenderTexture.Bind(gl.TEXTURE_RECTANGLE)
 
 				//gl.ClearColor(0, 0, 0, 1)
-				//gl.Scissor(0, 0, w, h)
-				//gl.Disable(gl.SCISSOR_TEST)
+				gl.Scissor(0, 0, w, h)
+				gl.Disable(gl.SCISSOR_TEST)
 
 				this.Framebuffer[recursion].Bind()
 				pos := nearestPortal.Position

@@ -7,7 +7,19 @@ import (
 type Portal struct {
 	Position    mgl.Vec3f
 	Orientation mgl.Quatf
-	Mesh 		*Mesh
-	Target		*Portal
+	Mesh        *Mesh
+	Target      *Portal
 }
 
+func (this *Portal) ModelMat4() (Model mgl.Mat4f) {
+	pos := this.Position
+	Model = mgl.Translate3D(pos[0], pos[1], pos[2]).Mul4(this.Orientation.Mat4())
+	return
+}
+
+func (this *Portal) ClippingPlane() mgl.Vec4f {
+	clippingPlane := this.ModelMat4().Mul4x1(mgl.Vec4f{0, 1, 0, 0})
+	p := this.Position
+	clippingPlane[3] = -clippingPlane.Dot(mgl.Vec4f{p[0], p[1], p[2], 0})
+	return clippingPlane
+}
