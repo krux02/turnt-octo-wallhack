@@ -17,10 +17,6 @@ type Player struct {
 	Velocity mgl.Vec3f
 }
 
-func (p *Player) SetInput(input PlayerInput) {
-	p.Input = input
-}
-
 func (p *Player) GetCamera() *Camera {
 	return &p.Camera
 }

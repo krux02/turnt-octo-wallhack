@@ -122,6 +122,6 @@ func Input(gs *gamestate.GameState) {
 		inp.Rotate[2] += 1
 	}
 
-	gs.Player.SetInput(inp)
+	gs.Player.Input = inp
 	updateLastMousePos()
 }
