@@ -1,4 +1,4 @@
-package main
+package gamestate
 
 import (
 	"fmt"
@@ -6,7 +6,6 @@ import (
 	"github.com/go-gl/gl"
 	glfw "github.com/go-gl/glfw3"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
-	"github.com/krux02/turnt-octo-wallhack/rendering"
 	"github.com/krux02/turnt-octo-wallhack/settings"
 	"github.com/krux02/turnt-octo-wallhack/world"
 	"github.com/krux02/tw"
@@ -14,23 +13,20 @@ import (
 )
 
 type GameState struct {
-	Window        *glfw.Window
-	Camera        *rendering.Camera
-	Proj          mgl.Mat4f
-	Bar           *tw.Bar
-	World         *world.World
-	WorldRenderer *rendering.WorldRenderer
-	Player        Player
-	Fps           float32
-	Options       settings.BoolOptions
+	Window  *glfw.Window
+	Camera  *Camera
+	Proj    mgl.Mat4f
+	Bar     *tw.Bar
+	World   *world.World
+	Player  Player
+	Fps     float32
+	Options settings.BoolOptions
 }
 
 func NewGameState(window *glfw.Window) (gamestate *GameState) {
 	gl.ClearColor(0., 0., 0.4, 0.0)
 
 	World := world.NewWorld()
-
-	wr := rendering.NewWorldRenderer(World)
 
 	gl.ActiveTexture(gl.TEXTURE4)
 	World.HeightMap.Texture()
@@ -42,15 +38,14 @@ func NewGameState(window *glfw.Window) (gamestate *GameState) {
 	bar := tw.NewBar("TweakBar")
 
 	gamestate = &GameState{
-		Window:        window,
-		Camera:        nil,
-		Proj:          mgl.Perspective(90, 4.0/3.0, 0.01, 1000),
-		Bar:           bar,
-		World:         World,
-		WorldRenderer: wr,
-		Player:        &MyPlayer{rendering.Camera{mgl.Vec3f{5, 5, 10}, mgl.QuatIdentf()}, PlayerInput{}, mgl.Vec3f{}},
-		Fps:           0,
-		Options:       settings.BoolOptions{},
+		Window:  window,
+		Camera:  nil,
+		Proj:    mgl.Perspective(90, 4.0/3.0, 0.001, 1000),
+		Bar:     bar,
+		World:   World,
+		Player:  &MyPlayer{Camera{mgl.Vec3f{5, 5, 10}, mgl.QuatIdentf()}, PlayerInput{}, mgl.Vec3f{}},
+		Fps:     0,
+		Options: settings.BoolOptions{},
 	}
 
 	gamestate.Camera = gamestate.Player.GetCamera()
@@ -68,6 +63,7 @@ func NewGameState(window *glfw.Window) (gamestate *GameState) {
 	bar.AddVarRW("NoTreeRender", tw.TYPE_BOOL8, unsafe.Pointer(&opt.NoTreeRender), "")
 	bar.AddVarRW("NoPlayerPhysics", tw.TYPE_BOOL8, unsafe.Pointer(&opt.NoPlayerPhysics), "")
 	bar.AddVarRW("Wireframe", tw.TYPE_BOOL8, unsafe.Pointer(&opt.Wireframe), "")
+	bar.AddVarRW("DepthClamp", tw.TYPE_BOOL8, unsafe.Pointer(&opt.DepthClamp), "")
 
 	N := len(gamestate.World.Portals)
 	for i := 0; i < N; i++ {
@@ -91,5 +87,4 @@ func NewGameState(window *glfw.Window) (gamestate *GameState) {
 
 func (this *GameState) Delete() {
 	this.Bar.Delete()
-	this.WorldRenderer.Delete()
 }

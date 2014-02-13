@@ -8,6 +8,7 @@ type BoolOptions struct {
 	NoWorldRender,
 	NoTreeRender,
 	NoPlayerPhysics,
+	DepthClamp,
 	Wireframe bool
 	portalOrientations []*mgl.Quatf
 }

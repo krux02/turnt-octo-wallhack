@@ -1,11 +1,12 @@
 package rendering
 
 import (
-	//"fmt"
+	//	"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
 	glfw "github.com/go-gl/glfw3"
 	//"github.com/krux02/turnt-octo-wallhack/helpers"
+	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/particles"
 	"github.com/krux02/turnt-octo-wallhack/settings"
 	"github.com/krux02/turnt-octo-wallhack/world"
@@ -76,7 +77,7 @@ func (this *WorldRenderer) render(ww *world.World, options *settings.BoolOptions
 
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-	camera := NewCameraM(View)
+	camera := gamestate.NewCameraFromMat4(View)
 	Rot2D := camera.Rotation2D()
 
 	currentTime := glfw.GetTime()
@@ -170,56 +171,55 @@ func (this *WorldRenderer) render(ww *world.World, options *settings.BoolOptions
 			meshMax = world.Max(meshMax, v)
 		}
 
-		if meshMin[0] < 1 && meshMin[1] < 1 && meshMin[2] < 1 &&
-			meshMax[0] > -1 && meshMax[1] > -1 && meshMax[2] > -1 {
+		// at least partially visible
+		if -1 < meshMax[0] && meshMin[0] < 1 &&
+			-1 < meshMax[1] && meshMin[1] < 1 &&
+			-1 < meshMax[2] && meshMin[2] < 1 {
+
 			w, h := window.GetSize()
 			p1x, p1y := convertToPixelCoords(mgl.Vec2f{meshMin[0], meshMin[1]}, w, h)
 			p2x, p2y := convertToPixelCoords(mgl.Vec2f{meshMax[0], meshMax[1]}, w, h)
 			pw, ph := p2x-p1x, p2y-p1y
-			if p1x != 0 || p1y != 0 || pw != w-1 || ph != h-1 {
-				//gl.Viewport(p1x, p1y, pw, ph)
+
+			// do scissoring only when all vertices are in front of the camera
+			scissor := meshMax[2] < 1
+			scissor = scissor && (p1x != 0 || p1y != 0 || pw != w-1 || ph != h-1)
+
+			if scissor {
 				gl.Enable(gl.SCISSOR_TEST)
 				gl.Scissor(p1x, p1y, pw, ph)
+			}
 
-				//gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-				//
+			// omit rendering when portal is not in frustum at all
+			// calculation View matrix that shows the target portal from the same angle as view shows the source portal
 
-				//gl.Viewport(0,0,w,h)
-				// calculation View matrix that shows the target portal from the same angle as view shows the source portal
-				pos2 := portal.Target.Position
-				Model2 := mgl.Translate3D(pos2[0], pos2[1], pos2[2]).Mul4(portal.Target.Orientation.Mat4())
-				View2 := View.Mul4(Model).Mul4(Model2.Inv())
+			//pos2 := portal.Target.Position
+			Model2 := portal.Target.ModelMat4()
+			// model matrix, so that portal 1 in camera 1 looks identical to portal 2 in camera
+			View2 := View.Mul4(Model).Mul4(Model2.Inv())
 
-				normal_os := mgl.Vec4f{0, 1, 0, 0}
-				normal_ws := Model.Mul4x1(normal_os)
-				view_dir := portal.Position.Sub(camera.Position)
-				sign := view_dir.Dot(mgl.Vec3f{normal_ws[0], normal_ws[1], normal_ws[2]})
+			normal_os := mgl.Vec4f{0, 1, 0, 0}
+			normal_ws := Model.Mul4x1(normal_os)
+			view_dir := portal.Position.Sub(camera.Position)
+			sign := view_dir.Dot(mgl.Vec3f{normal_ws[0], normal_ws[1], normal_ws[2]})
 
-				if sign > 0 {
-					clippingPlane = Model2.Mul4x1(mgl.Vec4f{0, 1, 0, 0})
-				} else {
-					clippingPlane = Model2.Mul4x1(mgl.Vec4f{0, -1, 0, 0})
-				}
-				clippingPlane[3] = -clippingPlane.Dot(mgl.Vec4f{pos2[0], pos2[1], pos2[2], 0})
+			clippingPlane = portal.Target.ClippingPlane(sign > 0)
 
-				//camera2 := NewCameraM(View2)
+			this.render(ww, options, Proj, View2, window, recursion+1, clippingPlane, nearestPortal)
+			gl.ActiveTexture(gl.TEXTURE8)
+			this.Framebuffer[recursion+1].RenderTexture.Bind(gl.TEXTURE_RECTANGLE)
 
-				//gl.ClearColor(0, 1, 1, 1)
-				this.render(ww, options, Proj, View2, window, recursion+1, clippingPlane, nearestPortal)
-
-				gl.ActiveTexture(gl.TEXTURE8)
-				this.Framebuffer[recursion+1].RenderTexture.Bind(gl.TEXTURE_RECTANGLE)
-
-				//gl.ClearColor(0, 0, 0, 1)
+			if scissor {
 				gl.Scissor(0, 0, w, h)
 				gl.Disable(gl.SCISSOR_TEST)
-
-				this.Framebuffer[recursion].Bind()
-				pos := nearestPortal.Position
-				rotation := nearestPortal.Orientation.Mat4()
-				Model := mgl.Translate3D(pos[0], pos[1], pos[2]).Mul4(rotation)
-				this.PortalRenderer.Render(&this.Portal, Proj, View, Model, 8)
 			}
+
+			this.Framebuffer[recursion].Bind()
+			pos := nearestPortal.Position
+			rotation := nearestPortal.Orientation.Mat4()
+			Model := mgl.Translate3D(pos[0], pos[1], pos[2]).Mul4(rotation)
+			this.PortalRenderer.Render(&this.Portal, Proj, View, Model, 8)
+
 		}
 	}
 }

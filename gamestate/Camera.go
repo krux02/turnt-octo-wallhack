@@ -1,4 +1,4 @@
-package rendering
+package gamestate
 
 //#include <string.h>
 import "C"
@@ -14,11 +14,21 @@ type Camera struct {
 	Direction mgl.Quatf
 }
 
-func NewCameraV(eye mgl.Vec3f, center mgl.Vec3f, up mgl.Vec3f) *Camera {
-	return NewCameraM(mgl.LookAtV(eye, center, up))
+func NewCameraFromLookAt(eye mgl.Vec3f, center mgl.Vec3f, up mgl.Vec3f) *Camera {
+	return NewCameraFromMat4(mgl.LookAtV(eye, center, up))
 }
 
-func NewCameraM(view mgl.Mat4f) (camera *Camera) {
+func (camera *Camera) SetCameraFromLookAt(eye mgl.Vec3f, center mgl.Vec3f, up mgl.Vec3f) {
+	camera.SetFromMat4(mgl.LookAtV(eye, center, up))
+}
+
+func NewCameraFromMat4(view mgl.Mat4f) (camera *Camera) {
+	camera = new(Camera)
+	camera.SetFromMat4(view)
+	return camera
+}
+
+func (camera *Camera) SetFromMat4(view mgl.Mat4f) {
 	m00 := view[0]
 	m10 := view[1]
 	m20 := view[2]
@@ -43,8 +53,8 @@ func NewCameraM(view mgl.Mat4f) (camera *Camera) {
 	dir := mgl.Quatf{qw, mgl.Vec3f{qx, qy, qz}}.Inverse()
 	pos := dir.Rotate(mgl.Vec3f{-m03, -m13, -m23})
 
-	camera = &Camera{pos, dir}
-	return
+	camera.Position = pos
+	camera.Direction = dir
 }
 
 func (camera *Camera) MoveAbsolute(dist mgl.Vec3f) {

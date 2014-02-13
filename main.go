@@ -50,10 +50,12 @@ func main() {
 
 	debugContext.InitDebugContext()
 
-	gamestate := NewGameState(window)
+	gs := gamestate.NewGameState(window)
 	defer gamestate.Delete()
+	renderer := rendering.NewWorldRenderer(gs.World)
+	defer renderer.Delete()
 
-	InitInput(gamestate)
+	InitInput(gs)
 
-	MainLoop(gamestate)
+	MainLoop(gs, renderer)
 }

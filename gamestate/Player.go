@@ -1,9 +1,8 @@
-package main
+package gamestate
 
 import (
 	// "fmt"
 	mgl "github.com/Jragonmiris/mathgl"
-	"github.com/krux02/turnt-octo-wallhack/rendering"
 	// "math"
 )
 
@@ -14,13 +13,13 @@ type PlayerInput struct {
 
 type Player interface {
 	SetInput(input PlayerInput)
-	GetCamera() *rendering.Camera
+	GetCamera() *Camera
 	Position() mgl.Vec3f
 	Update(gamestate *GameState)
 }
 
 type MyPlayer struct {
-	Camera   rendering.Camera
+	Camera   Camera
 	input    PlayerInput
 	velocety mgl.Vec3f
 }
@@ -29,7 +28,7 @@ func (p *MyPlayer) SetInput(input PlayerInput) {
 	p.input = input
 }
 
-func (p *MyPlayer) GetCamera() *rendering.Camera {
+func (p *MyPlayer) GetCamera() *Camera {
 	return &p.Camera
 }
 

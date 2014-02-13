@@ -5,36 +5,42 @@ import (
 	//mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
 	glfw "github.com/go-gl/glfw3"
+	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/tw"
 	//"math"
 )
 
-func MainLoop(gamestate *GameState) {
+func MainLoop(gs *gamestate.GameState, renderer *rendering.WorldRenderer) {
 	var frames int
 	time := glfw.GetTime()
 
-	window := gamestate.Window
+	window := gs.Window
 
 	for !window.ShouldClose() && window.GetKey(glfw.KeyEscape) != glfw.Press {
 
 		currentTime := glfw.GetTime()
 
 		if currentTime > time+1 {
-			gamestate.Fps = float32(frames)
+			gs.Fps = float32(frames)
 			frames = 0
 			time = currentTime
 		}
 		frames += 1
 
-		Input(gamestate)
+		Input(gs)
 
-		gamestate.Player.Update(gamestate)
+		gs.Player.Update(gs)
 
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-
 		gl.Disable(gl.BLEND)
 
-		gamestate.WorldRenderer.Render(gamestate.World, &gamestate.Options, gamestate.Proj, gamestate.Camera.View(), window)
+		if gs.Options.DepthClamp {
+			gl.Enable(gl.DEPTH_CLAMP)
+		} else {
+			gl.Disable(gl.DEPTH_CLAMP)
+		}
+
+		renderer.WorldRenderer.Render(gs.World, &gs.Options, gs.Proj, gs.Camera.View(), window)
 
 		tw.Draw()
 		window.SwapBuffers()

@@ -59,6 +59,10 @@ func (this *PortalRenderer) CreateRenderData(mesh *world.Mesh) (md PortalRenderD
 	return
 }
 
+func glMat(mat *mgl.Mat4f) *[16]float32 {
+	return (*[16]float32)(mat)
+}
+
 func (this *PortalRenderer) Render(meshData *PortalRenderData, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, textureUnit int) {
 	this.Program.Use()
 	meshData.VAO.Bind()
@@ -67,9 +71,9 @@ func (this *PortalRenderer) Render(meshData *PortalRenderData, Proj mgl.Mat4f, V
 	gl.Disable(gl.CULL_FACE)
 
 	Loc := this.RenLoc
-	Loc.View.UniformMatrix4f(false, (*[16]float32)(&View))
-	Loc.Model.UniformMatrix4f(false, (*[16]float32)(&Model))
-	Loc.Proj.UniformMatrix4f(false, (*[16]float32)(&Proj))
+	Loc.View.UniformMatrix4f(false, glMat(&View))
+	Loc.Model.UniformMatrix4f(false, glMat(&Model))
+	Loc.Proj.UniformMatrix4f(false, glMat(&Proj))
 	Loc.U_Image.Uniform1i(textureUnit)
 
 	numverts := meshData.Numverts

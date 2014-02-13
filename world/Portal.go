@@ -17,8 +17,15 @@ func (this *Portal) ModelMat4() (Model mgl.Mat4f) {
 	return
 }
 
-func (this *Portal) ClippingPlane() mgl.Vec4f {
-	clippingPlane := this.ModelMat4().Mul4x1(mgl.Vec4f{0, 1, 0, 0})
+func (this *Portal) ClippingPlane(front bool) mgl.Vec4f {
+	var sgn float32
+	if front {
+		sgn = 1
+	} else {
+		sgn = -1
+	}
+
+	clippingPlane := this.ModelMat4().Mul4x1(mgl.Vec4f{0, sgn, 0, 0})
 	p := this.Position
 	clippingPlane[3] = -clippingPlane.Dot(mgl.Vec4f{p[0], p[1], p[2], 0})
 	return clippingPlane
