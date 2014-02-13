@@ -64,8 +64,6 @@ func (this *WorldRenderer) Delete() {
 func (this *WorldRenderer) Render(ww *world.World, options *settings.BoolOptions, Proj mgl.Mat4f, View mgl.Mat4f, window *glfw.Window) {
 	this.render(ww, options, Proj, View, window, 0, mgl.Vec4f{3 / 5.0, 4 / 5.0, 0, math.MaxFloat32}, nil)
 
-	//fmt.Println(this.Framebuffer[0].RenderTexture, this.Framebuffer[1].RenderTexture)
-
 	gl.ActiveTexture(gl.TEXTURE9)
 	this.Framebuffer[0].RenderTexture.Bind(gl.TEXTURE_RECTANGLE)
 	this.ScreenQuad.Render()
@@ -81,31 +79,10 @@ func (this *WorldRenderer) render(ww *world.World, options *settings.BoolOptions
 	Rot2D := camera.Rotation2D()
 
 	currentTime := glfw.GetTime()
-	//rotation := mgl.HomogRotate3D(float32(currentTime), mgl.Vec3f{0, 0, 1})
-	//rotation := options.Rotation.Mat4()
-
-	//W := ww.HeightMap.W
-	//H := ww.HeightMap.H
 
 	if !options.NoParticlePhysics {
 		this.ParticleSystem.DoStep(currentTime)
 	}
-
-	//allPortals := make([]*world.Portal, len(ww.Portals)*9)
-	//k := 0
-
-	/*
-		for i := -1; i <= 1; i++ {
-			for j := -1; j <= 1; j++ {
-				OffsetM := mgl.Translate3D(float32(i*W), float32(j*H), 0)
-				OffsetV := mgl.Vec3f{float32(i * W), float32(j * H), 0}
-
-				for _, portal := range ww.Portals {
-					portal.Position = portal.Position.Add(OffsetV)
-					allPortals[k] = portal
-					k++
-				}
-	*/
 
 	if options.Wireframe {
 		gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
@@ -132,21 +109,13 @@ func (this *WorldRenderer) render(ww *world.World, options *settings.BoolOptions
 	pv := Proj.Mul4(View)
 
 	// calculating nearest portal
-	var dist float32 = math.MaxFloat32
-	var pos4f = View.Inv().Mul4x1(mgl.Vec4f{0, 0, 0, 1})
-	var pos3f = mgl.Vec3f{pos4f[0], pos4f[1], pos4f[2]}
-	var nearestPortal *world.Portal
-	for _, portal := range ww.Portals {
-		newDist := pos3f.Sub(portal.Position).Len()
-		if newDist < dist {
-			dist = newDist
-			nearestPortal = portal
-		}
-	}
+	pos4f := View.Inv().Mul4x1(mgl.Vec4f{0, 0, 0, 1})
+	pos3f := mgl.Vec3f{pos4f[0], pos4f[1], pos4f[2]}
+	nearestPortal := ww.NearestPortal(pos3f)
 
-	// drawing  portals
+	// draw  all portals except the nearest and the portal that we are looking throug
 	for _, portal := range ww.Portals {
-		// do not draw the source portal or the portal behind the portal
+		// do not draw the nearest portal or the portal behind the source portal if available
 		if (nearestPortal != portal) && (srcPortal == nil || srcPortal.Target != portal) {
 			pos := portal.Position
 			rotation := portal.Orientation.Mat4()
@@ -155,6 +124,7 @@ func (this *WorldRenderer) render(ww *world.World, options *settings.BoolOptions
 		}
 	}
 
+	// draw
 	if recursion < this.MaxRecursion {
 		portal := nearestPortal
 		pos := portal.Position

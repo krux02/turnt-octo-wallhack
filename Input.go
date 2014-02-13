@@ -1,9 +1,12 @@
 package main
 
-import glfw "github.com/go-gl/glfw3"
-import mgl "github.com/Jragonmiris/mathgl"
-import "github.com/krux02/tw"
-import "math"
+import (
+	mgl "github.com/Jragonmiris/mathgl"
+	glfw "github.com/go-gl/glfw3"
+	"github.com/krux02/turnt-octo-wallhack/gamestate"
+	"github.com/krux02/tw"
+	"math"
+)
 
 // import "fmt"
 
@@ -14,8 +17,8 @@ var highlight = 0
 var currentMousePos func() mgl.Vec2f
 var updateLastMousePos func()
 
-func InitInput(gamestate *GameState) {
-	window := gamestate.Window
+func InitInput(gs *gamestate.GameState) {
+	window := gs.Window
 
 	MouseButton := func(window *glfw.Window, button glfw.MouseButton, state glfw.Action, modifiers glfw.ModifierKey) {
 		if state == glfw.Press && drag == -1 {
@@ -81,44 +84,44 @@ func InitInput(gamestate *GameState) {
 	window.SetCharacterCallback(CharacterType)
 }
 
-func Input(gamestate *GameState) {
+func Input(gs *gamestate.GameState) {
 
-	window := gamestate.Window
+	window := gs.Window
 	delta := currentMousePos().Sub(lastMousePos)
-	inp := PlayerInput{}
+	inp := gamestate.PlayerInput{}
 
 	switch drag {
 	case 1:
 		if delta.Len() > 0 {
-			inp.rotate[0] -= delta[1]
-			inp.rotate[1] -= delta[0]
+			inp.Rotate[0] -= delta[1]
+			inp.Rotate[1] -= delta[0]
 		}
 	case 2:
 		if delta.Len() > 0 {
-			inp.rotate[1] -= delta[0]
-			inp.rotate[2] -= delta[1]
+			inp.Rotate[1] -= delta[0]
+			inp.Rotate[2] -= delta[1]
 		}
 	}
 
 	if window.GetKey(glfw.KeyE) == glfw.Press {
-		inp.move[2] -= 1
+		inp.Move[2] -= 1
 	}
 	if window.GetKey(glfw.KeyD) == glfw.Press {
-		inp.move[2] += 1
+		inp.Move[2] += 1
 	}
 	if window.GetKey(glfw.KeyS) == glfw.Press {
-		inp.move[0] -= 1
+		inp.Move[0] -= 1
 	}
 	if window.GetKey(glfw.KeyF) == glfw.Press {
-		inp.move[0] += 1
+		inp.Move[0] += 1
 	}
 	if window.GetKey(glfw.KeyR) == glfw.Press {
-		inp.rotate[2] -= 1
+		inp.Rotate[2] -= 1
 	}
 	if window.GetKey(glfw.KeyW) == glfw.Press {
-		inp.rotate[2] += 1
+		inp.Rotate[2] += 1
 	}
 
-	gamestate.Player.SetInput(inp)
+	gs.Player.SetInput(inp)
 	updateLastMousePos()
 }

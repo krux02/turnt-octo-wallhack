@@ -5,6 +5,8 @@ import (
 	"github.com/go-gl/gl"
 	glfw "github.com/go-gl/glfw3"
 	"github.com/krux02/turnt-octo-wallhack/debugContext"
+	"github.com/krux02/turnt-octo-wallhack/gamestate"
+	"github.com/krux02/turnt-octo-wallhack/rendering"
 	"github.com/krux02/tw"
 	"os"
 	"runtime"
@@ -51,7 +53,7 @@ func main() {
 	debugContext.InitDebugContext()
 
 	gs := gamestate.NewGameState(window)
-	defer gamestate.Delete()
+	defer gs.Delete()
 	renderer := rendering.NewWorldRenderer(gs.World)
 	defer renderer.Delete()
 

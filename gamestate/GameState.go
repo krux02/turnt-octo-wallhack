@@ -18,7 +18,7 @@ type GameState struct {
 	Proj    mgl.Mat4f
 	Bar     *tw.Bar
 	World   *world.World
-	Player  Player
+	Player  *Player
 	Fps     float32
 	Options settings.BoolOptions
 }
@@ -43,7 +43,7 @@ func NewGameState(window *glfw.Window) (gamestate *GameState) {
 		Proj:    mgl.Perspective(90, 4.0/3.0, 0.001, 1000),
 		Bar:     bar,
 		World:   World,
-		Player:  &MyPlayer{Camera{mgl.Vec3f{5, 5, 10}, mgl.QuatIdentf()}, PlayerInput{}, mgl.Vec3f{}},
+		Player:  &Player{Camera{mgl.Vec3f{5, 5, 10}, mgl.QuatIdentf()}, PlayerInput{}, mgl.Vec3f{}},
 		Fps:     0,
 		Options: settings.BoolOptions{},
 	}

@@ -2,6 +2,7 @@ package world
 
 import (
 	mgl "github.com/Jragonmiris/mathgl"
+	"math"
 )
 
 type World struct {
@@ -35,4 +36,17 @@ func NewWorld() (world *World) {
 
 	world = &World{heights, Portals}
 	return
+}
+
+func (this *World) NearestPortal(pos mgl.Vec3f) *Portal {
+	var dist float32 = math.MaxFloat32
+	var nearestPortal *Portal
+	for _, portal := range this.Portals {
+		newDist := pos.Sub(portal.Position).Len()
+		if newDist < dist {
+			dist = newDist
+			nearestPortal = portal
+		}
+	}
+	return nearestPortal
 }
