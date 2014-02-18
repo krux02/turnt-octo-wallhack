@@ -93,18 +93,14 @@ func ReadToGray16(filename string) (*image.Gray16, error) {
 func SaveImage(filename string, img image.Image) {
 	file, err := os.Create(filename)
 	if err != nil {
-		fmt.Println("cant write to file", filename)
-		fmt.Println(err)
-		return
+		panic(fmt.Sprintf("cant write to file %s %s", filename, err))
 	}
 	defer file.Close()
 
 	writer := bufio.NewWriter(file)
 	err = png.Encode(writer, img)
 	if err != nil {
-		fmt.Println("cant write to file", filename)
-		fmt.Println(err)
-		return
+		panic(fmt.Sprintf("cant write to file %s %s", filename, err))
 	}
 
 	fmt.Println("file written", filename)

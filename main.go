@@ -6,6 +6,7 @@ import (
 	glfw "github.com/go-gl/glfw3"
 	"github.com/krux02/turnt-octo-wallhack/debugContext"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
+	"github.com/krux02/turnt-octo-wallhack/generation"
 	"github.com/krux02/turnt-octo-wallhack/rendering"
 	"github.com/krux02/tw"
 	"os"
@@ -17,6 +18,7 @@ func errorCallback(err glfw.ErrorCode, desc string) {
 }
 
 func main() {
+
 	runtime.LockOSThread()
 
 	glfw.Init()
@@ -52,7 +54,8 @@ func main() {
 
 	debugContext.InitDebugContext()
 
-	gs := gamestate.NewGameState(window)
+	world := generation.GenerateWorld(256, 256, 18)
+	gs := gamestate.NewGameState(world, window)
 	defer gs.Delete()
 	renderer := rendering.NewWorldRenderer(gs.World)
 	defer renderer.Delete()

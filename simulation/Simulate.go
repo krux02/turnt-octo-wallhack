@@ -25,6 +25,7 @@ func PortalPassed(portal *gamestate.Portal, pos1, pos2 mgl.Vec4f) bool {
 }
 
 func Simulate(gs *gamestate.GameState) {
+	player := gs.Player
 	cam := &gs.Player.Camera
 	oldPos := cam.Position
 	UpdatePlayer(gs.Player, gs)
@@ -36,9 +37,7 @@ func Simulate(gs *gamestate.GameState) {
 		// Enter Portal
 		transform := nearestPortal.Transform()
 		cam.SetModel(transform.Mul4(cam.Model()))
-
-		//EnterPortal(nearestPortal, cam)
-		//fmt.Println("after", cam.Position, cam)
+		player.Velocity = transform.Mul4x1(player.Velocity)
 	}
 }
 

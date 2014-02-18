@@ -22,13 +22,11 @@ type GameState struct {
 	Options settings.BoolOptions
 }
 
-func NewGameState(window *glfw.Window) (gamestate *GameState) {
+func NewGameState(world *World, window *glfw.Window) (gamestate *GameState) {
 	gl.ClearColor(0., 0., 0.4, 0.0)
 
-	World := NewWorld()
-
 	gl.ActiveTexture(gl.TEXTURE4)
-	World.HeightMap.Texture()
+	world.HeightMap.Texture()
 	gl.ActiveTexture(gl.TEXTURE5)
 
 	gl.Enable(gl.DEPTH_TEST)
@@ -43,7 +41,7 @@ func NewGameState(window *glfw.Window) (gamestate *GameState) {
 		Camera:  nil,
 		Proj:    mgl.Perspective(90, 4.0/3.0, 0.001, 1000),
 		Bar:     bar,
-		World:   World,
+		World:   world,
 		Player:  &Player{*NewCameraFromPos4f(startPos), PlayerInput{}, mgl.Vec4f{}},
 		Fps:     0,
 		Options: settings.BoolOptions{StartPosition: startPos},
@@ -72,7 +70,7 @@ func NewGameState(window *glfw.Window) (gamestate *GameState) {
 		bar.AddVarRW(fmt.Sprintf("Rotation %d", i), tw.TYPE_QUAT4F, unsafe.Pointer(ptr), "")
 	}
 
-	bar.AddButton("save image", func() { helpers.SaveImage("test.png", World.HeightMap.ExportImage()) }, "")
+	bar.AddButton("save image", func() { helpers.SaveImage("test.png", world.HeightMap.ExportImage()) }, "")
 
 	window.SetSizeCallback(func(window *glfw.Window, width, height int) {
 		gl.Viewport(0, 0, width, height)

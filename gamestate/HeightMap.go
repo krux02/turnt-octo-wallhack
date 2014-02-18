@@ -1,12 +1,13 @@
 package gamestate
 
-import "math/rand"
-import mgl "github.com/Jragonmiris/mathgl"
-import "github.com/krux02/turnt-octo-wallhack/helpers"
-import "github.com/go-gl/gl"
-import "math"
-import "image"
-import "image/color"
+import (
+	mgl "github.com/Jragonmiris/mathgl"
+	"github.com/go-gl/gl"
+	"github.com/krux02/turnt-octo-wallhack/helpers"
+	"image"
+	"image/color"
+	"math"
+)
 
 // import "fmt"
 
@@ -62,70 +63,6 @@ func (m *HeightMap) flat(x, y int) int {
 
 func (m *HeightMap) unflat(i int) (int, int) {
 	return i % m.W, i / m.W
-}
-
-func (m *HeightMap) DiamondSquare(factor float32) {
-	w, h := m.W, m.H
-
-	stepSize := w
-
-	squares := func() {
-		for i := 0; i < w; i += stepSize {
-			for j := 0; j < h; j += stepSize {
-				sum := m.Get(i, j)
-				sum += m.Get(i+stepSize, j)
-				sum += m.Get(i, j+stepSize)
-				sum += m.Get(i+stepSize, j+stepSize)
-
-				h := (sum / 4.0) + (rand.Float32()-0.5)*factor
-				x := i + stepSize/2
-				y := j + stepSize/2
-				m.Set(x, y, h)
-			}
-		}
-	}
-
-	diamonds := func() {
-		for i := 0; i <= w; i += stepSize {
-			for j := 0; j <= h; j += stepSize {
-				if ((i+j)/stepSize)%2 == 1 {
-					sum := float32(0)
-					count := float32(0.0)
-					if i != 0 {
-						sum += m.Get(i-stepSize, j)
-						count += 1
-					}
-					if i < w-1 {
-						sum += m.Get(i+stepSize, j)
-						count += 1
-					}
-					if j != 0 {
-						sum += m.Get(i, j-stepSize)
-						count += 1
-					}
-					if j < h-1 {
-						sum += m.Get(i, j+stepSize)
-						count += 1
-					}
-
-					h := (sum / count) + (rand.Float32()-0.5)*factor
-					m.Set(i, j, h)
-				}
-			}
-		}
-	}
-
-	for stepSize > 0 {
-		squares()
-
-		stepSize /= 2
-		if stepSize == 0 {
-			break
-		}
-		diamonds()
-
-		factor *= 0.5
-	}
 }
 
 func (m *HeightMap) Normal(x int, y int) mgl.Vec3f {
@@ -197,26 +134,6 @@ func (m *HeightMap) Triangulate() []int32 {
 		v3 := flat(x, y+1)
 		v4 := flat(x+1, y+1)
 
-		// v1h := m.Vertices()[v1].Vertex_ms[2]
-		// v2h := m.Vertices()[v2].Vertex_ms[2]
-		// v3h := m.Vertices()[v3].Vertex_ms[2]
-		// v4h := m.Vertices()[v4].Vertex_ms[2]
-
-		// vec1 := mgl.Vec3f{0, v1h, 0}
-		// vec2 := mgl.Vec3f{1, 0.5*v2h + 0.5*v3h, 0}
-		// vec3 := mgl.Vec3f{2, v4h, 0}
-
-		// cross1 := vec1.Sub(vec2).Cross(vec3.Sub(vec2))
-
-		// vec1 = mgl.Vec3f{0, v2h, 0}
-		// vec2 = mgl.Vec3f{1, 0.5*v1h + 0.5*v4h, 0}
-		// vec3 = mgl.Vec3f{2, v3h, 0}
-
-		// cross2 := vec1.Sub(vec2).Cross(vec3.Sub(vec2))
-
-		// fmt.Println(cross1, cross2)
-
-		// if math.Abs(float64(cross1[2])) > math.Abs(float64(cross2[2])) {
 		put(v1)
 		put(v2)
 		put(v3)
@@ -224,16 +141,6 @@ func (m *HeightMap) Triangulate() []int32 {
 		put(v3)
 		put(v2)
 		put(v4)
-		// } else {
-		// put(v1)
-		// put(v2)
-		// put(v4)
-
-		// put(v4)
-		// put(v3)
-		// put(v1)
-		// }
-
 	}
 
 	for i := 0; i < w; i++ {
