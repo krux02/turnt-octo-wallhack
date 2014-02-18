@@ -21,6 +21,6 @@ func (p *Player) GetCamera() *Camera {
 	return &p.Camera
 }
 
-func (p *Player) Position() mgl.Vec3f {
+func (p *Player) Position() mgl.Vec4f {
 	return p.Camera.Position
 }

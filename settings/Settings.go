@@ -10,5 +10,5 @@ type BoolOptions struct {
 	NoPlayerPhysics,
 	DepthClamp,
 	Wireframe bool
-	StartPosition mgl.Vec3f
+	StartPosition mgl.Vec4f
 }

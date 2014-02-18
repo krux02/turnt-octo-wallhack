@@ -5,7 +5,7 @@ import (
 )
 
 type Entity struct {
-	Position    mgl.Vec3f
+	Position    mgl.Vec4f
 	Orientation mgl.Quatf
 }
 
@@ -15,8 +15,5 @@ func (e Entity) Model() mgl.Mat4f {
 }
 
 func (e Entity) View() mgl.Mat4f {
-	Tx := e.Position[0]
-	Ty := e.Position[1]
-	Tz := e.Position[2]
-	return e.Orientation.Inverse().Mat4().Mul4(mgl.Translate3D(-Tx, -Ty, -Tz))
+	return e.Model().Inv()
 }

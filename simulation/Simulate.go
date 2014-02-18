@@ -54,11 +54,9 @@ func EnterPortal(portal *gamestate.Portal, camera *gamestate.Camera) {
 	//i = (i + 1) % 6
 }
 
-func PortalPassed(portal *gamestate.Portal, pos1, pos2 mgl.Vec3f) bool {
-	pos1w := mgl.Vec4f{pos1[0], pos1[1], pos1[2], 1}
-	pos2w := mgl.Vec4f{pos2[0], pos2[1], pos2[2], 1}
+func PortalPassed(portal *gamestate.Portal, pos1, pos2 mgl.Vec4f) bool {
 	plane := portal.ClippingPlane(true)
-	return pos1w.Dot(plane)*pos2w.Dot(plane) < 0
+	return pos1.Dot(plane)*pos2.Dot(plane) < 0
 }
 
 func Simulate(gs *gamestate.GameState) {

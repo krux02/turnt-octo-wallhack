@@ -9,8 +9,15 @@ import (
 )
 
 type Camera struct {
-	Position    mgl.Vec3f
-	Orientation mgl.Quatf
+	Entity
+}
+
+func NewCameraFromPos3f(p mgl.Vec3f) *Camera {
+	return NewCameraFromPos4f(mgl.Vec4f{p[0], p[1], p[2], 1})
+}
+
+func NewCameraFromPos4f(position mgl.Vec4f) *Camera {
+	return &Camera{Entity{position, mgl.QuatIdentf()}}
 }
 
 func NewCameraFromLookAt(eye mgl.Vec3f, center mgl.Vec3f, up mgl.Vec3f) *Camera {
@@ -52,23 +59,18 @@ func (camera *Camera) SetFromMat4(view mgl.Mat4f) {
 	dir := mgl.Quatf{qw, mgl.Vec3f{qx, qy, qz}}.Inverse()
 	pos := dir.Rotate(mgl.Vec3f{-m03, -m13, -m23})
 
-	camera.Position = pos
+	camera.Position = mgl.Vec4f{pos[0], pos[1], pos[2], 1}
 	camera.Orientation = dir
 }
 
 func (camera *Camera) MoveAbsolute(dist mgl.Vec3f) {
-	camera.Position = camera.Position.Add(dist)
+	camera.Position[0] += dist[0]
+	camera.Position[1] += dist[1]
+	camera.Position[2] += dist[2]
 }
 
 func (camera *Camera) MoveRelative(dist mgl.Vec3f) {
 	camera.MoveAbsolute(camera.Orientation.Rotate(dist))
-}
-
-func (camera *Camera) View() mgl.Mat4f {
-	Tx := camera.Position[0]
-	Ty := camera.Position[1]
-	Tz := camera.Position[2]
-	return camera.Orientation.Inverse().Mat4().Mul4(mgl.Translate3D(-Tx, -Ty, -Tz))
 }
 
 func (camera *Camera) Pos4f() mgl.Vec4f {

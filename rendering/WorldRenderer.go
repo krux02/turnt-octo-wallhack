@@ -5,8 +5,8 @@ import (
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
 	glfw "github.com/go-gl/glfw3"
-	//"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
+	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/particles"
 	"github.com/krux02/turnt-octo-wallhack/settings"
 	"math"
@@ -109,8 +109,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 
 	// calculating nearest portal
 	pos4f := View.Inv().Mul4x1(mgl.Vec4f{0, 0, 0, 1})
-	pos3f := mgl.Vec3f{pos4f[0], pos4f[1], pos4f[2]}
-	nearestPortal := ww.NearestPortal(pos3f)
+	nearestPortal := ww.NearestPortal(pos4f)
 
 	// draw  all portals except the nearest and the portal that we are looking throug
 	for _, portal := range ww.Portals {
@@ -169,8 +168,8 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 
 			normal_os := mgl.Vec4f{0, 1, 0, 0}
 			normal_ws := Model.Mul4x1(normal_os)
-			view_dir := portal.Position.Sub(camera.Position)
-			sign := view_dir.Dot(mgl.Vec3f{normal_ws[0], normal_ws[1], normal_ws[2]})
+			view_dir := helpers.HomogenDiff(portal.Position, camera.Position)
+			sign := view_dir.Dot(normal_ws)
 
 			clippingPlane = portal.Target.ClippingPlane(sign > 0)
 

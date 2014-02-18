@@ -16,7 +16,7 @@ func NewWorld() (world *World) {
 	heights := NewHeightMap(W, H)
 	heights.DiamondSquare(W)
 
-	PortalPositions := []mgl.Vec3f{mgl.Vec3f{10, 10, 15}, mgl.Vec3f{30, 30, 10}} // , mgl.Vec3f{60, 60, 9}
+	PortalPositions := []mgl.Vec4f{mgl.Vec4f{10, 10, 15, 1}, mgl.Vec4f{30, 30, 10, 1}} // , mgl.Vec3f{60, 60, 9}
 
 	//PortalMesh := LoadMesh("meshes/Portal.blend")
 	PortalMesh := PortalRect()
@@ -38,11 +38,14 @@ func NewWorld() (world *World) {
 	return
 }
 
-func (this *World) NearestPortal(pos mgl.Vec3f) *Portal {
+func (this *World) NearestPortal(pos mgl.Vec4f) *Portal {
+	pos = pos.Mul(1 / pos[3])
 	var dist float32 = math.MaxFloat32
 	var nearestPortal *Portal
 	for _, portal := range this.Portals {
-		newDist := pos.Sub(portal.Position).Len()
+		p := portal.Position
+		p = p.Mul(1 / p[3])
+		newDist := pos.Sub(p).Len()
 		if newDist < dist {
 			dist = newDist
 			nearestPortal = portal

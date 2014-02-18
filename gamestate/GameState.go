@@ -36,7 +36,7 @@ func NewGameState(window *glfw.Window) (gamestate *GameState) {
 
 	bar := tw.NewBar("TweakBar")
 
-	startPos := mgl.Vec3f{5, 5, 10}
+	startPos := mgl.Vec4f{5, 5, 10, 1}
 
 	gamestate = &GameState{
 		Window:  window,
@@ -44,7 +44,7 @@ func NewGameState(window *glfw.Window) (gamestate *GameState) {
 		Proj:    mgl.Perspective(90, 4.0/3.0, 0.001, 1000),
 		Bar:     bar,
 		World:   World,
-		Player:  &Player{Camera{startPos, mgl.QuatIdentf()}, PlayerInput{}, mgl.Vec3f{}},
+		Player:  &Player{*NewCameraFromPos4f(startPos), PlayerInput{}, mgl.Vec3f{}},
 		Fps:     0,
 		Options: settings.BoolOptions{StartPosition: startPos},
 	}
