@@ -23,3 +23,9 @@ func (this *Portal) ClippingPlane(front bool) mgl.Vec4f {
 	clippingPlane[3] = -clippingPlane.Dot(mgl.Vec4f{p[0], p[1], p[2], 0})
 	return clippingPlane
 }
+
+func (this *Portal) Transform() mgl.Mat4f {
+	Mat1 := this.View()
+	Mat2 := this.Target.Model()
+	return Mat2.Mul4(Mat1)
+}

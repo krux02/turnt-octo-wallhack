@@ -1,62 +1,20 @@
 package simulation
 
 import (
-	"fmt"
+	//	"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 )
 
-var i int = 2
-
 func EnterPortal(portal *gamestate.Portal, camera *gamestate.Camera) {
-
-	//quat1 := portal.Orientation
-	//quat2 := portal.Target.Orientation
-
-	//camMat := camera.Orientation.Inverse().Mat4()
-	//model1 := dir1.Mat4()
-	//model2 := dir2.Mat4()
-
-	//camMat = (model2.Mul4(model1.Inv()).Mul4(camMat))
-
-	//camera.SetFromMat4(camMat)
-	//camera.Orientation = camera.Orientation.Mul(dir2).Mul(dir1.Inverse())
-	//camera.Orientation = dir1.Inverse().Mul(dir2).Mul(camera.Orientation)
-	//camera.Orientation = quat2.Mul(quat1.Inverse()).Mul(camera.Orientation)
-	//camera.Orientation = camera.Orientation.Inverse().Mul(dir2.Inverse()).Mul(dir1).Inverse()
-	//camera.Orientation = camera.Orientation.Inverse().Mul(quat1.Inverse()).Mul(quat2).Inverse()
-
-	pos1 := portal.Position
-	pos2 := portal.Target.Position
-
-	camera.Position = camera.Position.Sub(pos1).Add(pos2)
-
-	camO := camera.Orientation
-	targO := portal.Target.Orientation
-
-	switch i {
-	case 0:
-		camera.Orientation = camO.Mul(targO)
-	case 1:
-		camera.Orientation = camO.Mul(targO.Inverse())
-	case 2:
-		camera.Orientation = targO.Mul(camO)
-	case 3:
-		camera.Orientation = targO.Inverse().Mul(camO)
-	case 4:
-		camera.Orientation = targO.Inverse().Mul(camO).Mul(targO)
-	case 5:
-		camera.Orientation = targO.Mul(camO).Mul(targO).Inverse()
-	}
-
-	fmt.Println("enter portal i:", i)
-
-	//i = (i + 1) % 6
+	camera.SetModel(portal.Transform().Mul4(camera.Model()))
 }
 
 func PortalPassed(portal *gamestate.Portal, pos1, pos2 mgl.Vec4f) bool {
-	plane := portal.ClippingPlane(true)
-	return pos1.Dot(plane)*pos2.Dot(plane) < 0
+	m := portal.View()
+	pos1 = m.Mul4x1(pos1)
+	pos2 = m.Mul4x1(pos2)
+	return pos1[1]*pos2[1] < 0
 }
 
 func Simulate(gs *gamestate.GameState) {

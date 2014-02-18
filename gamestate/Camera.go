@@ -25,42 +25,13 @@ func NewCameraFromLookAt(eye mgl.Vec3f, center mgl.Vec3f, up mgl.Vec3f) *Camera 
 }
 
 func (camera *Camera) SetCameraFromLookAt(eye mgl.Vec3f, center mgl.Vec3f, up mgl.Vec3f) {
-	camera.SetFromMat4(mgl.LookAtV(eye, center, up))
+	camera.SetView(mgl.LookAtV(eye, center, up))
 }
 
 func NewCameraFromMat4(view mgl.Mat4f) (camera *Camera) {
 	camera = new(Camera)
-	camera.SetFromMat4(view)
+	camera.SetView(view)
 	return camera
-}
-
-func (camera *Camera) SetFromMat4(view mgl.Mat4f) {
-	m00 := view[0]
-	m10 := view[1]
-	m20 := view[2]
-
-	m01 := view[4]
-	m11 := view[5]
-	m21 := view[6]
-
-	m02 := view[8]
-	m12 := view[9]
-	m22 := view[10]
-
-	m03 := view[12]
-	m13 := view[13]
-	m23 := view[14]
-
-	qw := float32(math.Sqrt(float64(1+m00+m11+m22))) / 2
-	qx := (m21 - m12) / (4 * qw)
-	qy := (m02 - m20) / (4 * qw)
-	qz := (m10 - m01) / (4 * qw)
-
-	dir := mgl.Quatf{qw, mgl.Vec3f{qx, qy, qz}}.Inverse()
-	pos := dir.Rotate(mgl.Vec3f{-m03, -m13, -m23})
-
-	camera.Position = mgl.Vec4f{pos[0], pos[1], pos[2], 1}
-	camera.Orientation = dir
 }
 
 func (camera *Camera) MoveAbsolute(dist mgl.Vec3f) {
