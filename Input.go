@@ -52,6 +52,8 @@ func InitInput(gs *gamestate.GameState) {
 				default:
 					window.SetInputMode(glfw.Cursor, glfw.CursorNormal)
 				}
+			case glfw.KeySpace:
+				gs.Player.Camera.Position = gs.Options.StartPosition
 			default:
 			}
 		}

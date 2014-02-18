@@ -1,4 +1,4 @@
-package world
+package gamestate
 
 import (
 	mgl "github.com/Jragonmiris/mathgl"
@@ -16,7 +16,7 @@ func NewWorld() (world *World) {
 	heights := NewHeightMap(W, H)
 	heights.DiamondSquare(W)
 
-	PortalPositions := []mgl.Vec3f{mgl.Vec3f{10, 10, 15}, mgl.Vec3f{30, 30, 10}, mgl.Vec3f{60, 60, 9}}
+	PortalPositions := []mgl.Vec3f{mgl.Vec3f{10, 10, 15}, mgl.Vec3f{30, 30, 10}} // , mgl.Vec3f{60, 60, 9}
 
 	//PortalMesh := LoadMesh("meshes/Portal.blend")
 	PortalMesh := PortalRect()
@@ -24,14 +24,14 @@ func NewWorld() (world *World) {
 	Portals := make([]*Portal, len(PortalPositions))
 	for i, pos := range PortalPositions {
 		Portals[i] = &Portal{
-			Position:    pos,
-			Orientation: mgl.QuatIdentf(),
-			Mesh:        PortalMesh,
-			Target:      nil,
+			Entity{Position: pos, Orientation: mgl.QuatIdentf()},
+			PortalMesh,
+			nil,
 		}
 	}
 	for i := range Portals {
-		Portals[i].Target = Portals[(i+1)%len(Portals)]
+		j := i ^ 1
+		Portals[i].Target = Portals[j]
 	}
 
 	world = &World{heights, Portals}

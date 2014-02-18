@@ -7,7 +7,6 @@ import (
 	glfw "github.com/go-gl/glfw3"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/settings"
-	"github.com/krux02/turnt-octo-wallhack/world"
 	"github.com/krux02/tw"
 	"unsafe"
 )
@@ -17,7 +16,7 @@ type GameState struct {
 	Camera  *Camera
 	Proj    mgl.Mat4f
 	Bar     *tw.Bar
-	World   *world.World
+	World   *World
 	Player  *Player
 	Fps     float32
 	Options settings.BoolOptions
@@ -26,7 +25,7 @@ type GameState struct {
 func NewGameState(window *glfw.Window) (gamestate *GameState) {
 	gl.ClearColor(0., 0., 0.4, 0.0)
 
-	World := world.NewWorld()
+	World := NewWorld()
 
 	gl.ActiveTexture(gl.TEXTURE4)
 	World.HeightMap.Texture()
@@ -37,15 +36,17 @@ func NewGameState(window *glfw.Window) (gamestate *GameState) {
 
 	bar := tw.NewBar("TweakBar")
 
+	startPos := mgl.Vec3f{5, 5, 10}
+
 	gamestate = &GameState{
 		Window:  window,
 		Camera:  nil,
 		Proj:    mgl.Perspective(90, 4.0/3.0, 0.001, 1000),
 		Bar:     bar,
 		World:   World,
-		Player:  &Player{Camera{mgl.Vec3f{5, 5, 10}, mgl.QuatIdentf()}, PlayerInput{}, mgl.Vec3f{}},
+		Player:  &Player{Camera{startPos, mgl.QuatIdentf()}, PlayerInput{}, mgl.Vec3f{}},
 		Fps:     0,
-		Options: settings.BoolOptions{},
+		Options: settings.BoolOptions{StartPosition: startPos},
 	}
 
 	gamestate.Camera = gamestate.Player.GetCamera()

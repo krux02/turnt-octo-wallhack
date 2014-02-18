@@ -10,5 +10,5 @@ type BoolOptions struct {
 	NoPlayerPhysics,
 	DepthClamp,
 	Wireframe bool
-	portalOrientations []*mgl.Quatf
+	StartPosition mgl.Vec3f
 }

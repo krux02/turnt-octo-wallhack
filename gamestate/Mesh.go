@@ -1,4 +1,4 @@
-package world
+package gamestate
 
 import (
 	"fmt"

@@ -4,8 +4,8 @@ import (
 	//"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
+	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
-	"github.com/krux02/turnt-octo-wallhack/world"
 )
 
 type PortalRenderer struct {
@@ -39,7 +39,7 @@ func (this *PortalRenderer) Delete() {
 	this.Program = 0
 }
 
-func (this *PortalRenderer) CreateRenderData(mesh *world.Mesh) (md PortalRenderData) {
+func (this *PortalRenderer) CreateRenderData(mesh *gamestate.Mesh) (md PortalRenderData) {
 
 	md.VAO = gl.GenVertexArray()
 	md.VAO.Bind()
@@ -52,7 +52,7 @@ func (this *PortalRenderer) CreateRenderData(mesh *world.Mesh) (md PortalRenderD
 	md.Vertices.Bind(gl.ARRAY_BUFFER)
 	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(mesh.Vertices), mesh.Vertices, gl.STATIC_DRAW)
 
-	helpers.SetAttribPointers(&this.RenLoc, &world.MeshVertex{}, true)
+	helpers.SetAttribPointers(&this.RenLoc, &gamestate.MeshVertex{}, true)
 
 	md.Numverts = len(mesh.Indices)
 

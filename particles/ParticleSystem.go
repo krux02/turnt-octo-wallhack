@@ -5,8 +5,8 @@ import (
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
 	"github.com/go-gl/glh"
+	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
-	"github.com/krux02/turnt-octo-wallhack/world"
 	"io/ioutil"
 	"math"
 	"math/rand"
@@ -55,7 +55,7 @@ type ParticleSystem struct {
 	MaxLifetime                              float32
 }
 
-func NewParticleSystem(w *world.World, numParticles int, Origin mgl.Vec3f, initialSpeed, MaxLifetime float32) *ParticleSystem {
+func NewParticleSystem(w *gamestate.World, numParticles int, Origin mgl.Vec3f, initialSpeed, MaxLifetime float32) *ParticleSystem {
 	vertices := make([]ParticleVertex, numParticles)
 	directions := make([]NonTransformBuffer, numParticles)
 

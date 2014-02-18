@@ -1,4 +1,4 @@
-package world
+package gamestate
 
 import "math/rand"
 import mgl "github.com/Jragonmiris/mathgl"
@@ -164,13 +164,13 @@ func (m *HeightMap) Normalf(x float32, y float32) (n mgl.Vec3f) {
 	n01 := m.Normal(x0, y1)
 	n11 := m.Normal(x1, y1)
 
-	w := x-float32(x0)
-	h := y-float32(y0)
+	w := x - float32(x0)
+	h := y - float32(y0)
 
-	n0 := n00.Mul(1-w).Add(n10.Mul(w))
-	n1 := n01.Mul(1-w).Add(n11.Mul(w))
+	n0 := n00.Mul(1 - w).Add(n10.Mul(w))
+	n1 := n01.Mul(1 - w).Add(n11.Mul(w))
 
-	n = n0.Mul(1-h).Add(n1.Mul(h))
+	n = n0.Mul(1 - h).Add(n1.Mul(h))
 	return
 }
 

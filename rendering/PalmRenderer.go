@@ -3,8 +3,8 @@ package rendering
 import (
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
+	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
-	"github.com/krux02/turnt-octo-wallhack/world"
 	"math/rand"
 )
 
@@ -67,7 +67,7 @@ type PalmTreesInstanceData struct {
 	positions []PalmTree
 }
 
-func NewPalmTreesInstanceData(world *world.HeightMap, count int) *PalmTreesInstanceData {
+func NewPalmTreesInstanceData(gamestate *gamestate.HeightMap, count int) *PalmTreesInstanceData {
 
 	pt := &PalmTreesInstanceData{
 		make([]PalmTree, count),
@@ -77,15 +77,15 @@ func NewPalmTreesInstanceData(world *world.HeightMap, count int) *PalmTreesInsta
 
 		var x, y float32
 		for true {
-			x = rand.Float32() * float32(world.W)
-			y = rand.Float32() * float32(world.H)
-			n := world.Normalf(x, y)
+			x = rand.Float32() * float32(gamestate.W)
+			y = rand.Float32() * float32(gamestate.H)
+			n := gamestate.Normalf(x, y)
 			if n.Dot(mgl.Vec3f{0, 0, 1}) > 0.65 {
 				break
 			}
 		}
 
-		z := world.Get2f(x, y)
+		z := gamestate.Get2f(x, y)
 
 		pt.positions[i] = PalmTree{mgl.Vec4f{x, y, z, 1}}
 	}
@@ -114,8 +114,8 @@ func (this *PalmTrees) Delete() {
 	*this = PalmTrees{}
 }
 
-func NewPalmTrees(world *world.HeightMap, count int) *PalmTrees {
-	pt := NewPalmTreesInstanceData(world, count)
+func NewPalmTrees(gamestate *gamestate.HeightMap, count int) *PalmTrees {
+	pt := NewPalmTreesInstanceData(gamestate, count)
 
 	Prog := helpers.MakeProgram("Sprite.vs", "Sprite.fs")
 	Prog.Use()

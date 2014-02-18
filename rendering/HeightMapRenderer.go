@@ -3,7 +3,7 @@ package rendering
 import "github.com/go-gl/gl"
 import mgl "github.com/Jragonmiris/mathgl"
 import "github.com/krux02/turnt-octo-wallhack/helpers"
-import "github.com/krux02/turnt-octo-wallhack/world"
+import "github.com/krux02/turnt-octo-wallhack/gamestate"
 import "math"
 
 // import "fmt"
@@ -32,7 +32,7 @@ type WorldRenderLocations struct {
 	U_clippingPlane                                         gl.UniformLocation
 }
 
-func Vertices(m *world.HeightMap) []WorldVertex {
+func Vertices(m *gamestate.HeightMap) []WorldVertex {
 	vertices := make([]WorldVertex, (m.W+1)*(m.H+1))
 
 	i := 0
@@ -50,7 +50,7 @@ func Vertices(m *world.HeightMap) []WorldVertex {
 	return vertices
 }
 
-func NewHeightMapRenderer(heightMap *world.HeightMap) (this *HeightMapRenderer) {
+func NewHeightMapRenderer(heightMap *gamestate.HeightMap) (this *HeightMapRenderer) {
 	vertices := Vertices(heightMap)
 	indices := heightMap.Triangulate()
 	min_h, max_h := heightMap.Bounds()

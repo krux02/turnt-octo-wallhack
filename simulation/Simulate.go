@@ -1,13 +1,14 @@
 package simulation
 
 import (
-	//"fmt"
+	"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
-	"github.com/krux02/turnt-octo-wallhack/world"
 )
 
-func EnterPortal(portal *world.Portal, camera *gamestate.Camera) {
+var i int = 2
+
+func EnterPortal(portal *gamestate.Portal, camera *gamestate.Camera) {
 
 	//quat1 := portal.Orientation
 	//quat2 := portal.Target.Orientation
@@ -29,9 +30,31 @@ func EnterPortal(portal *world.Portal, camera *gamestate.Camera) {
 	pos2 := portal.Target.Position
 
 	camera.Position = camera.Position.Sub(pos1).Add(pos2)
+
+	camO := camera.Orientation
+	targO := portal.Target.Orientation
+
+	switch i {
+	case 0:
+		camera.Orientation = camO.Mul(targO)
+	case 1:
+		camera.Orientation = camO.Mul(targO.Inverse())
+	case 2:
+		camera.Orientation = targO.Mul(camO)
+	case 3:
+		camera.Orientation = targO.Inverse().Mul(camO)
+	case 4:
+		camera.Orientation = targO.Inverse().Mul(camO).Mul(targO)
+	case 5:
+		camera.Orientation = targO.Mul(camO).Mul(targO).Inverse()
+	}
+
+	fmt.Println("enter portal i:", i)
+
+	//i = (i + 1) % 6
 }
 
-func PortalPassed(portal *world.Portal, pos1, pos2 mgl.Vec3f) bool {
+func PortalPassed(portal *gamestate.Portal, pos1, pos2 mgl.Vec3f) bool {
 	pos1w := mgl.Vec4f{pos1[0], pos1[1], pos1[2], 1}
 	pos2w := mgl.Vec4f{pos2[0], pos2[1], pos2[2], 1}
 	plane := portal.ClippingPlane(true)

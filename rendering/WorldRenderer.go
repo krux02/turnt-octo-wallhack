@@ -9,7 +9,6 @@ import (
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/particles"
 	"github.com/krux02/turnt-octo-wallhack/settings"
-	"github.com/krux02/turnt-octo-wallhack/world"
 	"math"
 	//"math/rand"
 )
@@ -27,7 +26,7 @@ type WorldRenderer struct {
 	MaxRecursion      int
 }
 
-func NewWorldRenderer(w *world.World) *WorldRenderer {
+func NewWorldRenderer(w *gamestate.World) *WorldRenderer {
 
 	portalData := w.Portals[0].Mesh
 	mr := NewMeshRenderer()
@@ -61,7 +60,7 @@ func (this *WorldRenderer) Delete() {
 	*this = WorldRenderer{}
 }
 
-func (this *WorldRenderer) Render(ww *world.World, options *settings.BoolOptions, Proj mgl.Mat4f, View mgl.Mat4f, window *glfw.Window) {
+func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOptions, Proj mgl.Mat4f, View mgl.Mat4f, window *glfw.Window) {
 	this.render(ww, options, Proj, View, window, 0, mgl.Vec4f{3 / 5.0, 4 / 5.0, 0, math.MaxFloat32}, nil)
 
 	gl.ActiveTexture(gl.TEXTURE9)
@@ -69,7 +68,7 @@ func (this *WorldRenderer) Render(ww *world.World, options *settings.BoolOptions
 	this.ScreenQuad.Render()
 }
 
-func (this *WorldRenderer) render(ww *world.World, options *settings.BoolOptions, Proj mgl.Mat4f, View mgl.Mat4f, window *glfw.Window, recursion int, clippingPlane mgl.Vec4f, srcPortal *world.Portal) {
+func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOptions, Proj mgl.Mat4f, View mgl.Mat4f, window *glfw.Window, recursion int, clippingPlane mgl.Vec4f, srcPortal *gamestate.Portal) {
 	this.Framebuffer[recursion].Bind()
 	defer this.Framebuffer[recursion].Unbind()
 
@@ -137,8 +136,8 @@ func (this *WorldRenderer) render(ww *world.World, options *settings.BoolOptions
 		for _, v := range boxVertices {
 			v = pvm.Mul4x1(v)
 			v = v.Mul(1 / v[3])
-			meshMin = world.Min(meshMin, v)
-			meshMax = world.Max(meshMax, v)
+			meshMin = gamestate.Min(meshMin, v)
+			meshMax = gamestate.Max(meshMax, v)
 		}
 
 		// at least partially visible
@@ -164,7 +163,7 @@ func (this *WorldRenderer) render(ww *world.World, options *settings.BoolOptions
 			// calculation View matrix that shows the target portal from the same angle as view shows the source portal
 
 			//pos2 := portal.Target.Position
-			Model2 := portal.Target.ModelMat4()
+			Model2 := portal.Target.Model()
 			// model matrix, so that portal 1 in camera 1 looks identical to portal 2 in camera
 			View2 := View.Mul4(Model).Mul4(Model2.Inv())
 
