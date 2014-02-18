@@ -166,7 +166,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 			// model matrix, so that portal 1 in camera 1 looks identical to portal 2 in camera
 			View2 := View.Mul4(Model).Mul4(Model2.Inv())
 
-			normal_os := mgl.Vec4f{0, 1, 0, 0}
+			normal_os := portal.Target.Normal
 			normal_ws := Model.Mul4x1(normal_os)
 			view_dir := helpers.HomogenDiff(portal.Position, camera.Position)
 			sign := view_dir.Dot(normal_ws)

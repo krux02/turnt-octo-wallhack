@@ -19,13 +19,16 @@ func NewWorld() (world *World) {
 	PortalPositions := []mgl.Vec4f{mgl.Vec4f{10, 10, 15, 1}, mgl.Vec4f{30, 30, 10, 1}} // , mgl.Vec3f{60, 60, 9}
 
 	//PortalMesh := LoadMesh("meshes/Portal.blend")
-	PortalMesh := PortalRect()
+	//PortalMesh := PortalRect()
+	PortalMesh := QuadMesh()
+	normal := mgl.Vec4f{0, 0, 1, 0}
 
 	Portals := make([]*Portal, len(PortalPositions))
 	for i, pos := range PortalPositions {
 		Portals[i] = &Portal{
 			Entity{Position: pos, Orientation: mgl.QuatIdentf()},
 			PortalMesh,
+			normal,
 			nil,
 		}
 	}

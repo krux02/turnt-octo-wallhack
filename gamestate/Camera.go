@@ -34,14 +34,16 @@ func NewCameraFromMat4(view mgl.Mat4f) (camera *Camera) {
 	return camera
 }
 
-func (camera *Camera) MoveAbsolute(dist mgl.Vec3f) {
+func (camera *Camera) MoveAbsolute(dist mgl.Vec4f) {
 	camera.Position[0] += dist[0]
 	camera.Position[1] += dist[1]
 	camera.Position[2] += dist[2]
 }
 
-func (camera *Camera) MoveRelative(dist mgl.Vec3f) {
-	camera.MoveAbsolute(camera.Orientation.Rotate(dist))
+func (camera *Camera) MoveRelative(dist mgl.Vec4f) {
+	dist_xyz := mgl.Vec3f{dist[0], dist[1], dist[2]}
+	v := camera.Orientation.Rotate(dist_xyz)
+	camera.MoveAbsolute(mgl.Vec4f{v[0], v[1], v[2], 0})
 }
 
 func (camera *Camera) Pos4f() mgl.Vec4f {

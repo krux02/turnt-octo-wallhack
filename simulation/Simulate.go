@@ -6,15 +6,22 @@ import (
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 )
 
-func EnterPortal(portal *gamestate.Portal, camera *gamestate.Camera) {
-	camera.SetModel(portal.Transform().Mul4(camera.Model()))
-}
-
 func PortalPassed(portal *gamestate.Portal, pos1, pos2 mgl.Vec4f) bool {
 	m := portal.View()
 	pos1 = m.Mul4x1(pos1)
 	pos2 = m.Mul4x1(pos2)
-	return pos1[1]*pos2[1] < 0
+	n := portal.Normal
+
+	a := n.Dot(pos1)
+	b := n.Dot(pos2)
+
+	if a*b < 0 {
+		c := a / (a - b)
+		pos3 := pos1.Mul(c).Add(pos2.Mul(1 - c))
+		return -1 < pos3[0] && pos3[0] < 1 && -1 < pos3[1] && pos3[1] < 1
+	} else {
+		return false
+	}
 }
 
 func Simulate(gs *gamestate.GameState) {
@@ -26,8 +33,11 @@ func Simulate(gs *gamestate.GameState) {
 	nearestPortal := gs.World.NearestPortal(oldPos)
 
 	if PortalPassed(nearestPortal, oldPos, newPos) {
-		//fmt.Println("before", oldPos, newPos, cam)
-		EnterPortal(nearestPortal, cam)
+		// Enter Portal
+		transform := nearestPortal.Transform()
+		cam.SetModel(transform.Mul4(cam.Model()))
+
+		//EnterPortal(nearestPortal, cam)
 		//fmt.Println("after", cam.Position, cam)
 	}
 }
@@ -42,7 +52,9 @@ func UpdatePlayer(p *gamestate.Player, gs *gamestate.GameState) {
 	if move.Len() > 0 {
 		move = move.Normalize()
 	}
-	move = p.Camera.Orientation.Rotate(move)
+	move_xyz := mgl.Vec3f{move[0], move[1], move[2]}
+	move_xyz = p.Camera.Orientation.Rotate(move_xyz)
+	move = mgl.Vec4f{move_xyz[0], move_xyz[1], move_xyz[2], 0}
 
 	if gs.Options.NoPlayerPhysics {
 		move = move.Mul(0.1)
