@@ -34,8 +34,8 @@ type ProgramLocations struct {
 }
 
 type RenderProgramLocations struct {
-	Pos1, Pos2, Lifetime, TexCoord, Vertex_os gl.AttribLocation
-	Proj, View, MaxLifetime, Image            gl.UniformLocation
+	Pos1, Pos2, Lifetime, TexCoord, Vertex_os       gl.AttribLocation
+	Proj, View, MaxLifetime, Image, U_clippingPlane gl.UniformLocation
 }
 
 type ParticleSystem struct {
@@ -247,7 +247,7 @@ func CreateShapeDataBuffer() gl.Buffer {
 	return particleShapeBuffer
 }
 
-func (ps *ParticleSystem) Render(Proj mgl.Mat4f, View mgl.Mat4f) {
+func (ps *ParticleSystem) Render(Proj mgl.Mat4f, View mgl.Mat4f, clippingPlane mgl.Vec4f) {
 	gl.PointSize(64)
 
 	ps.VaoRender1.Bind()
@@ -259,6 +259,7 @@ func (ps *ParticleSystem) Render(Proj mgl.Mat4f, View mgl.Mat4f) {
 	Loc.View.UniformMatrix4f(false, (*[16]float32)(&View))
 	Loc.MaxLifetime.Uniform1f(ps.MaxLifetime)
 	Loc.Image.Uniform1i(6)
+	Loc.U_clippingPlane.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
 
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE)

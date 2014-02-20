@@ -92,17 +92,11 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 		this.HeightMapRenderer.Render(Proj, View, mgl.Ident4f(), currentTime, clippingPlane)
 	}
 	if !options.NoTreeRender {
-		//this.PalmTrees.Render(Proj, View.Mul4(OffsetM), Rot2D)
-		this.PalmTrees.Render(Proj, View, Rot2D)
+		this.PalmTrees.Render(Proj, View, Rot2D, clippingPlane)
 	}
 	if !options.NoParticleRender {
-		//this.ParticleSystem.Render(Proj, View.Mul4(OffsetM))
-		this.ParticleSystem.Render(Proj, View)
+		this.ParticleSystem.Render(Proj, View, clippingPlane)
 	}
-	/*
-			}
-		}
-	*/
 
 	boxVertices := ww.Portals[0].Mesh.MakeBoxVertices()
 	pv := Proj.Mul4(View)

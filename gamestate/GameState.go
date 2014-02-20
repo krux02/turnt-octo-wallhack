@@ -47,11 +47,9 @@ func NewGameState(world *World, window *glfw.Window) (gamestate *GameState) {
 		Options: settings.BoolOptions{StartPosition: startPos},
 	}
 
-	gamestate.Camera = gamestate.Player.GetCamera()
 	opt := &gamestate.Options
-	opt.NoTreeRender = true
-	opt.NoParticlePhysics = true
-	opt.NoParticleRender = true
+	opt.Load()
+	gamestate.Camera = gamestate.Player.GetCamera()
 
 	tw.Define(" GLOBAL help='This example shows how to integrate AntTweakBar with GLFW and OpenGL.' ")
 
@@ -84,5 +82,6 @@ func NewGameState(world *World, window *glfw.Window) (gamestate *GameState) {
 }
 
 func (this *GameState) Delete() {
+	this.Options.Save()
 	this.Bar.Delete()
 }

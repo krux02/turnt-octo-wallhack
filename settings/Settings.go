@@ -21,7 +21,8 @@ type BoolOptions struct {
 func (this *BoolOptions) Load() {
 	file, err := os.Open("settings.txt")
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		return
 	}
 	defer file.Close()
 

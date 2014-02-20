@@ -14,9 +14,9 @@ out vec4 color;
 vec4 mymix(vec4 color, float alpha) {
 	float a = alpha * 6 / M_PI;
 
-	float x = 1 - min( 1, min( abs(a - 0), abs(a - 3) ) );
-	float y = 1 - min( 1, min( abs(a - 1), abs(a - 4) ) );
-	float z = 1 - min( 1, min( abs(a - 2), abs(a - 5) ) );
+	float x = 1 - min(1, min(a, 3-a));
+	float y = 1 - min(1, abs(a - 1));
+	float z = 1 - min(1, abs(a - 2));
 
 	float r = dot(vec4(x,y,z,0), color);
 	float g = dot(vec4(y,z,x,0), color);
@@ -46,6 +46,5 @@ void main() {
 	float dist = length(pos_cs.xyz);
 	dist = min(dist / 3, 1);
 	color = mix(t, mymix(t, alpha), dist);
-
 }
 
