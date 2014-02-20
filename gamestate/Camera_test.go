@@ -9,15 +9,15 @@ import (
 
 func TestCameraMatrix(t *testing.T) {
 	var camera1, camera2 Camera
-	camera1.Direction.W = 1
+	camera1.Orientation.W = 1
 	camera1.Yaw(rand.Float32() * 2 * math.Pi)
 	camera1.Pitch(rand.Float32() * 2 * math.Pi)
 	camera1.Roll(rand.Float32() * 2 * math.Pi)
-	camera1.Position = mgl.Vec3f{rand.Float32() * 10, rand.Float32() * 10, rand.Float32() * 10}
+	camera1.Position = mgl.Vec4f{rand.Float32() * 10, rand.Float32() * 10, rand.Float32() * 10, 1}
 	t.Log(camera1)
 
 	view1 := camera1.View()
-	camera2.SetFromMat4(view1)
+	camera2.SetView(view1)
 	view2 := camera2.View()
 
 	err := SquareErrorMat4(view1.Sub(view2))
