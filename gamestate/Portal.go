@@ -28,3 +28,7 @@ func (this *Portal) ClippingPlane(front bool) mgl.Vec4f {
 func (this *Portal) Transform() mgl.Mat4f {
 	return this.Target.Model().Mul4(this.View())
 }
+
+func (this *Portal) Dimension(dim int) float32 {
+	return this.Position[dim]
+}

@@ -10,7 +10,7 @@ type MyPos struct {
 	pos mgl.Vec3f
 }
 
-func (mp MyPos) Position(dim int) float32 {
+func (mp MyPos) Dimension(dim int) float32 {
 	return mp.pos[dim]
 }
 
@@ -18,7 +18,7 @@ func randPos() MyPos {
 	return MyPos{mgl.Vec3f{rand.Float32(), rand.Float32(), rand.Float32()}}
 }
 
-const length = 127
+const length = 200
 
 func TestKdTree(t *testing.T) {
 	positions := make([]KdElement, length)
@@ -37,9 +37,9 @@ func TestKdTree(t *testing.T) {
 		}
 	}
 
-	tree := NewTree(positions, 0)
+	tree := NewTree(positions)
 
-	nearestPosTree := tree.NearestQuery(MyPos{center})
+	nearestPosTree := tree.NearestQuery(MyPos{center}, func(kd KdElement) bool { return true })
 
 	if nearestPos != nearestPosTree {
 		t.Log(nearestPos)

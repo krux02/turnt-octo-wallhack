@@ -12,7 +12,14 @@ func GenerateWorld(W, H, N int) (world *gs.World) {
 	heights := gs.NewHeightMap(W, H)
 	DiamondSquare(heights, float32(W))
 	Portals := RandomPortals(heights, N)
-	world = &gs.World{heights, Portals}
+
+	kdTree := make([]gs.KdElement, len(Portals))
+	for i, portal := range Portals {
+		kdTree[i] = portal
+	}
+	kdTree = gs.NewTree(kdTree)
+
+	world = &gs.World{heights, kdTree, Portals}
 	return
 }
 

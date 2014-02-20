@@ -8,13 +8,13 @@ import (
 const Dims = 3
 
 type KdElement interface {
-	Position(dim int) float32
+	Dimension(dim int) float32
 }
 
 func Dist(this, that KdElement) float32 {
 	var sum float32
 	for i := 0; i < Dims; i++ {
-		v := this.Position(i) - that.Position(i)
+		v := this.Dimension(i) - that.Dimension(i)
 		sum += v * v
 	}
 	return float32(math.Sqrt(float64(sum)))
@@ -44,20 +44,24 @@ func (s *nodeSorter) Swap(i, j int) {
 }
 
 func (s *nodeSorter) Less(i, j int) bool {
-	return s.elements[i].Position(s.dim) < s.elements[j].Position(s.dim)
+	return s.elements[i].Dimension(s.dim) < s.elements[j].Dimension(s.dim)
 }
 
 func sortByDim(data []KdElement, dim int) {
 	sort.Sort(&nodeSorter{data, dim})
 }
 
-func NewTree(data KdTree, dim int) KdTree {
+func NewTree(data KdTree) KdTree {
+	return newTree(data, 0)
+}
+
+func newTree(data KdTree, dim int) KdTree {
 	sortByDim(data, dim)
 	dim = (dim + 1) % 3
 	l := len(data)
 	if l >= 2 {
-		NewTree(data.Left(), dim)
-		NewTree(data.Right(), dim)
+		newTree(data.Left(), dim)
+		newTree(data.Right(), dim)
 	}
 	return KdTree(data)
 }
@@ -68,6 +72,10 @@ func (this KdTree) Left() KdTree {
 
 func (this KdTree) Right() KdTree {
 	return this[len(this)/2+1 : len(this)]
+}
+
+func (this KdTree) HasRight() bool {
+	return len(this) > 2
 }
 
 func (this KdTree) Node() KdElement {
@@ -83,7 +91,7 @@ func (this KdTree) RegionQuery(pos KdElement, radius float32, target []KdElement
 }
 
 func (this KdTree) regionQuery(pos KdElement, radius float32, target []KdElement, dim int) []KdElement {
-	dist := pos.Position(dim) - this.Node().Position(dim)
+	dist := pos.Dimension(dim) - this.Node().Dimension(dim)
 
 	// dist := pos - node
 	// pos - radius <= node <=>  radius <= dist
@@ -91,7 +99,8 @@ func (this KdTree) regionQuery(pos KdElement, radius float32, target []KdElement
 
 	dim = (dim + 1) % Dims
 	if radius < abs(dist) {
-		target = append(target, this.Node())
+		node := this.Node()
+		target = append(target, node)
 	}
 	if !this.IsLeaf() {
 		if radius <= dist {
@@ -104,32 +113,37 @@ func (this KdTree) regionQuery(pos KdElement, radius float32, target []KdElement
 	return target
 }
 
-func (this KdTree) NearestQuery(pos KdElement) KdElement {
-	return this.nearestQuery(pos, this.Node(), 0)
+func (this KdTree) NearestQuery(pos KdElement, filter func(KdElement) bool) KdElement {
+	return this.nearestQuery(pos, nil, filter, 0)
 }
 
-func (this KdTree) nearestQuery(pos, currentBest KdElement, dim int) KdElement {
-
-	if Dist(pos, this.Node()) < Dist(pos, currentBest) {
-		currentBest = this.Node()
+func (this KdTree) nearestQuery(pos, currentBest KdElement, filter func(KdElement) bool, dim int) KdElement {
+	if currentBest == nil || Dist(pos, this.Node()) < Dist(pos, currentBest) {
+		if filter(this.Node()) {
+			currentBest = this.Node()
+		}
 	}
 	if this.IsLeaf() {
 		return currentBest
 	}
 
-	dist := pos.Position(dim) - this.Node().Position(dim)
+	dist := pos.Dimension(dim) - this.Node().Dimension(dim)
 
 	if dist < 0 {
-		currentBest = this.Left().nearestQuery(pos, currentBest, (dim+1)%Dims)
+		currentBest = this.Left().nearestQuery(pos, currentBest, filter, (dim+1)%Dims)
 		// test the other branch if there might be a candidate
-		if Dist(pos, currentBest) > -dist {
-			currentBest = this.Right().nearestQuery(pos, currentBest, (dim+1)%Dims)
+		if this.HasRight() {
+			if currentBest == nil || Dist(pos, currentBest) > -dist {
+				currentBest = this.Right().nearestQuery(pos, currentBest, filter, (dim+1)%Dims)
+			}
 		}
 	} else {
-		currentBest = this.Right().nearestQuery(pos, currentBest, (dim+1)%Dims)
+		if this.HasRight() {
+			currentBest = this.Right().nearestQuery(pos, currentBest, filter, (dim+1)%Dims)
+		}
 		// test the other branch if there might be a candidate
-		if Dist(pos, currentBest) > dist {
-			currentBest = this.Left().nearestQuery(pos, currentBest, (dim+1)%Dims)
+		if currentBest == nil || Dist(pos, currentBest) > dist {
+			currentBest = this.Left().nearestQuery(pos, currentBest, filter, (dim+1)%Dims)
 		}
 	}
 

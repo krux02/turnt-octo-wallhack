@@ -54,7 +54,7 @@ func main() {
 
 	debugContext.InitDebugContext()
 
-	world := generation.GenerateWorld(256, 256, 18)
+	world := generation.GenerateWorld(128, 128, 16)
 	gs := gamestate.NewGameState(world, window)
 	defer gs.Delete()
 	renderer := rendering.NewWorldRenderer(gs.World)

@@ -64,9 +64,8 @@ func NewGameState(world *World, window *glfw.Window) (gamestate *GameState) {
 	bar.AddVarRW("Wireframe", tw.TYPE_BOOL8, unsafe.Pointer(&opt.Wireframe), "")
 	bar.AddVarRW("DepthClamp", tw.TYPE_BOOL8, unsafe.Pointer(&opt.DepthClamp), "")
 
-	N := len(gamestate.World.Portals)
-	for i := 0; i < N; i++ {
-		ptr := &gamestate.World.Portals[i].Orientation
+	for i, portal := range gamestate.World.KdTree {
+		ptr := &(portal.(*Portal).Orientation)
 		bar.AddVarRW(fmt.Sprintf("Rotation %d", i), tw.TYPE_QUAT4F, unsafe.Pointer(ptr), "")
 	}
 
