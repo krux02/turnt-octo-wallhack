@@ -25,8 +25,6 @@ void main()
 		discard;
 	}
 	
-	
-	
 	float sunIntensity = dot(-lightDir,normal_ws);
 	vec3 light = max((sunIntensity * sunColor),ambientColor);
 	
