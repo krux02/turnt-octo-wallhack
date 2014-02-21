@@ -16,6 +16,7 @@ import (
 type WorldRenderer struct {
 	Textures          *Textures
 	HeightMapRenderer *HeightMapRenderer
+	WaterRenderer     *WaterRenderer
 	MeshRenderer      *MeshRenderer
 	PortalRenderer    *PortalRenderer
 	Portal            PortalRenderData
@@ -32,8 +33,9 @@ func NewWorldRenderer(w *gamestate.World) *WorldRenderer {
 	mr := NewMeshRenderer()
 	pr := NewPortalRenderer()
 	return &WorldRenderer{
-		Textures:          NewTextures(),
+		Textures:          NewTextures(w.HeightMap),
 		HeightMapRenderer: NewHeightMapRenderer(w.HeightMap),
+		WaterRenderer:     NewWaterRenderer(w.HeightMap),
 		MeshRenderer:      mr,
 		PortalRenderer:    pr,
 		Portal:            pr.CreateRenderData(portalData),
@@ -77,6 +79,8 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 	camera := gamestate.NewCameraFromMat4(View)
 	Rot2D := camera.Rotation2D()
 
+	gl.CullFace(gl.BACK)
+
 	currentTime := glfw.GetTime()
 
 	if !options.NoParticlePhysics {
@@ -88,14 +92,26 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 	} else {
 		gl.PolygonMode(gl.FRONT_AND_BACK, gl.FILL)
 	}
+
+	gl.Enable(gl.CULL_FACE)
+	gl.Enable(gl.BLEND)
+	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+
 	if !options.NoWorldRender {
-		this.HeightMapRenderer.Render(Proj, View, mgl.Ident4f(), currentTime, clippingPlane)
+		this.HeightMapRenderer.Render(Proj, View, mgl.Ident4f(), clippingPlane)
+		this.WaterRenderer.Render(Proj, View, mgl.Ident4f(), currentTime, clippingPlane)
 	}
-	if !options.NoTreeRender {
-		this.PalmTrees.Render(Proj, View, Rot2D, clippingPlane)
-	}
+
+	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE)
+
 	if !options.NoParticleRender {
 		this.ParticleSystem.Render(Proj, View, clippingPlane)
+	}
+
+	gl.Disable(gl.CULL_FACE)
+
+	if !options.NoTreeRender {
+		this.PalmTrees.Render(Proj, View, Rot2D, clippingPlane)
 	}
 
 	boxVertices := ww.Portals[0].Mesh.MakeBoxVertices()

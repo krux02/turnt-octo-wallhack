@@ -25,12 +25,9 @@ type GameState struct {
 func NewGameState(world *World, window *glfw.Window) (gamestate *GameState) {
 	gl.ClearColor(0., 0., 0.4, 0.0)
 
-	gl.ActiveTexture(gl.TEXTURE4)
-	world.HeightMap.Texture()
 	gl.ActiveTexture(gl.TEXTURE5)
 
 	gl.Enable(gl.DEPTH_TEST)
-	gl.Enable(gl.CULL_FACE)
 
 	bar := tw.NewBar("TweakBar")
 

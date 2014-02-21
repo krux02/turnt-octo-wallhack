@@ -14,14 +14,14 @@ uniform vec3 Origin;
 uniform float Gravity;
 uniform float MaxLifetime;
 
-uniform sampler2D Heights;
+uniform sampler2D HeightMap;
 uniform vec3 LowerBound;
 uniform vec3 UpperBound;
 
 float heightAt(vec2 pos) {
 	float minh = LowerBound.z;
 	float maxh = UpperBound.z;
-	return minh + texture(Heights,(pos.xy+vec2(0.5)) / UpperBound.xy).r * (maxh-minh);
+	return minh + texture(HeightMap,(pos.xy+vec2(0.5)) / UpperBound.xy).r * (maxh-minh);
 }
 
 vec3 normalAt(vec2 pos) {

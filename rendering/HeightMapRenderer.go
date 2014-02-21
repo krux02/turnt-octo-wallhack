@@ -1,10 +1,11 @@
 package rendering
 
-import "github.com/go-gl/gl"
-import mgl "github.com/Jragonmiris/mathgl"
-import "github.com/krux02/turnt-octo-wallhack/helpers"
-import "github.com/krux02/turnt-octo-wallhack/gamestate"
-import "math"
+import (
+	mgl "github.com/Jragonmiris/mathgl"
+	"github.com/go-gl/gl"
+	"github.com/krux02/turnt-octo-wallhack/gamestate"
+	"github.com/krux02/turnt-octo-wallhack/helpers"
+)
 
 // import "fmt"
 
@@ -26,10 +27,10 @@ type WorldRenderData struct {
 }
 
 type WorldRenderLocations struct {
-	Vertex_ms, Normal_ms                                    gl.AttribLocation
-	Matrix, Model, Time, SeaLevel, Highlight                gl.UniformLocation
-	Min_h, Max_h, U_color, U_texture, U_slope, U_screenRect gl.UniformLocation
-	U_clippingPlane                                         gl.UniformLocation
+	Vertex_ms, Normal_ms                     gl.AttribLocation
+	Matrix, Model                            gl.UniformLocation
+	U_HeightMap, U_color, U_texture, U_slope gl.UniformLocation
+	U_clippingPlane, Min_h, Max_h            gl.UniformLocation
 }
 
 func Vertices(m *gamestate.HeightMap) []WorldVertex {
@@ -52,12 +53,12 @@ func Vertices(m *gamestate.HeightMap) []WorldVertex {
 
 func NewHeightMapRenderer(heightMap *gamestate.HeightMap) (this *HeightMapRenderer) {
 	vertices := Vertices(heightMap)
-	indices := heightMap.Triangulate()
+	indices := TriangulationIndices(heightMap.W, heightMap.H)
 	min_h, max_h := heightMap.Bounds()
 
 	this = new(HeightMapRenderer)
 
-	this.Program = helpers.MakeProgram("World.vs", "World.fs")
+	this.Program = helpers.MakeProgram("HeightMap.vs", "HeightMap.fs")
 	this.Program.Use()
 
 	helpers.BindLocations(this.Program, &this.RenLoc)
@@ -80,7 +81,6 @@ func NewHeightMapRenderer(heightMap *gamestate.HeightMap) (this *HeightMapRender
 	this.RenLoc.U_color.Uniform1i(0)
 	this.RenLoc.U_texture.Uniform1i(1)
 	this.RenLoc.U_slope.Uniform1i(2)
-	this.RenLoc.U_screenRect.Uniform1i(3)
 	this.RenLoc.Min_h.Uniform1f(min_h)
 	this.RenLoc.Max_h.Uniform1f(max_h)
 
@@ -94,14 +94,11 @@ func (wr *HeightMapRenderer) Delete() {
 	wr.Data.Vertices.Delete()
 }
 
-func (wr *HeightMapRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, time float64, clippingPlane mgl.Vec4f) {
+func (wr *HeightMapRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, clippingPlane mgl.Vec4f) {
 	wr.Program.Use()
 	wr.Data.VAO.Bind()
 
 	Loc := wr.RenLoc
-	Loc.Time.Uniform1f(float32(time))
-	Loc.SeaLevel.Uniform1f(float32(math.Sin(time*0.1)*10 - 5))
-	Loc.Highlight.Uniform1f(1)
 	Loc.U_clippingPlane.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
 
 	numverts := wr.Data.Numverts

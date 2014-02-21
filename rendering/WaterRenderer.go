@@ -14,8 +14,8 @@ type WaterVertex struct {
 
 type WaterRenderer struct {
 	Program gl.Program
-	RenLoc  WorldRenderLocations
-	Data    WorldRenderData
+	RenLoc  WaterRenderLocations
+	Data    WaterRenderData
 }
 
 type WaterRenderData struct {
@@ -26,10 +26,10 @@ type WaterRenderData struct {
 }
 
 type WaterRenderLocations struct {
-	Vertex_ms, Normal_ms                                    gl.AttribLocation
-	Matrix, Model, Time, SeaLevel, Highlight                gl.UniformLocation
-	Min_h, Max_h, U_color, U_texture, U_slope, U_screenRect gl.UniformLocation
-	U_clippingPlane                                         gl.UniformLocation
+	Vertex_ms, Normal_ms                         gl.AttribLocation
+	Matrix, Model, Time, SeaLevel                gl.UniformLocation
+	HeightMap, LowerBound, UpperBound            gl.UniformLocation
+	U_clippingPlane, CameraPos_ws, GroundTexture gl.UniformLocation
 }
 
 func WaterVertices(W, H int) []WaterVertex {
@@ -50,8 +50,9 @@ func WaterVertices(W, H int) []WaterVertex {
 
 func NewWaterRenderer(heightMap *gamestate.HeightMap) (this *WaterRenderer) {
 	vertices := WaterVertices(heightMap.W, heightMap.H)
-	indices := heightMap.Triangulate()
+	indices := TriangulationIndices(heightMap.W, heightMap.H)
 	min_h, max_h := heightMap.Bounds()
+	W, H := float32(heightMap.W), float32(heightMap.H)
 
 	this = new(WaterRenderer)
 
@@ -75,12 +76,10 @@ func NewWaterRenderer(heightMap *gamestate.HeightMap) (this *WaterRenderer) {
 
 	this.Data.Numverts = len(indices)
 
-	this.RenLoc.U_color.Uniform1i(0)
-	this.RenLoc.U_texture.Uniform1i(1)
-	this.RenLoc.U_slope.Uniform1i(2)
-	this.RenLoc.U_screenRect.Uniform1i(3)
-	this.RenLoc.Min_h.Uniform1f(min_h)
-	this.RenLoc.Max_h.Uniform1f(max_h)
+	this.RenLoc.HeightMap.Uniform1i(4)
+	this.RenLoc.LowerBound.Uniform3f(0, 0, min_h)
+	this.RenLoc.UpperBound.Uniform3f(W, H, max_h)
+	this.RenLoc.GroundTexture.Uniform1i(1)
 
 	return
 }
@@ -99,7 +98,6 @@ func (wr *WaterRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f,
 	Loc := wr.RenLoc
 	Loc.Time.Uniform1f(float32(time))
 	Loc.SeaLevel.Uniform1f(float32(math.Sin(time*0.1)*10 - 5))
-	Loc.Highlight.Uniform1f(1)
 	Loc.U_clippingPlane.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
 
 	numverts := wr.Data.Numverts
@@ -108,6 +106,8 @@ func (wr *WaterRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f,
 
 	wr.RenLoc.Matrix.UniformMatrix4f(false, (*[16]float32)(&ProjViewModel))
 	wr.RenLoc.Model.UniformMatrix4f(false, (*[16]float32)(&Model))
+	v := View.Inv().Mul4x1(mgl.Vec4f{0, 0, 0, 1})
+	wr.RenLoc.CameraPos_ws.Uniform4f(v[0], v[1], v[2], v[3])
 
 	gl.DrawElements(gl.TRIANGLES, numverts, gl.UNSIGNED_INT, uintptr(0))
 }

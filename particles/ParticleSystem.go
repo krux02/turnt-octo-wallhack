@@ -27,10 +27,10 @@ type ParticleShapeVertex struct {
 }
 
 type ProgramLocations struct {
-	Pos1, Pos2, Lifetime, StartDir  gl.AttribLocation
-	Origin, Gravity, MaxLifetime    gl.UniformLocation
-	Heights, LowerBound, UpperBound gl.UniformLocation
-	RandomDirs                      gl.UniformLocation
+	Pos1, Pos2, Lifetime, StartDir    gl.AttribLocation
+	Origin, Gravity, MaxLifetime      gl.UniformLocation
+	HeightMap, LowerBound, UpperBound gl.UniformLocation
+	RandomDirs                        gl.UniformLocation
 }
 
 type RenderProgramLocations struct {
@@ -144,7 +144,7 @@ func NewParticleSystem(w *gamestate.World, numParticles int, Origin mgl.Vec3f, i
 
 	TransformProg.Use()
 
-	ps.TransformLoc.Heights.Uniform1i(4)
+	ps.TransformLoc.HeightMap.Uniform1i(4)
 	ps.TransformLoc.LowerBound.Uniform3f(0, 0, min_h)
 	ps.TransformLoc.UpperBound.Uniform3f(W, H, max_h)
 
@@ -261,12 +261,9 @@ func (ps *ParticleSystem) Render(Proj mgl.Mat4f, View mgl.Mat4f, clippingPlane m
 	Loc.Image.Uniform1i(6)
 	Loc.U_clippingPlane.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
 
-	gl.Enable(gl.BLEND)
-	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE)
 	gl.DepthMask(false)
 	gl.DrawArraysInstanced(gl.TRIANGLE_FAN, 0, 4, ps.NumParticles)
 	gl.DepthMask(true)
-	gl.Disable(gl.BLEND)
 }
 
 func (ps *ParticleSystem) Delete() {

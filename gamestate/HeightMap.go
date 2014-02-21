@@ -2,7 +2,6 @@ package gamestate
 
 import (
 	mgl "github.com/Jragonmiris/mathgl"
-	"github.com/go-gl/gl"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"image"
 	"image/color"
@@ -111,62 +110,13 @@ func (m *HeightMap) Normalf(x float32, y float32) (n mgl.Vec3f) {
 	return
 }
 
-func (m *HeightMap) Triangulate() []int32 {
-	w, h := m.W, m.H
-
-	indexCount := 6 * w * h
-	indices := make([]int32, indexCount, indexCount)
-
-	i := 0
-
-	put := func(v int) {
-		indices[i] = int32(v)
-		i += 1
-	}
-
-	flat := func(x, y int) int {
-		return (w+1)*y + x
-	}
-
-	quad := func(x, y int) {
-		v1 := flat(x, y)
-		v2 := flat(x+1, y)
-		v3 := flat(x, y+1)
-		v4 := flat(x+1, y+1)
-
-		put(v1)
-		put(v2)
-		put(v3)
-
-		put(v3)
-		put(v2)
-		put(v4)
-	}
-
-	for i := 0; i < w; i++ {
-		for j := 0; j < h; j++ {
-			quad(i, j)
-		}
-	}
-
-	return indices
-}
-
-func (m *HeightMap) Texture() gl.Texture {
-	texture := gl.GenTexture()
-	texture.Bind(gl.TEXTURE_2D)
+func (m *HeightMap) TexturePixels() (pixels []float32) {
+	pixels = make([]float32, m.W*m.H)
 	minh, maxh := m.Bounds()
-
-	pixels := make([]float32, m.W*m.H)
 	for i, _ := range pixels {
 		pixels[i] = (m.Data[i] - minh) / (maxh - minh)
 	}
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.R16, m.W, m.H, 0, gl.RED, gl.FLOAT, pixels)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
-	return texture
+	return
 }
 
 func (m *HeightMap) Bounds() (float32, float32) {
@@ -205,7 +155,7 @@ func (m *HeightMap) ExportImage() image.Image {
 	return img
 }
 
-func NewHeightMapFramFile(filename string) *HeightMap {
+func NewHeightMapFromFile(filename string) *HeightMap {
 	img, err := helpers.ReadToGray16(filename)
 	if err != nil {
 		panic(err)

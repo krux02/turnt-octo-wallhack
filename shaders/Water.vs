@@ -6,7 +6,6 @@ in vec3 Normal_ms;
 
 uniform mat4 Model;
 uniform mat4 Matrix;
-uniform float SeaLevel;
 uniform float Time;
 
 uniform vec3 waveColor1 = vec3(0,0,1);
@@ -19,20 +18,20 @@ out vec4 pos_ws;
 out vec3 normal_ws;
 
 void main() {
-	pos_ws = Model*vec4(Vertex_ms,1);
-	float wavePos = dot(pos_ws.xy, waveDir)+Time;
+	float wavePos = dot(Vertex_ms.xy, waveDir)+Time;
 	float s = sin(wavePos);
 	float c = cos(wavePos);
-	float waveHeight = s * waveAmplitudeScale + SeaLevel;
+	float waveHeight = s * waveAmplitudeScale;
 
 	vec3 waveNormal = normalize(vec3(waveDir * vec2(-c*waveAmplitudeScale),1));
 	vec3 waveColor = mix(waveColor1, waveColor2, (s+1)/2);
 	
-	float mixValue = clamp(pos_ws.z-waveHeight, 0, 1);
-	v_color = vec4(waveColor,mixValue);
-	normal_ws = mix(waveNormal, Normal_ms, mixValue);
+	v_color = vec4(waveColor,1);
+	normal_ws = waveNormal;
 
-	vec3 pos = vec3( Vertex_ms.xy, max(waveHeight, Vertex_ms.z));
 
+	vec3 pos = vec3( Vertex_ms.xy, Vertex_ms.z + waveHeight + 10 );
+
+	pos_ws = Model * vec4(pos,1);
     gl_Position = Matrix * vec4(pos,1);
 }

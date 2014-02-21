@@ -3,6 +3,7 @@ package rendering
 import (
 	"fmt"
 	"github.com/go-gl/gl"
+	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 )
 
@@ -10,7 +11,7 @@ type Textures struct {
 	Textures []gl.Texture
 }
 
-func NewTextures() *Textures {
+func NewTextures(heightMap *gamestate.HeightMap) *Textures {
 	textures := make([]gl.Texture, 0, 7)
 
 	gl.ActiveTexture(gl.TEXTURE0)
@@ -64,7 +65,16 @@ func NewTextures() *Textures {
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
 	}
 
-	// texture 4 is filled by the heightmap
+	gl.ActiveTexture(gl.TEXTURE4)
+	heightMapTexture := gl.GenTexture()
+	textures = append(textures, heightMapTexture)
+	heightMapTexture.Bind(gl.TEXTURE_2D)
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.R16, heightMap.W, heightMap.H, 0, gl.RED, gl.FLOAT, heightMap.TexturePixels())
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
+
 	// texture 5 is used by ant tweak bar
 
 	gl.ActiveTexture(gl.TEXTURE6)
