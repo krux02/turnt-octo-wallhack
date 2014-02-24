@@ -23,3 +23,5 @@ func HomogenDiffXYZ(p1, p2 mgl.Vec4f) mgl.Vec3f {
 	v := HomogenDiff(p1, p2)
 	return mgl.Vec3f{v[0], v[1], v[2]}
 }
+
+func Log2(uint64) uint64
