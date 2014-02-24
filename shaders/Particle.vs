@@ -14,15 +14,14 @@ out vec2 v_texCoord;
 uniform mat4 Proj;
 uniform mat4 View;
 uniform float MaxLifetime = 500;
+uniform vec4 U_clippingPlane;
 
 void main() {
-	vec4 Position_ws = vec4(Pos1,1);
-	gl_Position = Proj * View * Position_ws;
+	vec4 pos_ws = vec4(Pos1,1);
 	v_texCoord = TexCoord;
-
-	vec4 Position_cs = View * Position_ws;
- 	vec3 sum = Vertex_os.xyz + Position_cs.xyz;
- 	gl_Position = Proj * vec4(sum, 1);
+	vec4 pos_cs = View * pos_ws;
+ 	gl_Position = Proj * vec4(Vertex_os.xyz + pos_cs.xyz, 1);
+ 	gl_ClipDistance[0] = dot(pos_ws, U_clippingPlane);
 
 	vertexColor.r = clamp(2*Lifetime/MaxLifetime,0,1);
 	vertexColor.g = clamp(2*Lifetime/MaxLifetime,1,2)-1;

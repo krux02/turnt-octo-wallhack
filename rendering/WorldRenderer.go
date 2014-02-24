@@ -96,6 +96,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 	gl.Enable(gl.CULL_FACE)
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+	gl.Enable(gl.CLIP_DISTANCE0)
 
 	if !options.NoWorldRender {
 		this.HeightMapRenderer.Render(Proj, View, mgl.Ident4f(), clippingPlane)

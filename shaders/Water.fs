@@ -4,7 +4,6 @@
 uniform vec3 lightDir = vec3(-0.57735);
 uniform vec3 ambientColor = vec3(0.5);
 uniform vec3 sunColor = vec3(1);
-uniform vec4 U_clippingPlane;
 
 uniform sampler2D GroundTexture;
 
@@ -30,9 +29,6 @@ out vec4 color;
 
 void main()
 {
-	if( dot(pos_ws, U_clippingPlane) < 0 ) {
-		discard;
-	}
 
 	float height = heightAt(pos_ws.xy);
 	float depth = pos_ws.z - height;

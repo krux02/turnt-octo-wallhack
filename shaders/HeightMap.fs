@@ -10,7 +10,6 @@ uniform sampler2D U_slope;
 uniform vec3 lightDir = vec3(-0.57735);
 uniform vec3 ambientColor = vec3(0.5);
 uniform vec3 sunColor = vec3(1);
-uniform vec4 U_clippingPlane;
 
 in vec4 v_color;
 in vec4 pos_ws;
@@ -18,12 +17,7 @@ in vec4 normal_ws;
 // Ouput data
 out vec4 color;
 
-void main()
-{
-	if( dot(pos_ws, U_clippingPlane) < 0 ) {
-		discard;
-	}
-	
+void main() {
 	float sunIntensity = dot(-lightDir,normal_ws.xyz);
 	vec3 light = max((sunIntensity * sunColor),ambientColor);
 	
