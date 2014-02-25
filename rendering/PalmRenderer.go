@@ -127,7 +127,7 @@ func NewPalmTrees(gamestate *gamestate.HeightMap, count int) *PalmTrees {
 	helpers.BindLocations(Prog, &Loc)
 
 	fmt.Println(Loc)
-	Loc.PalmTree.Uniform1i(3)
+	Loc.PalmTree.Uniform1i(5)
 
 	vertexDataBuffer := CreateVertexDataBuffer()
 	helpers.SetAttribPointers(&Loc, &PalmShape{}, true)

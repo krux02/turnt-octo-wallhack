@@ -55,10 +55,15 @@ func main() {
 	debugContext.InitDebugContext()
 
 	world := generation.GenerateWorld(64, 64, 2)
-	gs := gamestate.NewGameState(world, window)
+	gs := gamestate.NewGameState(window, world)
 	defer gs.Delete()
-	renderer := rendering.NewWorldRenderer(gs.World)
+	renderer := rendering.NewWorldRenderer(window, gs.World)
 	defer renderer.Delete()
+
+	window.SetFramebufferSizeCallback(func(window *glfw.Window, width, height int) {
+		renderer.Resize(window, width, height)
+		tw.WindowSize(width, height)
+	})
 
 	InitInput(gs)
 

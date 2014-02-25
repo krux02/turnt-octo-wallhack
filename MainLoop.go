@@ -35,7 +35,7 @@ func MainLoop(gs *gamestate.GameState, renderer *rendering.WorldRenderer) {
 		gl.Disable(gl.BLEND)
 
 		simulation.Simulate(gs)
-		renderer.Render(gs.World, &gs.Options, gs.Proj, gs.Camera.View(), window)
+		renderer.Render(gs.World, &gs.Options, gs.Camera.View(), window)
 
 		tw.Draw()
 		window.SwapBuffers()

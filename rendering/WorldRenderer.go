@@ -14,6 +14,7 @@ import (
 )
 
 type WorldRenderer struct {
+	Proj              mgl.Mat4f
 	Textures          *Textures
 	HeightMapRenderer *HeightMapRenderer
 	WaterRenderer     *WaterRenderer
@@ -27,12 +28,22 @@ type WorldRenderer struct {
 	MaxRecursion      int
 }
 
-func NewWorldRenderer(w *gamestate.World) *WorldRenderer {
+func (this *WorldRenderer) Resize(window *glfw.Window, width, height int) {
+	this.Proj = mgl.Perspective(90, float32(width)/float32(height), 0.1, 1000)
+	gl.Viewport(0, 0, width, height)
+	for _, fb := range this.Framebuffer {
+		fb.Resize(width, height)
+	}
+}
+
+func NewWorldRenderer(window *glfw.Window, w *gamestate.World) *WorldRenderer {
+	width, height := window.GetSize()
 
 	portalData := w.Portals[0].Mesh
 	mr := NewMeshRenderer()
 	pr := NewPortalRenderer()
 	return &WorldRenderer{
+		Proj:              mgl.Perspective(90, float32(width)/float32(height), 0.1, 1000),
 		Textures:          NewTextures(w.HeightMap),
 		HeightMapRenderer: NewHeightMapRenderer(w.HeightMap),
 		WaterRenderer:     NewWaterRenderer(w.HeightMap),
@@ -41,7 +52,7 @@ func NewWorldRenderer(w *gamestate.World) *WorldRenderer {
 		Portal:            pr.CreateRenderData(portalData),
 		PalmTrees:         NewPalmTrees(w.HeightMap, 5000),
 		ParticleSystem:    particles.NewParticleSystem(w, 10000, mgl.Vec3f{32, 32, 32}, 1, 250),
-		Framebuffer:       [2]*FrameBuffer{NewFrameBuffer(), NewFrameBuffer()},
+		Framebuffer:       [2]*FrameBuffer{NewFrameBuffer(window.GetSize()), NewFrameBuffer(window.GetSize())},
 		ScreenQuad:        NewScreenQuadRenderer(),
 		MaxRecursion:      1,
 	}
@@ -62,15 +73,15 @@ func (this *WorldRenderer) Delete() {
 	*this = WorldRenderer{}
 }
 
-func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOptions, Proj mgl.Mat4f, View mgl.Mat4f, window *glfw.Window) {
-	this.render(ww, options, Proj, View, window, 0, mgl.Vec4f{3 / 5.0, 4 / 5.0, 0, math.MaxFloat32}, nil)
+func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOptions, View mgl.Mat4f, window *glfw.Window) {
+	this.render(ww, options, View, window, 0, mgl.Vec4f{3 / 5.0, 4 / 5.0, 0, math.MaxFloat32}, nil)
 
-	gl.ActiveTexture(gl.TEXTURE9)
+	gl.ActiveTexture(gl.TEXTURE0)
 	this.Framebuffer[0].RenderTexture.Bind(gl.TEXTURE_RECTANGLE)
-	this.ScreenQuad.Render()
+	this.ScreenQuad.Render(0)
 }
 
-func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOptions, Proj mgl.Mat4f, View mgl.Mat4f, window *glfw.Window, recursion int, clippingPlane mgl.Vec4f, srcPortal *gamestate.Portal) {
+func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOptions, View mgl.Mat4f, window *glfw.Window, recursion int, clippingPlane mgl.Vec4f, srcPortal *gamestate.Portal) {
 	this.Framebuffer[recursion].Bind()
 	defer this.Framebuffer[recursion].Unbind()
 
@@ -99,24 +110,24 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 	gl.Enable(gl.CLIP_DISTANCE0)
 
 	if !options.NoWorldRender {
-		this.HeightMapRenderer.Render(Proj, View, mgl.Ident4f(), clippingPlane)
-		this.WaterRenderer.Render(Proj, View, mgl.Ident4f(), currentTime, clippingPlane)
+		this.HeightMapRenderer.Render(this.Proj, View, mgl.Ident4f(), clippingPlane)
+		this.WaterRenderer.Render(this.Proj, View, mgl.Ident4f(), currentTime, clippingPlane)
 	}
 
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE)
 
 	if !options.NoParticleRender {
-		this.ParticleSystem.Render(Proj, View, clippingPlane)
+		this.ParticleSystem.Render(this.Proj, View, clippingPlane)
 	}
 
 	gl.Disable(gl.CULL_FACE)
 
 	if !options.NoTreeRender {
-		this.PalmTrees.Render(Proj, View, Rot2D, clippingPlane)
+		this.PalmTrees.Render(this.Proj, View, Rot2D, clippingPlane)
 	}
 
 	boxVertices := ww.Portals[0].Mesh.MakeBoxVertices()
-	pv := Proj.Mul4(View)
+	pv := this.Proj.Mul4(View)
 
 	// calculating nearest portal
 	pos4f := View.Inv().Mul4x1(mgl.Vec4f{0, 0, 0, 1})
@@ -129,7 +140,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 			pos := portal.Position
 			rotation := portal.Orientation.Mat4()
 			Model := mgl.Translate3D(pos[0], pos[1], pos[2]).Mul4(rotation)
-			this.PortalRenderer.Render(&this.Portal, Proj, View, Model, 7)
+			this.PortalRenderer.Render(&this.Portal, this.Proj, View, Model, 7)
 		}
 	}
 
@@ -184,8 +195,9 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 
 			clippingPlane = portal.Target.ClippingPlane(sign > 0)
 
-			this.render(ww, options, Proj, View2, window, recursion+1, clippingPlane, nearestPortal)
-			gl.ActiveTexture(gl.TEXTURE8)
+			this.render(ww, options, View2, window, recursion+1, clippingPlane, nearestPortal)
+
+			gl.ActiveTexture(gl.TEXTURE0)
 			this.Framebuffer[recursion+1].RenderTexture.Bind(gl.TEXTURE_RECTANGLE)
 
 			if scissor {
@@ -197,7 +209,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 			pos := nearestPortal.Position
 			rotation := nearestPortal.Orientation.Mat4()
 			Model := mgl.Translate3D(pos[0], pos[1], pos[2]).Mul4(rotation)
-			this.PortalRenderer.Render(&this.Portal, Proj, View, Model, 8)
+			this.PortalRenderer.Render(&this.Portal, this.Proj, View, Model, 0)
 
 		}
 	}

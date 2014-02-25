@@ -53,11 +53,9 @@ func (this *ScreenQuadRenderer) Delete() {
 	*this = ScreenQuadRenderer{}
 }
 
-func (this *ScreenQuadRenderer) Render() {
+func (this *ScreenQuadRenderer) Render(textureUnit int) {
 	this.Prog.Use()
 	this.Vao.Bind()
-	//	gl.Enable(gl.BLEND)
-	//	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-	this.Locations.U_Image.Uniform1i(9)
+	this.Locations.U_Image.Uniform1i(textureUnit)
 	gl.DrawArrays(gl.TRIANGLES, 0, 3)
 }

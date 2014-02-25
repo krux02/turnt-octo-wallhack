@@ -14,15 +14,7 @@ type Textures struct {
 func NewTextures(heightMap *gamestate.HeightMap) *Textures {
 	textures := make([]gl.Texture, 0, 7)
 
-	gl.ActiveTexture(gl.TEXTURE0)
-	colorTexture, err := helpers.LoadTexture1D("textures/gradient.png")
-	if err != nil {
-		fmt.Println(err)
-	} else {
-		textures = append(textures, colorTexture)
-		gl.TexParameteri(gl.TEXTURE_1D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-		gl.TexParameteri(gl.TEXTURE_1D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-	}
+	// TEXTURE0 is only used for temporarly bound textures
 
 	gl.ActiveTexture(gl.TEXTURE1)
 	detailTexture, err := helpers.LoadTexture2D("textures/GravelCobbleS.jpg")
@@ -52,17 +44,13 @@ func NewTextures(heightMap *gamestate.HeightMap) *Textures {
 	}
 
 	gl.ActiveTexture(gl.TEXTURE3)
-	palmTexture, err := helpers.LoadTexture2D("textures/palme.png")
+	colorTexture, err := helpers.LoadTexture1D("textures/gradient.png")
 	if err != nil {
-		fmt.Println("can't load palme.png")
 		fmt.Println(err)
 	} else {
-		textures = append(textures, palmTexture)
-		gl.GenerateMipmap(gl.TEXTURE_2D)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+		textures = append(textures, colorTexture)
+		gl.TexParameteri(gl.TEXTURE_1D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+		gl.TexParameteri(gl.TEXTURE_1D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 	}
 
 	gl.ActiveTexture(gl.TEXTURE4)
@@ -75,7 +63,19 @@ func NewTextures(heightMap *gamestate.HeightMap) *Textures {
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
 
-	// texture 5 is used by ant tweak bar
+	gl.ActiveTexture(gl.TEXTURE5)
+	palmTexture, err := helpers.LoadTexture2D("textures/palme.png")
+	if err != nil {
+		fmt.Println("can't load palme.png")
+		fmt.Println(err)
+	} else {
+		textures = append(textures, palmTexture)
+		gl.GenerateMipmap(gl.TEXTURE_2D)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+	}
 
 	gl.ActiveTexture(gl.TEXTURE6)
 	firebullTexture, err := helpers.LoadTexture2D("textures/fireball.png")
@@ -90,18 +90,7 @@ func NewTextures(heightMap *gamestate.HeightMap) *Textures {
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
 	}
 
-	gl.ActiveTexture(gl.TEXTURE7)
-	emptyRect := gl.GenTexture()
-	emptyRect.Bind(gl.TEXTURE_RECTANGLE)
-	gl.TexImage2D(gl.TEXTURE_RECTANGLE, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, []byte{0, 0, 0, 255})
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_R, gl.REPEAT)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
-	textures = append(textures, emptyRect)
-
-	// texture 8 is used for framebuffer (behind portal)
-	// texture 7 is used to draw the framebuffer on the screen
+	gl.ActiveTexture(gl.TEXTURE0)
 
 	return &Textures{textures}
 }

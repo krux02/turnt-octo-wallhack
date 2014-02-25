@@ -14,7 +14,6 @@ import (
 type GameState struct {
 	Window  *glfw.Window
 	Camera  *Camera
-	Proj    mgl.Mat4f
 	Bar     *tw.Bar
 	World   *World
 	Player  *Player
@@ -22,7 +21,7 @@ type GameState struct {
 	Options settings.BoolOptions
 }
 
-func NewGameState(world *World, window *glfw.Window) (gamestate *GameState) {
+func NewGameState(window *glfw.Window, world *World) (gamestate *GameState) {
 	gl.ClearColor(0., 0., 0.4, 0.0)
 
 	gl.ActiveTexture(gl.TEXTURE5)
@@ -36,7 +35,6 @@ func NewGameState(world *World, window *glfw.Window) (gamestate *GameState) {
 	gamestate = &GameState{
 		Window:  window,
 		Camera:  nil,
-		Proj:    mgl.Perspective(90, 4.0/3.0, 0.001, 1000),
 		Bar:     bar,
 		World:   world,
 		Player:  &Player{*NewCameraFromPos4f(startPos), PlayerInput{}, mgl.Vec4f{}},
@@ -65,12 +63,6 @@ func NewGameState(world *World, window *glfw.Window) (gamestate *GameState) {
 	}
 
 	bar.AddButton("save image", func() { helpers.SaveImage("test.png", world.HeightMap.ExportImage()) }, "")
-
-	window.SetSizeCallback(func(window *glfw.Window, width, height int) {
-		gl.Viewport(0, 0, width, height)
-		gamestate.Proj = mgl.Perspective(90, float32(width)/float32(height), 0.1, 1000)
-		tw.WindowSize(width, height)
-	})
 
 	w, h := window.GetSize()
 	tw.WindowSize(w, h)

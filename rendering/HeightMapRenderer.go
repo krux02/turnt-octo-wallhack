@@ -78,7 +78,7 @@ func NewHeightMapRenderer(heightMap *gamestate.HeightMap) (this *HeightMapRender
 
 	this.Data.Numverts = len(indices)
 
-	this.RenLoc.U_color.Uniform1i(0)
+	this.RenLoc.U_color.Uniform1i(3)
 	this.RenLoc.U_texture.Uniform1i(1)
 	this.RenLoc.U_slope.Uniform1i(2)
 	this.RenLoc.Min_h.Uniform1f(min_h)
