@@ -2,12 +2,9 @@
 #define M_PI 3.1415926535897932384626433832795
 
 uniform sampler2DRect U_Image;
-uniform vec4 U_clippingPlane;
-
 
 in vec4 Normal_cs;
-in vec4 pos_ws;
-in vec4 pos_cs;
+in vec4 Position_cs;
 
 out vec4 color;
 
@@ -23,27 +20,13 @@ vec4 mymix(vec4 color, float alpha) {
 	float b = dot(vec4(z,x,y,0), color);
 
 	return vec4(r,g,b, color.a);
-	
-	/*
-	if (a < 1) {
-		return color.rgba;
-	} else if (a < 2) {
-		return color.gbra;
-	} else {
-		return color.brga;
-	}
-	*/
 }
 
 void main() {
-	if( dot(pos_ws, U_clippingPlane) < 0 ) {
-		discard;
-	}
-
 	vec4 t = texture(U_Image,gl_FragCoord.xy);
-	float alpha = acos(abs(dot(normalize(pos_cs.xyz), Normal_cs.xyz)));
+	float alpha = acos(abs(dot(normalize(Position_cs.xyz), Normal_cs.xyz)));
 
-	float dist = length(pos_cs.xyz);
+	float dist = length(Position_cs.xyz);
 	dist = min(dist / 3, 1);
 	color = mix(t, mymix(t, alpha), dist);
 }

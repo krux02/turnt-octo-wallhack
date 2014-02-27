@@ -29,7 +29,7 @@ type WorldRenderer struct {
 }
 
 func (this *WorldRenderer) Resize(window *glfw.Window, width, height int) {
-	this.Proj = mgl.Perspective(90, float32(width)/float32(height), 0.1, 1000)
+	this.Proj = mgl.Perspective(90, float32(width)/float32(height), 1, 1000)
 	gl.Viewport(0, 0, width, height)
 	for _, fb := range this.Framebuffer {
 		fb.Resize(width, height)
@@ -43,7 +43,7 @@ func NewWorldRenderer(window *glfw.Window, w *gamestate.World) *WorldRenderer {
 	mr := NewMeshRenderer()
 	pr := NewPortalRenderer()
 	return &WorldRenderer{
-		Proj:              mgl.Perspective(90, float32(width)/float32(height), 0.1, 1000),
+		Proj:              mgl.Perspective(90, float32(width)/float32(height), 1, 1000),
 		Textures:          NewTextures(w.HeightMap),
 		HeightMapRenderer: NewHeightMapRenderer(w.HeightMap),
 		WaterRenderer:     NewWaterRenderer(w.HeightMap),
@@ -107,7 +107,10 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 	gl.Enable(gl.CULL_FACE)
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-	gl.Enable(gl.CLIP_DISTANCE0)
+	if recursion != 0 {
+		gl.Enable(gl.CLIP_DISTANCE0)
+		defer gl.Disable(gl.CLIP_DISTANCE0)
+	}
 
 	if !options.NoWorldRender {
 		this.HeightMapRenderer.Render(this.Proj, View, mgl.Ident4f(), clippingPlane)
@@ -141,12 +144,11 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 			pos := portal.Position
 			rotation := portal.Orientation.Mat4()
 			Model := mgl.Translate3D(pos[0], pos[1], pos[2]).Mul4(rotation)
-			this.PortalRenderer.Render(&this.Portal, this.Proj, View, Model, 7)
+			this.PortalRenderer.Render(&this.Portal, this.Proj, View, Model, clippingPlane, 7)
 		}
 	}
 
 	gl.Disable(gl.BLEND)
-	// both sides of portals are drawn
 	gl.Disable(gl.CULL_FACE)
 
 	// draw
@@ -214,7 +216,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 			pos := nearestPortal.Position
 			rotation := nearestPortal.Orientation.Mat4()
 			Model := mgl.Translate3D(pos[0], pos[1], pos[2]).Mul4(rotation)
-			this.PortalRenderer.Render(&this.Portal, this.Proj, View, Model, 0)
+			this.PortalRenderer.Render(&this.Portal, this.Proj, View, Model, clippingPlane, 0)
 
 		}
 	}

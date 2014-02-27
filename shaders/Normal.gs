@@ -11,7 +11,7 @@
 layout (points) in;
 layout (line_strip, max_vertices = 2) out;
 
-uniform float normal_scale = 0.5; // don't forget: this is the default value! 
+uniform float normal_scale = 0.5;
 uniform mat4 Model;
 uniform mat4 View;
 uniform mat4 Proj;

@@ -16,6 +16,7 @@ type PortalRenderer struct {
 type PortalRenderLocations struct {
 	Vertex_ms, Normal_ms       gl.AttribLocation
 	Proj, View, Model, U_Image gl.UniformLocation
+	ClippingPlane_cs           gl.UniformLocation
 }
 
 type PortalRenderData struct {
@@ -62,7 +63,7 @@ func glMat(mat *mgl.Mat4f) *[16]float32 {
 	return (*[16]float32)(mat)
 }
 
-func (this *PortalRenderer) Render(meshData *PortalRenderData, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, textureUnit int) {
+func (this *PortalRenderer) Render(meshData *PortalRenderData, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, ClippingPlane_ws mgl.Vec4f, textureUnit int) {
 	this.Program.Use()
 	meshData.VAO.Bind()
 
@@ -71,8 +72,11 @@ func (this *PortalRenderer) Render(meshData *PortalRenderData, Proj mgl.Mat4f, V
 	Loc.Model.UniformMatrix4f(false, glMat(&Model))
 	Loc.Proj.UniformMatrix4f(false, glMat(&Proj))
 	Loc.U_Image.Uniform1i(textureUnit)
+	ClippingPlane_cs := View.Mul4x1(ClippingPlane_ws)
+	Loc.ClippingPlane_cs.Uniform4f(ClippingPlane_cs[0], ClippingPlane_cs[1], ClippingPlane_cs[2], ClippingPlane_cs[3])
 
 	numverts := meshData.Numverts
 
+	gl.Enable(gl.DEPTH_CLAMP)
 	gl.DrawElements(gl.TRIANGLES, numverts, gl.UNSIGNED_SHORT, uintptr(0))
 }

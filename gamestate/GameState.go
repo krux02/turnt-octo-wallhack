@@ -47,15 +47,8 @@ func NewGameState(window *glfw.Window, world *World) (gamestate *GameState) {
 	gamestate.Camera = gamestate.Player.GetCamera()
 
 	tw.Define(" GLOBAL help='This example shows how to integrate AntTweakBar with GLFW and OpenGL.' ")
-
 	bar.AddVarRO("fps", tw.TYPE_FLOAT, unsafe.Pointer(&gamestate.Fps), "")
-	bar.AddVarRW("NoParticleRender", tw.TYPE_BOOL8, unsafe.Pointer(&opt.NoParticleRender), "")
-	bar.AddVarRW("NoParticlePhysics", tw.TYPE_BOOL8, unsafe.Pointer(&opt.NoParticlePhysics), "")
-	bar.AddVarRW("NoWorldRender", tw.TYPE_BOOL8, unsafe.Pointer(&opt.NoWorldRender), "")
-	bar.AddVarRW("NoTreeRender", tw.TYPE_BOOL8, unsafe.Pointer(&opt.NoTreeRender), "")
-	bar.AddVarRW("NoPlayerPhysics", tw.TYPE_BOOL8, unsafe.Pointer(&opt.NoPlayerPhysics), "")
-	bar.AddVarRW("Wireframe", tw.TYPE_BOOL8, unsafe.Pointer(&opt.Wireframe), "")
-	bar.AddVarRW("DepthClamp", tw.TYPE_BOOL8, unsafe.Pointer(&opt.DepthClamp), "")
+	opt.CreateGui(bar)
 
 	for i, portal := range gamestate.World.KdTree {
 		ptr := &(portal.(*Portal).Orientation)

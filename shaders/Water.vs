@@ -42,3 +42,5 @@ void main() {
 	gl_Position =  Proj * View * Model * vec4(pos,1);
 	gl_ClipDistance[0] = dot(pos_ws, U_clippingPlane);
 }
+
+

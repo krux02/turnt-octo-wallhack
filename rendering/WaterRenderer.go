@@ -5,7 +5,6 @@ import (
 	"github.com/go-gl/gl"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
-	"math"
 )
 
 type WaterVertex struct {
@@ -14,8 +13,9 @@ type WaterVertex struct {
 
 type WaterRenderer struct {
 	Program      gl.Program
-	DebugProgram gl.Program
 	RenLoc       WaterRenderLocations
+	DebugProgram gl.Program
+	DebugRenLoc  WaterRenderLocations
 	Data         WaterRenderData
 }
 
@@ -57,10 +57,8 @@ func NewWaterRenderer(heightMap *gamestate.HeightMap) (this *WaterRenderer) {
 
 	this = new(WaterRenderer)
 
-	//this.DebugProgram = helpers.MakeProgram3("Water.vs", "Normal.gs", "Line.fs")
 	this.Program = helpers.MakeProgram("Water.vs", "Water.fs")
 	this.Program.Use()
-
 	helpers.BindLocations(this.Program, &this.RenLoc)
 
 	this.Data.VAO = gl.GenVertexArray()
@@ -75,7 +73,6 @@ func NewWaterRenderer(heightMap *gamestate.HeightMap) (this *WaterRenderer) {
 	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(vertices), vertices, gl.STATIC_DRAW)
 
 	helpers.SetAttribPointers(&this.RenLoc, &WorldVertex{})
-
 	this.Data.Numverts = len(indices)
 
 	this.RenLoc.HeightMap.Uniform1i(4)
@@ -83,11 +80,21 @@ func NewWaterRenderer(heightMap *gamestate.HeightMap) (this *WaterRenderer) {
 	this.RenLoc.UpperBound.Uniform3f(W, H, max_h)
 	this.RenLoc.GroundTexture.Uniform1i(1)
 
+	this.DebugProgram = helpers.MakeProgram3("Water.vs", "Normal.gs", "Line.fs")
+	this.DebugProgram.Use()
+	helpers.BindLocations(this.DebugProgram, &this.DebugRenLoc)
+
+	this.DebugRenLoc.HeightMap.Uniform1i(4)
+	this.DebugRenLoc.LowerBound.Uniform3f(0, 0, min_h)
+	this.DebugRenLoc.UpperBound.Uniform3f(W, H, max_h)
+	this.DebugRenLoc.GroundTexture.Uniform1i(1)
+
 	return
 }
 
 func (wr *WaterRenderer) Delete() {
 	wr.Program.Delete()
+	wr.DebugProgram.Delete()
 	wr.Data.VAO.Delete()
 	wr.Data.Indices.Delete()
 	wr.Data.Vertices.Delete()
@@ -99,18 +106,22 @@ func (wr *WaterRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f,
 
 	Loc := wr.RenLoc
 	Loc.Time.Uniform1f(float32(time))
-	// Loc.SeaLevel.Uniform1f(float32(math.Sin(time*0.1)*10 - 5))
 	Loc.U_clippingPlane.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
 
 	numverts := wr.Data.Numverts
-	//ProjView := Proj.Mul4(View)
-	//ProjViewModel := ProjView.Mul4(Model)
 
-	wr.RenLoc.Proj.UniformMatrix4f(false, (*[16]float32)(&Proj))
-	wr.RenLoc.Model.UniformMatrix4f(false, (*[16]float32)(&Model))
-	wr.RenLoc.View.UniformMatrix4f(false, (*[16]float32)(&View))
+	Loc.Proj.UniformMatrix4f(false, (*[16]float32)(&Proj))
+	Loc.Model.UniformMatrix4f(false, (*[16]float32)(&Model))
+	Loc.View.UniformMatrix4f(false, (*[16]float32)(&View))
 	v := View.Inv().Mul4x1(mgl.Vec4f{0, 0, 0, 1})
-	wr.RenLoc.CameraPos_ws.Uniform4f(v[0], v[1], v[2], v[3])
+	Loc.CameraPos_ws.Uniform4f(v[0], v[1], v[2], v[3])
+
+	gl.Disable(gl.CULL_FACE)
 
 	gl.DrawElements(gl.TRIANGLES, numverts, gl.UNSIGNED_INT, uintptr(0))
+
+	wr.DebugProgram.Use()
+	wr.Data.VAO.Bind()
+
+	gl.DrawElements(gl.POINTS, numverts, gl.UNSIGNED_INT, uintptr(0))
 }

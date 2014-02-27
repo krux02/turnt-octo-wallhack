@@ -3,8 +3,10 @@ package settings
 import (
 	"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
+	"github.com/krux02/tw"
 	"os"
 	"reflect"
+	"unsafe"
 )
 
 type BoolOptions struct {
@@ -13,7 +15,6 @@ type BoolOptions struct {
 	NoWorldRender,
 	NoTreeRender,
 	NoPlayerPhysics,
-	DepthClamp,
 	Wireframe bool
 	StartPosition mgl.Vec4f
 }
@@ -49,9 +50,6 @@ func (this *BoolOptions) Load() {
 func (this *BoolOptions) Save() {
 	file, _ := os.Create("settings.txt")
 	defer file.Close()
-
-	//fmt.Fprintf(file, "%v\n", this)
-
 	v := reflect.ValueOf(this).Elem()
 	t := v.Type()
 	N := v.NumField()
@@ -65,4 +63,19 @@ func (this *BoolOptions) Save() {
 		}
 	}
 
+}
+
+func (this *BoolOptions) CreateGui(bar *tw.Bar) {
+	v := reflect.ValueOf(this).Elem()
+	t := v.Type()
+	N := v.NumField()
+	for i := 0; i < N; i++ {
+		field := t.Field(i)
+		fieldValue := v.Field(i)
+
+		switch field.Type.Kind() {
+		case reflect.Bool:
+			bar.AddVarRW(field.Name, tw.TYPE_BOOL8, unsafe.Pointer(fieldValue.Addr().Pointer()), "")
+		}
+	}
 }
