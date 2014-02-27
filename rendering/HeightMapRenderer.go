@@ -9,32 +9,32 @@ import (
 
 // import "fmt"
 
-type WorldVertex struct {
+type HeightMapVertex struct {
 	Vertex_ms, Normal_ms mgl.Vec3f
 }
 
 type HeightMapRenderer struct {
 	Program gl.Program
-	RenLoc  WorldRenderLocations
-	Data    WorldRenderData
+	RenLoc  HeightMapRenderLocations
+	Data    HeightMapRenderData
 }
 
-type WorldRenderData struct {
+type HeightMapRenderData struct {
 	VAO      gl.VertexArray
 	Indices  gl.Buffer
 	Vertices gl.Buffer
 	Numverts int
 }
 
-type WorldRenderLocations struct {
+type HeightMapRenderLocations struct {
 	Vertex_ms, Normal_ms             gl.AttribLocation
 	Matrix, Model                    gl.UniformLocation
 	HeightMap, Color, Texture, Slope gl.UniformLocation
 	ClippingPlane_ws, Min_h, Max_h   gl.UniformLocation
 }
 
-func Vertices(m *gamestate.HeightMap) []WorldVertex {
-	vertices := make([]WorldVertex, (m.W+1)*(m.H+1))
+func Vertices(m *gamestate.HeightMap) []HeightMapVertex {
+	vertices := make([]HeightMapVertex, (m.W+1)*(m.H+1))
 
 	i := 0
 
@@ -43,7 +43,7 @@ func Vertices(m *gamestate.HeightMap) []WorldVertex {
 			h := m.Get(x, y)
 			pos := mgl.Vec3f{float32(x), float32(y), h}
 			nor := m.Normal(x, y)
-			vertices[i] = WorldVertex{pos, nor}
+			vertices[i] = HeightMapVertex{pos, nor}
 			i += 1
 		}
 	}
@@ -74,7 +74,7 @@ func NewHeightMapRenderer(heightMap *gamestate.HeightMap) (this *HeightMapRender
 	this.Data.Vertices.Bind(gl.ARRAY_BUFFER)
 	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(vertices), vertices, gl.STATIC_DRAW)
 
-	helpers.SetAttribPointers(&this.RenLoc, &WorldVertex{})
+	helpers.SetAttribPointers(&this.RenLoc, &HeightMapVertex{})
 
 	this.Data.Numverts = len(indices)
 
