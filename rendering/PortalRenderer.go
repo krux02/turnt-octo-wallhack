@@ -67,9 +67,6 @@ func (this *PortalRenderer) Render(meshData *PortalRenderData, Proj mgl.Mat4f, V
 	this.Program.Use()
 	meshData.VAO.Bind()
 
-	gl.Disable(gl.BLEND)
-	gl.Disable(gl.CULL_FACE)
-
 	Loc := this.RenLoc
 	Loc.View.UniformMatrix4f(false, glMat(&View))
 	Loc.Model.UniformMatrix4f(false, glMat(&Model))

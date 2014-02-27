@@ -142,8 +142,6 @@ func NewPalmTrees(gamestate *gamestate.HeightMap, count int) *PalmTrees {
 }
 
 func (pt *PalmTrees) Render(Proj, View mgl.Mat4f, Rot2D mgl.Mat3f, clippingPlane mgl.Vec4f) {
-	gl.Disable(gl.BLEND)
-	//gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
 	pt.Prog.Use()
 	pt.Buffers.Vao.Bind()

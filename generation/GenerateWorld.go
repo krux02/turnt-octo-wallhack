@@ -35,7 +35,7 @@ func RandomPortals(hm *gs.HeightMap, N int) []*gs.Portal {
 	for i := 0; i < N; i++ {
 		x := rand.Float32() * float32(hm.W)
 		y := rand.Float32() * float32(hm.H)
-		z := hm.Get2f(x, y) + 1.5
+		z := hm.Get2f(x, y) + 5
 		q := mgl.Quatf{rand.Float32(), mgl.Vec3f{rand.Float32(), rand.Float32(), rand.Float32()}}.Normalize()
 		Portals[i] = &gs.Portal{
 			gs.Entity{mgl.Vec4f{x, y, z, 1}, q},

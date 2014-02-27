@@ -121,6 +121,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 	}
 
 	gl.Disable(gl.CULL_FACE)
+	gl.Disable(gl.BLEND)
 
 	if !options.NoTreeRender {
 		this.PalmTrees.Render(this.Proj, View, Rot2D, clippingPlane)
@@ -143,6 +144,10 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 			this.PortalRenderer.Render(&this.Portal, this.Proj, View, Model, 7)
 		}
 	}
+
+	gl.Disable(gl.BLEND)
+	// both sides of portals are drawn
+	gl.Disable(gl.CULL_FACE)
 
 	// draw
 	if recursion < this.MaxRecursion {

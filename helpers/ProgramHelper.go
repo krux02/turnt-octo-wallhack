@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"github.com/go-gl/gl"
-	"github.com/go-gl/glh"
 	"io/ioutil"
 	"reflect"
 )
@@ -21,18 +20,65 @@ func ReadShaderFile(name string) string {
 	return string(source)
 }
 
+func MakeShader(type_ gl.GLenum, filename string) gl.Shader {
+	source := ReadShaderFile(filename)
+	shader := gl.CreateShader(type_)
+	shader.Source(source)
+
+	shader.Compile()
+	log := shader.GetInfoLog()
+	if log != "" {
+		panic(fmt.Sprint(filename, log))
+	}
+
+	return shader
+}
+
+func MakeProgram3(vertFname, geomFname, fragFname string) gl.Program {
+	vertShader := MakeShader(gl.VERTEX_SHADER, vertFname)
+	defer vertShader.Delete()
+	geomShader := MakeShader(gl.GEOMETRY_SHADER, geomFname)
+	defer geomShader.Delete()
+	fragShader := MakeShader(gl.FRAGMENT_SHADER, fragFname)
+	defer fragShader.Delete()
+
+	program := gl.CreateProgram()
+	program.AttachShader(vertShader)
+	program.AttachShader(geomShader)
+	program.AttachShader(fragShader)
+	program.Link()
+
+	log := program.GetInfoLog()
+	if log != "" {
+		panic(fmt.Sprint("linking ", vertFname, geomFname, fragFname, log))
+	}
+
+	return program
+}
+
 func MakeProgram(vertFname, fragFname string) gl.Program {
-	vertSource := ReadShaderFile(vertFname)
-	fragSource := ReadShaderFile(fragFname)
+	vertShader := MakeShader(gl.VERTEX_SHADER, vertFname)
+	defer vertShader.Delete()
+	fragShader := MakeShader(gl.FRAGMENT_SHADER, fragFname)
+	defer fragShader.Delete()
 
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Println(vertFname, fragFname)
-			panic(r)
-		}
-	}()
+	program := gl.CreateProgram()
+	program.AttachShader(vertShader)
+	program.AttachShader(fragShader)
+	program.Link()
 
-	return glh.NewProgram(glh.Shader{gl.VERTEX_SHADER, vertSource}, glh.Shader{gl.FRAGMENT_SHADER, fragSource})
+	linkstat := program.Get(gl.LINK_STATUS)
+	if linkstat != 1 {
+		panic(fmt.Sprint("Program link failed, sources=", vertFname, fragFname, "\nstatus=", linkstat, "\nInfo log: ", program.GetInfoLog()))
+	}
+
+	program.Validate()
+	valstat := program.Get(gl.VALIDATE_STATUS)
+	if valstat != 1 {
+		panic(fmt.Sprint("Program validation failed: ", valstat))
+	}
+
+	return program
 }
 
 func ByteSizeOfSlice(slice interface{}) int {

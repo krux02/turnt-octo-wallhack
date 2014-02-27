@@ -13,9 +13,10 @@ type WaterVertex struct {
 }
 
 type WaterRenderer struct {
-	Program gl.Program
-	RenLoc  WaterRenderLocations
-	Data    WaterRenderData
+	Program      gl.Program
+	DebugProgram gl.Program
+	RenLoc       WaterRenderLocations
+	Data         WaterRenderData
 }
 
 type WaterRenderData struct {
@@ -56,6 +57,7 @@ func NewWaterRenderer(heightMap *gamestate.HeightMap) (this *WaterRenderer) {
 
 	this = new(WaterRenderer)
 
+	//this.DebugProgram = helpers.MakeProgram3("Water.vs", "Normal.gs", "Water.fs")
 	this.Program = helpers.MakeProgram("Water.vs", "Water.fs")
 	this.Program.Use()
 

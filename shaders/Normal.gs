@@ -20,12 +20,15 @@ in vec4 Normal;
 
 void main()
 {
+	mat4 m = Proj * View * Model;
+
     vec4 v0     = gl_in[0].gl_Position;
-    gl_Position = gl_ModelViewProjectionMatrix * v0;
+    gl_Position = m * v0;
+
     EmitVertex();
 
-    vec4 v1     = v0 + vec4(vs_normal[0] * normal_scale, 0);
-    gl_Position = gl_ModelViewProjectionMatrix * v1;
+    vec4 v1     = v0 + Normal * normal_scale;
+    gl_Position = m * v1;
     EmitVertex();
 
     EndPrimitive();
