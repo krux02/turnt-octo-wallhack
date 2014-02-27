@@ -1,10 +1,8 @@
 #version 330 core
 
 in vec4 Normal_ws;
-
 out vec4 color;
 
-uniform vec4 U_clippingPlane;
 uniform vec4 BaseColor = vec4(1,0,0,1);
 
 uniform vec3 lightDir = vec3(-0.57735);

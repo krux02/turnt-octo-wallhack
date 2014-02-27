@@ -74,7 +74,7 @@ func NewHeightMapRenderer(heightMap *gamestate.HeightMap) (this *HeightMapRender
 	this.Data.Vertices.Bind(gl.ARRAY_BUFFER)
 	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(vertices), vertices, gl.STATIC_DRAW)
 
-	helpers.SetAttribPointers(&this.RenLoc, &WorldVertex{}, true)
+	helpers.SetAttribPointers(&this.RenLoc, &WorldVertex{})
 
 	this.Data.Numverts = len(indices)
 

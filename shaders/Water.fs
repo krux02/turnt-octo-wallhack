@@ -21,8 +21,8 @@ float heightAt(vec2 pos) {
 
 in vec4 v_color;
 in vec4 pos_ws;
-in vec4 pos_cs;
-in vec3 normal_ws;
+in vec4 Normal_ws;
+in vec4 Normal_cs;
 
 // Ouput data
 out vec4 color;
@@ -36,11 +36,11 @@ void main()
 		discard;
 	}
 	
-	float sunIntensity = dot(-lightDir, normal_ws);
+	float sunIntensity = dot(-lightDir, Normal_ws.xyz);
 	vec3 light = max((sunIntensity * sunColor), ambientColor);
 	vec3 dir_ws = (pos_ws.xyz - CameraPos_ws.xyz);
 
-	dir_ws = refract(dir_ws, normal_ws, 1/1.337);
+	dir_ws = refract(dir_ws, Normal_ws.xyz, 1/1.337);
 	float x = -depth / dir_ws.z;
 
 	color = texture(GroundTexture, pos_ws.xy + x * (dir_ws.xy));

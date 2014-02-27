@@ -30,7 +30,6 @@ func NewPortalRenderer() (mr *PortalRenderer) {
 	mr.Program = helpers.MakeProgram("Portal.vs", "Portal.fs")
 	mr.Program.Use()
 	helpers.BindLocations(mr.Program, &mr.RenLoc)
-	helpers.PrintLocations(&mr.RenLoc)
 	return
 }
 
@@ -52,7 +51,7 @@ func (this *PortalRenderer) CreateRenderData(mesh *gamestate.Mesh) (md PortalRen
 	md.Vertices.Bind(gl.ARRAY_BUFFER)
 	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(mesh.Vertices), mesh.Vertices, gl.STATIC_DRAW)
 
-	helpers.SetAttribPointers(&this.RenLoc, &gamestate.MeshVertex{}, true)
+	helpers.SetAttribPointers(&this.RenLoc, &gamestate.MeshVertex{})
 
 	md.Numverts = len(mesh.Indices)
 

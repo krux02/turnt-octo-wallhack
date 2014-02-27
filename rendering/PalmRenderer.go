@@ -130,10 +130,10 @@ func NewPalmTrees(gamestate *gamestate.HeightMap, count int) *PalmTrees {
 	Loc.PalmTree.Uniform1i(5)
 
 	vertexDataBuffer := CreateVertexDataBuffer()
-	helpers.SetAttribPointers(&Loc, &PalmShape{}, true)
+	helpers.SetAttribPointers(&Loc, &PalmShape{})
 
 	instanceDataBuffer := pt.CreateInstanceDataBuffer()
-	helpers.SetAttribPointers(&Loc, &PalmTree{}, true)
+	helpers.SetAttribPointers(&Loc, &PalmTree{})
 	Loc.Position_ws.AttribDivisor(1)
 
 	buffers := PalmTreesBuffers{vao, instanceDataBuffer, vertexDataBuffer}

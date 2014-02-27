@@ -5,7 +5,9 @@ in vec3 Vertex_ms;
 in vec3 Normal_ms;
 
 uniform mat4 Model;
-uniform mat4 Matrix;
+uniform mat4 View;
+uniform mat4 Proj;
+
 uniform float Time;
 
 uniform vec3 waveColor1 = vec3(0,0,1);
@@ -16,7 +18,8 @@ uniform vec4 U_clippingPlane;
 
 out vec4 v_color;
 out vec4 pos_ws;
-out vec3 normal_ws;
+out vec4 Normal_ws;
+out vec4 Normal_cs;
 
 void main() {
 	float wavePos = dot(Vertex_ms.xy, waveDir)+Time;
@@ -28,12 +31,14 @@ void main() {
 	vec3 waveColor = mix(waveColor1, waveColor2, (s+1)/2);
 	
 	v_color = vec4(waveColor,1);
-	normal_ws = waveNormal;
+	Normal_ws = vec4(waveNormal,0);
+	Normal_cs = View * vec4(waveNormal, 0);
 
 
 	vec3 pos = vec3( Vertex_ms.xy, Vertex_ms.z + waveHeight + 10 );
 
 	pos_ws = Model * vec4(pos,1);
-  gl_Position = Matrix * vec4(pos,1);
-  gl_ClipDistance[0] = dot(pos_ws, U_clippingPlane);
+
+	gl_Position =  Proj * View * Model * vec4(pos,1);
+	gl_ClipDistance[0] = dot(pos_ws, U_clippingPlane);
 }

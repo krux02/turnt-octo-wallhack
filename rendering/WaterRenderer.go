@@ -28,9 +28,9 @@ type WaterRenderData struct {
 
 type WaterRenderLocations struct {
 	Vertex_ms, Normal_ms                         gl.AttribLocation
-	Matrix, Model, Time, SeaLevel                gl.UniformLocation
 	HeightMap, LowerBound, UpperBound            gl.UniformLocation
 	U_clippingPlane, CameraPos_ws, GroundTexture gl.UniformLocation
+	Time, Model, View, Proj                      gl.UniformLocation
 }
 
 func WaterVertices(W, H int) []WaterVertex {
@@ -57,7 +57,7 @@ func NewWaterRenderer(heightMap *gamestate.HeightMap) (this *WaterRenderer) {
 
 	this = new(WaterRenderer)
 
-	//this.DebugProgram = helpers.MakeProgram3("Water.vs", "Normal.gs", "Water.fs")
+	//this.DebugProgram = helpers.MakeProgram3("Water.vs", "Normal.gs", "Line.fs")
 	this.Program = helpers.MakeProgram("Water.vs", "Water.fs")
 	this.Program.Use()
 
@@ -74,7 +74,7 @@ func NewWaterRenderer(heightMap *gamestate.HeightMap) (this *WaterRenderer) {
 	this.Data.Vertices.Bind(gl.ARRAY_BUFFER)
 	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(vertices), vertices, gl.STATIC_DRAW)
 
-	helpers.SetAttribPointers(&this.RenLoc, &WorldVertex{}, true)
+	helpers.SetAttribPointers(&this.RenLoc, &WorldVertex{})
 
 	this.Data.Numverts = len(indices)
 
@@ -99,15 +99,16 @@ func (wr *WaterRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f,
 
 	Loc := wr.RenLoc
 	Loc.Time.Uniform1f(float32(time))
-	Loc.SeaLevel.Uniform1f(float32(math.Sin(time*0.1)*10 - 5))
+	// Loc.SeaLevel.Uniform1f(float32(math.Sin(time*0.1)*10 - 5))
 	Loc.U_clippingPlane.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
 
 	numverts := wr.Data.Numverts
-	ProjView := Proj.Mul4(View)
-	ProjViewModel := ProjView.Mul4(Model)
+	//ProjView := Proj.Mul4(View)
+	//ProjViewModel := ProjView.Mul4(Model)
 
-	wr.RenLoc.Matrix.UniformMatrix4f(false, (*[16]float32)(&ProjViewModel))
+	wr.RenLoc.Proj.UniformMatrix4f(false, (*[16]float32)(&Proj))
 	wr.RenLoc.Model.UniformMatrix4f(false, (*[16]float32)(&Model))
+	wr.RenLoc.View.UniformMatrix4f(false, (*[16]float32)(&View))
 	v := View.Inv().Mul4x1(mgl.Vec4f{0, 0, 0, 1})
 	wr.RenLoc.CameraPos_ws.Uniform4f(v[0], v[1], v[2], v[3])
 

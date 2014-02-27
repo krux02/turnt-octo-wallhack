@@ -156,35 +156,35 @@ func (ps *ParticleSystem) SetVaos() {
 
 	ps.VaoTff1.Bind()
 	ps.NonTransformBuffer.Bind(gl.ARRAY_BUFFER)
-	helpers.SetAttribPointers(&ps.TransformLoc, &NonTransformBuffer{}, true)
+	helpers.SetAttribPointers(&ps.TransformLoc, &NonTransformBuffer{})
 	ps.Data1.Bind(gl.ARRAY_BUFFER)
-	helpers.SetAttribPointers(&ps.TransformLoc, &ParticleVertex{}, true)
+	helpers.SetAttribPointers(&ps.TransformLoc, &ParticleVertex{})
 	ps.Data2.BindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0)
 
 	ps.VaoTff2.Bind()
 	ps.NonTransformBuffer.Bind(gl.ARRAY_BUFFER)
-	helpers.SetAttribPointers(&ps.TransformLoc, &NonTransformBuffer{}, true)
+	helpers.SetAttribPointers(&ps.TransformLoc, &NonTransformBuffer{})
 	ps.Data2.Bind(gl.ARRAY_BUFFER)
-	helpers.SetAttribPointers(&ps.TransformLoc, &ParticleVertex{}, true)
+	helpers.SetAttribPointers(&ps.TransformLoc, &ParticleVertex{})
 	ps.Data1.BindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0)
 
 	ps.RenderProg.Use()
 
 	ps.VaoRender1.Bind()
 	ps.Data1.Bind(gl.ARRAY_BUFFER)
-	helpers.SetAttribPointers(&ps.RenderLoc, &ParticleVertex{}, true)
+	helpers.SetAttribPointers(&ps.RenderLoc, &ParticleVertex{})
 	ps.RenderLoc.Pos1.AttribDivisor(1)
 	ps.RenderLoc.Lifetime.AttribDivisor(1)
 	ps.ShapeData.Bind(gl.ARRAY_BUFFER)
-	helpers.SetAttribPointers(&ps.RenderLoc, &ParticleShapeVertex{}, true)
+	helpers.SetAttribPointers(&ps.RenderLoc, &ParticleShapeVertex{})
 
 	ps.VaoRender2.Bind()
 	ps.Data2.Bind(gl.ARRAY_BUFFER)
-	helpers.SetAttribPointers(&ps.RenderLoc, &ParticleVertex{}, true)
+	helpers.SetAttribPointers(&ps.RenderLoc, &ParticleVertex{})
 	ps.RenderLoc.Pos1.AttribDivisor(1)
 	ps.RenderLoc.Lifetime.AttribDivisor(1)
 	ps.ShapeData.Bind(gl.ARRAY_BUFFER)
-	helpers.SetAttribPointers(&ps.RenderLoc, &ParticleShapeVertex{}, true)
+	helpers.SetAttribPointers(&ps.RenderLoc, &ParticleShapeVertex{})
 }
 
 func (ps *ParticleSystem) SetUniforms() {

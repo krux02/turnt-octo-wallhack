@@ -1,12 +1,16 @@
 package helpers
 
 import (
+	"fmt"
 	"github.com/go-gl/gl"
 	"io/ioutil"
+	"log"
 	"reflect"
 )
 
-import "fmt"
+const (
+	VERTEX_INFO_FLAG = 1
+)
 
 func ReadShaderFile(name string) string {
 	name = fmt.Sprintf("shaders/%s", name)
@@ -69,13 +73,18 @@ func MakeProgram(vertFname, fragFname string) gl.Program {
 
 	linkstat := program.Get(gl.LINK_STATUS)
 	if linkstat != 1 {
-		panic(fmt.Sprint("Program link failed, sources=", vertFname, fragFname, "\nstatus=", linkstat, "\nInfo log: ", program.GetInfoLog()))
+		log.Panic("Program link failed, sources=", vertFname, fragFname, "\nstatus=", linkstat, "\nInfo log: ", program.GetInfoLog())
 	}
 
 	program.Validate()
 	valstat := program.Get(gl.VALIDATE_STATUS)
 	if valstat != 1 {
-		panic(fmt.Sprint("Program validation failed: ", valstat))
+		log.Panic("Program validation failed: ", valstat)
+	}
+
+	infoLog := program.GetInfoLog()
+	if infoLog != "" {
+		log.Panic(fmt.Sprint("linking ", vertFname, fragFname, infoLog))
 	}
 
 	return program
@@ -106,20 +115,23 @@ func BindLocations(prog gl.Program, locations interface{}) {
 			fieldValue.SetInt(int64(loc))
 		case gl.UniformLocation:
 			loc := prog.GetUniformLocation(fieldName)
+			if loc == -1 {
+				log.Println("warning ", fieldName, " not valid")
+			}
 			fieldValue.SetInt(int64(loc))
 		default:
 		}
 	}
 }
 
-func PrintLocations(locations interface{}) {
+func PrintLocations(logger log.Logger, locations interface{}) {
 	value := reflect.ValueOf(locations).Elem()
 	typ := reflect.TypeOf(locations).Elem()
-	fmt.Printf("%s:\n", typ.Name())
+	logger.Printf("%s:\n", typ.Name())
 	for i := 0; i < value.NumField(); i++ {
 		fieldValue := value.Field(i)
 		fieldName := typ.Field(i).Name
-		fmt.Printf("\t%s:\t%d\n", fieldName, fieldValue.Int())
+		logger.Printf("\t%s:\t%d\n", fieldName, fieldValue.Int())
 	}
 }
 
@@ -149,9 +161,8 @@ func LocationMap(locations interface{}) (map[string]gl.AttribLocation, map[strin
 	return attribs, uniforms
 }
 
-func SetAttribPointers(locations interface{}, vertexData interface{}, log bool) {
+func SetAttribPointers(locations interface{}, vertexData interface{}) {
 	attribs, _ := LocationMap(locations)
-
 	Type := reflect.TypeOf(vertexData).Elem()
 	stride := int(Type.Size())
 
@@ -187,12 +198,11 @@ func SetAttribPointers(locations interface{}, vertexData interface{}, log bool) 
 		if Loc >= 0 {
 			Loc.EnableArray()
 			Loc.AttribPointer(size, typ, false, stride, offset)
-			if log {
-
-				fmt.Printf("%s: Loc: %d, size: %d, type: %d, stride: %d, offset: %d\n", structElement.Name, Loc, size, typ, stride, offset)
+			if log.Flags()&VERTEX_INFO_FLAG != 0 {
+				log.Printf("%s: Loc: %d, size: %d, type: %d, stride: %d, offset: %d\n", structElement.Name, Loc, size, typ, stride, offset)
 			}
-		} else if log {
-			fmt.Printf("%s: Loc: %d, !!!\n", structElement.Name, Loc)
+		} else if log.Flags()&VERTEX_INFO_FLAG != 0 {
+			log.Printf("%s: Loc: %d, !!!\n", structElement.Name, Loc)
 		}
 	}
 }

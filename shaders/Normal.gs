@@ -16,7 +16,7 @@ uniform mat4 Model;
 uniform mat4 View;
 uniform mat4 Proj;
 
-in vec4 Normal;
+in vec4 Normal_cs[];
 
 void main()
 {
@@ -27,7 +27,7 @@ void main()
 
     EmitVertex();
 
-    vec4 v1     = v0 + Normal * normal_scale;
+    vec4 v1     = v0 + Normal_cs[0] * normal_scale;
     gl_Position = m * v1;
     EmitVertex();
 
