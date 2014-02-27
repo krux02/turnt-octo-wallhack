@@ -27,10 +27,10 @@ type WorldRenderData struct {
 }
 
 type WorldRenderLocations struct {
-	Vertex_ms, Normal_ms                     gl.AttribLocation
-	Matrix, Model                            gl.UniformLocation
-	U_HeightMap, U_color, U_texture, U_slope gl.UniformLocation
-	U_clippingPlane, Min_h, Max_h            gl.UniformLocation
+	Vertex_ms, Normal_ms             gl.AttribLocation
+	Matrix, Model                    gl.UniformLocation
+	HeightMap, Color, Texture, Slope gl.UniformLocation
+	ClippingPlane_ws, Min_h, Max_h   gl.UniformLocation
 }
 
 func Vertices(m *gamestate.HeightMap) []WorldVertex {
@@ -78,9 +78,9 @@ func NewHeightMapRenderer(heightMap *gamestate.HeightMap) (this *HeightMapRender
 
 	this.Data.Numverts = len(indices)
 
-	this.RenLoc.U_color.Uniform1i(3)
-	this.RenLoc.U_texture.Uniform1i(1)
-	this.RenLoc.U_slope.Uniform1i(2)
+	this.RenLoc.Color.Uniform1i(3)
+	this.RenLoc.Texture.Uniform1i(1)
+	this.RenLoc.Slope.Uniform1i(2)
 	this.RenLoc.Min_h.Uniform1f(min_h)
 	this.RenLoc.Max_h.Uniform1f(max_h)
 
@@ -99,7 +99,7 @@ func (wr *HeightMapRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Ma
 	wr.Data.VAO.Bind()
 
 	Loc := wr.RenLoc
-	Loc.U_clippingPlane.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
+	Loc.ClippingPlane_ws.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
 
 	numverts := wr.Data.Numverts
 

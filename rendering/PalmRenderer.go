@@ -11,8 +11,8 @@ import (
 import "fmt"
 
 type TreeRenderLocatins struct {
-	Vertex_os, TexCoord, Position_ws             gl.AttribLocation
-	Proj, View, PalmTree, Rot2D, U_clippingPlane gl.UniformLocation
+	Vertex_os, TexCoord, Position_ws              gl.AttribLocation
+	Proj, View, PalmTree, Rot2D, ClippingPlane_ws gl.UniformLocation
 }
 
 // global information for all trees
@@ -149,7 +149,7 @@ func (pt *PalmTrees) Render(Proj, View mgl.Mat4f, Rot2D mgl.Mat3f, clippingPlane
 	pt.Loc.Proj.UniformMatrix4f(false, (*[16]float32)(&Proj))
 	pt.Loc.View.UniformMatrix4f(false, (*[16]float32)(&View))
 	pt.Loc.Rot2D.UniformMatrix3f(false, (*[9]float32)(&Rot2D))
-	pt.Loc.U_clippingPlane.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
+	pt.Loc.ClippingPlane_ws.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
 
 	gl.DrawArraysInstanced(gl.TRIANGLE_FAN, 0, 4, pt.Count)
 }

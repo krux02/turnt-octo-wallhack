@@ -1,5 +1,7 @@
 #version 330 core
 
+uniform vec4 ClippingPlane_ws;
+
 in vec4 Vertex_os;
 in vec2 TexCoord;
 in vec4 Position_ws;
@@ -17,4 +19,5 @@ void main() {
 	vec4 Position_cs = View * vec4(Position_ws.xyz + Rot2D * Vertex_os.xyz,1);
 	vec3 sum = Position_cs.xyz;
 	gl_Position = Proj * vec4(sum, 1);
+	gl_ClipDistance[0] = dot(ClippingPlane_ws, pos_ws);
 }

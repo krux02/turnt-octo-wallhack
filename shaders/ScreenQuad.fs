@@ -1,10 +1,10 @@
 #version 330 core
 
-uniform sampler2DRect U_Image;
+uniform sampler2DRect Image;
 
 out vec4 color;
 
 void main() {
-	color = texture(U_Image,gl_FragCoord.xy);
+	color = texture(Image,gl_FragCoord.xy);
 }
 

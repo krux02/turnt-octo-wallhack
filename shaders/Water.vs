@@ -14,7 +14,7 @@ uniform vec3 waveColor1 = vec3(0,0,1);
 uniform vec3 waveColor2 = vec3(0,1,1);
 uniform vec2 waveDir = vec2(0.707107);
 uniform float waveAmplitudeScale = 0.35;
-uniform vec4 U_clippingPlane;
+uniform vec4 ClippingPlane_ws;
 
 out vec4 v_color;
 out vec4 pos_ws;
@@ -38,9 +38,10 @@ void main() {
 	vec3 pos = vec3( Vertex_ms.xy, Vertex_ms.z + waveHeight + 10 );
 
 	pos_ws = Model * vec4(pos,1);
+	vec4 pos_cs = View * pos_ws;
 
-	gl_Position =  Proj * View * Model * vec4(pos,1);
-	gl_ClipDistance[0] = dot(pos_ws, U_clippingPlane);
+	gl_Position =  Proj * pos_cs;
+
+	gl_ClipDistance[0] = dot(pos_ws, ClippingPlane_ws);
 }
-
 

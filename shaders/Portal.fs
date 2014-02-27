@@ -1,7 +1,7 @@
 #version 330 core
 #define M_PI 3.1415926535897932384626433832795
 
-uniform sampler2DRect U_Image;
+uniform sampler2DRect Image;
 
 in vec4 Normal_cs;
 in vec4 Position_cs;
@@ -23,7 +23,7 @@ vec4 mymix(vec4 color, float alpha) {
 }
 
 void main() {
-	vec4 t = texture(U_Image,gl_FragCoord.xy);
+	vec4 t = texture(Image,gl_FragCoord.xy);
 	float alpha = acos(abs(dot(normalize(Position_cs.xyz), Normal_cs.xyz)));
 
 	float dist = length(Position_cs.xyz);

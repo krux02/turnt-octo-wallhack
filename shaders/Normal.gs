@@ -12,23 +12,22 @@ layout (points) in;
 layout (line_strip, max_vertices = 2) out;
 
 uniform float normal_scale = 0.5;
+
 uniform mat4 Model;
 uniform mat4 View;
 uniform mat4 Proj;
 
-in vec4 Normal_cs[];
+in vec4 pos_ws[];
+in vec4 Normal_ws[];
 
 void main()
 {
-	mat4 m = Proj * View * Model;
+	mat4 m = Proj * View;
 
-    vec4 v0     = gl_in[0].gl_Position;
-    gl_Position = m * v0;
-
+    gl_Position = m * pos_ws[0];
     EmitVertex();
 
-    vec4 v1     = v0 + Normal_cs[0] * normal_scale;
-    gl_Position = m * v1;
+    gl_Position = m* (pos_ws[0] + Normal_ws[0] * normal_scale);
     EmitVertex();
 
     EndPrimitive();

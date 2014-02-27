@@ -14,9 +14,9 @@ type PortalRenderer struct {
 }
 
 type PortalRenderLocations struct {
-	Vertex_ms, Normal_ms       gl.AttribLocation
-	Proj, View, Model, U_Image gl.UniformLocation
-	ClippingPlane_cs           gl.UniformLocation
+	Vertex_ms, Normal_ms     gl.AttribLocation
+	Proj, View, Model, Image gl.UniformLocation
+	ClippingPlane_cs         gl.UniformLocation
 }
 
 type PortalRenderData struct {
@@ -71,7 +71,7 @@ func (this *PortalRenderer) Render(meshData *PortalRenderData, Proj mgl.Mat4f, V
 	Loc.View.UniformMatrix4f(false, glMat(&View))
 	Loc.Model.UniformMatrix4f(false, glMat(&Model))
 	Loc.Proj.UniformMatrix4f(false, glMat(&Proj))
-	Loc.U_Image.Uniform1i(textureUnit)
+	Loc.Image.Uniform1i(textureUnit)
 	ClippingPlane_cs := View.Mul4x1(ClippingPlane_ws)
 	Loc.ClippingPlane_cs.Uniform4f(ClippingPlane_cs[0], ClippingPlane_cs[1], ClippingPlane_cs[2], ClippingPlane_cs[3])
 

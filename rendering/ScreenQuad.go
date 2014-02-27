@@ -8,7 +8,8 @@ import (
 )
 
 type ScreenQuadLocations struct {
-	U_Image gl.UniformLocation
+	Image        gl.UniformLocation
+	Position_ndc gl.AttribLocation
 }
 
 type ScreenQuadRenderer struct {
@@ -26,8 +27,10 @@ func NewScreenQuadRenderer() *ScreenQuadRenderer {
 	vao := gl.GenVertexArray()
 	vao.Bind()
 
-	a_positionLoc := prog.GetAttribLocation("a_position")
-	a_positionLoc.EnableArray()
+	locations := ScreenQuadLocations{}
+	helpers.BindLocations(prog, &locations)
+
+	locations.Position_ndc.EnableArray()
 	a_positionBuffer := gl.GenBuffer()
 	a_positionBuffer.Bind(gl.ARRAY_BUFFER)
 
@@ -38,10 +41,7 @@ func NewScreenQuadRenderer() *ScreenQuadRenderer {
 	}
 
 	gl.BufferData(gl.ARRAY_BUFFER, len(arr)*int(unsafe.Sizeof(mgl.Vec4f{})), arr, gl.STATIC_DRAW)
-	a_positionLoc.AttribPointer(4, gl.FLOAT, false, 0, uintptr(0))
-
-	locations := ScreenQuadLocations{}
-	helpers.BindLocations(prog, &locations)
+	locations.Position_ndc.AttribPointer(4, gl.FLOAT, false, 0, uintptr(0))
 
 	return &ScreenQuadRenderer{prog, vao, a_positionBuffer, locations}
 }
@@ -56,6 +56,6 @@ func (this *ScreenQuadRenderer) Delete() {
 func (this *ScreenQuadRenderer) Render(textureUnit int) {
 	this.Prog.Use()
 	this.Vao.Bind()
-	this.Locations.U_Image.Uniform1i(textureUnit)
+	this.Locations.Image.Uniform1i(textureUnit)
 	gl.DrawArrays(gl.TRIANGLES, 0, 3)
 }

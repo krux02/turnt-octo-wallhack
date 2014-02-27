@@ -34,8 +34,8 @@ type ProgramLocations struct {
 }
 
 type RenderProgramLocations struct {
-	Pos1, Pos2, Lifetime, TexCoord, Vertex_os       gl.AttribLocation
-	Proj, View, MaxLifetime, Image, U_clippingPlane gl.UniformLocation
+	Pos1, Pos2, Lifetime, TexCoord, Vertex_os        gl.AttribLocation
+	Proj, View, MaxLifetime, Image, ClippingPlane_ws gl.UniformLocation
 }
 
 type ParticleSystem struct {
@@ -259,7 +259,7 @@ func (ps *ParticleSystem) Render(Proj mgl.Mat4f, View mgl.Mat4f, clippingPlane m
 	Loc.View.UniformMatrix4f(false, (*[16]float32)(&View))
 	Loc.MaxLifetime.Uniform1f(ps.MaxLifetime)
 	Loc.Image.Uniform1i(6)
-	Loc.U_clippingPlane.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
+	Loc.ClippingPlane_ws.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
 
 	gl.DepthMask(false)
 	gl.DrawArraysInstanced(gl.TRIANGLE_FAN, 0, 4, ps.NumParticles)

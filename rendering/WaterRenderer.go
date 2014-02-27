@@ -27,10 +27,10 @@ type WaterRenderData struct {
 }
 
 type WaterRenderLocations struct {
-	Vertex_ms, Normal_ms                         gl.AttribLocation
-	HeightMap, LowerBound, UpperBound            gl.UniformLocation
-	U_clippingPlane, CameraPos_ws, GroundTexture gl.UniformLocation
-	Time, Model, View, Proj                      gl.UniformLocation
+	Vertex_ms, Normal_ms                          gl.AttribLocation
+	HeightMap, LowerBound, UpperBound             gl.UniformLocation
+	ClippingPlane_ws, CameraPos_ws, GroundTexture gl.UniformLocation
+	Time, Model, View, Proj                       gl.UniformLocation
 }
 
 func WaterVertices(W, H int) []WaterVertex {
@@ -72,7 +72,7 @@ func NewWaterRenderer(heightMap *gamestate.HeightMap) (this *WaterRenderer) {
 	this.Data.Vertices.Bind(gl.ARRAY_BUFFER)
 	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(vertices), vertices, gl.STATIC_DRAW)
 
-	helpers.SetAttribPointers(&this.RenLoc, &WorldVertex{})
+	helpers.SetAttribPointers(&this.RenLoc, &WaterVertex{})
 	this.Data.Numverts = len(indices)
 
 	this.RenLoc.HeightMap.Uniform1i(4)
@@ -106,7 +106,7 @@ func (wr *WaterRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f,
 
 	Loc := wr.RenLoc
 	Loc.Time.Uniform1f(float32(time))
-	Loc.U_clippingPlane.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
+	Loc.ClippingPlane_ws.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
 
 	numverts := wr.Data.Numverts
 
