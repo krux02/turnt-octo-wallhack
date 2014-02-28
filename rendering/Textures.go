@@ -90,6 +90,20 @@ func NewTextures(heightMap *gamestate.HeightMap) *Textures {
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
 	}
 
+	gl.ActiveTexture(gl.TEXTURE7)
+
+	skybox, err := helpers.LoadTextureCube("textures/Above_The_Sea.jpg")
+	if err != nil {
+		panic("Above_The_Sea.jpg")
+	} else {
+		textures = append(textures, skybox)
+		gl.GenerateMipmap(gl.TEXTURE_CUBE_MAP)
+		gl.TexParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+		gl.TexParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+		gl.TexParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE)
+		gl.TexParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+	}
+
 	gl.ActiveTexture(gl.TEXTURE0)
 
 	return &Textures{textures}

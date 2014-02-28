@@ -112,12 +112,11 @@ func (wr *WaterRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f,
 	wr.Program.Use()
 	wr.Data.VAO.Bind()
 
+	numverts := wr.Data.Numverts
+
 	Loc := wr.RenLoc
 	Loc.Time.Uniform1f(float32(time))
 	Loc.ClippingPlane_ws.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
-
-	numverts := wr.Data.Numverts
-
 	Loc.Proj.UniformMatrix4f(false, (*[16]float32)(&Proj))
 	Loc.Model.UniformMatrix4f(false, (*[16]float32)(&Model))
 	Loc.View.UniformMatrix4f(false, (*[16]float32)(&View))
@@ -136,9 +135,6 @@ func (wr *WaterRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f,
 	Loc = wr.DebugRenLoc
 	Loc.Time.Uniform1f(float32(time))
 	Loc.ClippingPlane_ws.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
-
-	numverts = wr.Data.Numverts
-
 	Loc.Proj.UniformMatrix4f(false, (*[16]float32)(&Proj))
 	Loc.Model.UniformMatrix4f(false, (*[16]float32)(&Model))
 	Loc.View.UniformMatrix4f(false, (*[16]float32)(&View))

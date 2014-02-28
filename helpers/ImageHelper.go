@@ -45,7 +45,6 @@ func LoadTexture1D(name string) (gl.Texture, error) {
 func LoadTexture2D(name string) (gl.Texture, error) {
 	file, err := os.Open(name)
 	if err != nil {
-
 		fmt.Println(name, err)
 		return 0, err
 	}
@@ -58,12 +57,56 @@ func LoadTexture2D(name string) (gl.Texture, error) {
 
 	bounds := m.Bounds()
 
-	imageData := image.NewRGBA(m.Bounds())
+	imageData := image.NewRGBA(bounds)
 	draw.Draw(imageData, bounds, m, image.ZP, draw.Src)
 
 	texture := gl.GenTexture()
 	texture.Bind(gl.TEXTURE_2D)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, bounds.Dx(), bounds.Dy(), 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData.Pix)
+
+	return texture, nil
+}
+
+func LoadTextureCube(name string) (gl.Texture, error) {
+	file, err := os.Open(name)
+	if err != nil {
+		fmt.Println(name, err)
+		return 0, err
+	}
+	defer file.Close()
+	m, _, err := image.Decode(file)
+	if err != nil {
+		fmt.Println(name, err)
+		return 0, err
+	}
+
+	size := m.Bounds().Max
+	W := size.X / 4
+	H := size.Y / 3
+	top_rect := image.Rect(W, 0*H, 2*W, 1*H)
+	bottom_rect := image.Rect(W, 2*H, 2*W, 3*H)
+	left_rect := image.Rect(0*W, H, 1*W, 2*H)
+	front_rect := image.Rect(1*W, H, 2*W, 2*H)
+	right_rect := image.Rect(2*W, H, 3*W, 2*H)
+	back_rect := image.Rect(3*W, H, 4*W, 2*H)
+	bounds := image.Rect(0, 0, W, H)
+
+	texture := gl.GenTexture()
+	texture.Bind(gl.TEXTURE_CUBE_MAP)
+
+	imageData := image.NewRGBA(bounds)
+	draw.Draw(imageData, top_rect, m, image.ZP, draw.Src)
+	gl.TexImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, gl.RGBA8, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData.Pix)
+	draw.Draw(imageData, bottom_rect, m, image.ZP, draw.Src)
+	gl.TexImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, gl.RGBA8, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData.Pix)
+	draw.Draw(imageData, left_rect, m, image.ZP, draw.Src)
+	gl.TexImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, gl.RGBA8, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData.Pix)
+	draw.Draw(imageData, right_rect, m, image.ZP, draw.Src)
+	gl.TexImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, gl.RGBA8, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData.Pix)
+	draw.Draw(imageData, front_rect, m, image.ZP, draw.Src)
+	gl.TexImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, gl.RGBA8, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData.Pix)
+	draw.Draw(imageData, back_rect, m, image.ZP, draw.Src)
+	gl.TexImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl.RGBA8, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData.Pix)
 
 	return texture, nil
 }

@@ -29,7 +29,7 @@ type WorldRenderer struct {
 }
 
 func (this *WorldRenderer) Resize(window *glfw.Window, width, height int) {
-	this.Proj = mgl.Perspective(90, float32(width)/float32(height), 1, 1000)
+	this.Proj = mgl.Perspective(90, float32(width)/float32(height), 0.3, 1000)
 	gl.Viewport(0, 0, width, height)
 	for _, fb := range this.Framebuffer {
 		fb.Resize(width, height)
@@ -43,7 +43,7 @@ func NewWorldRenderer(window *glfw.Window, w *gamestate.World) *WorldRenderer {
 	mr := NewMeshRenderer()
 	pr := NewPortalRenderer()
 	return &WorldRenderer{
-		Proj:              mgl.Perspective(90, float32(width)/float32(height), 1, 1000),
+		Proj:              mgl.Perspective(90, float32(width)/float32(height), 0.3, 1000),
 		Textures:          NewTextures(w.HeightMap),
 		HeightMapRenderer: NewHeightMapRenderer(w.HeightMap),
 		WaterRenderer:     NewWaterRenderer(w.HeightMap),

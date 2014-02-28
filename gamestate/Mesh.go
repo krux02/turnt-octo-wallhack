@@ -32,6 +32,27 @@ func QuadMesh() (mesh *Mesh) {
 	return
 }
 
+func PortalQuad() (mesh *Mesh) {
+	mesh = &Mesh{
+		[]MeshVertex{
+			MeshVertex{mgl.Vec4f{-1, -1, 0, 1}, mgl.Vec4f{0, 0, 1, 0}},
+			MeshVertex{mgl.Vec4f{1, -1, 0, 1}, mgl.Vec4f{0, 0, 1, 0}},
+			MeshVertex{mgl.Vec4f{1, 1, 0, 1}, mgl.Vec4f{0, 0, 1, 0}},
+			MeshVertex{mgl.Vec4f{-1, 1, 0, 1}, mgl.Vec4f{0, 0, 1, 0}},
+
+			MeshVertex{mgl.Vec4f{-1, -1, 0.5, 1}, mgl.Vec4f{0, 0, 1, 0}},
+			MeshVertex{mgl.Vec4f{1, -1, 0.5, 1}, mgl.Vec4f{0, 0, 1, 0}},
+			MeshVertex{mgl.Vec4f{1, 1, 0.5, 1}, mgl.Vec4f{0, 0, 1, 0}},
+			MeshVertex{mgl.Vec4f{-1, 1, 0.5, 1}, mgl.Vec4f{0, 0, 1, 0}},
+		},
+		[]MeshIndex{
+			0, 1, 2, 2, 3, 0,
+			4, 5, 6, 6, 7, 4,
+		},
+	}
+	return
+}
+
 func PortalRect() (mesh *Mesh) {
 	mesh = &Mesh{
 		[]MeshVertex{

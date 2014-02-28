@@ -1,20 +1,22 @@
 #version 330 core
 
 // Input vertex data, different for all executions of this shader.
-in vec3 Vertex_ms;
-in vec3 Normal_ms;
 
 uniform mat4 Model;
 uniform mat4 View;
 uniform mat4 Proj;
 
 uniform float Time;
+uniform float WaterHeight;
 
 uniform vec3 waveColor1 = vec3(0,0,1);
 uniform vec3 waveColor2 = vec3(0,1,1);
 uniform vec2 waveDir = vec2(0.707107);
 uniform float waveAmplitudeScale = 0.35;
 uniform vec4 ClippingPlane_ws;
+
+in vec3 Vertex_ms;
+in vec3 Normal_ms;
 
 out vec4 v_color;
 out vec4 pos_ws;
@@ -35,7 +37,7 @@ void main() {
 	Normal_cs = View * vec4(waveNormal, 0);
 
 
-	vec3 pos = vec3( Vertex_ms.xy, Vertex_ms.z + waveHeight + 10 );
+	vec3 pos = vec3( Vertex_ms.xy, WaterHeight + waveHeight + 10 );
 
 	pos_ws = Model * vec4(pos,1);
 	vec4 pos_cs = View * pos_ws;

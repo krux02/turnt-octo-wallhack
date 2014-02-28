@@ -16,6 +16,7 @@ type BoolOptions struct {
 	NoTreeRender,
 	NoPlayerPhysics,
 	Wireframe bool
+	WaterHeight   float32
 	StartPosition mgl.Vec4f
 }
 
@@ -43,6 +44,10 @@ func (this *BoolOptions) Load() {
 			var b bool
 			fmt.Sscan(value, &b)
 			fieldValue.SetBool(b)
+		case reflect.Float32, reflect.Float64:
+			var f float64
+			fmt.Sscan(value, &f)
+			fieldValue.SetFloat(f)
 		}
 	}
 }
@@ -60,6 +65,8 @@ func (this *BoolOptions) Save() {
 		switch field.Type.Kind() {
 		case reflect.Bool:
 			fmt.Fprintf(file, "%s %t\n", field.Name, fieldValue.Bool())
+		case reflect.Float32, reflect.Float64:
+			fmt.Fprintf(file, "%s %f\n", field.Name, fieldValue.Float())
 		}
 	}
 
@@ -76,6 +83,10 @@ func (this *BoolOptions) CreateGui(bar *tw.Bar) {
 		switch field.Type.Kind() {
 		case reflect.Bool:
 			bar.AddVarRW(field.Name, tw.TYPE_BOOL8, unsafe.Pointer(fieldValue.Addr().Pointer()), "")
+		case reflect.Float32:
+			bar.AddVarRW(field.Name, tw.TYPE_FLOAT, unsafe.Pointer(fieldValue.Addr().Pointer()), "")
+		case reflect.Float64:
+			bar.AddVarRW(field.Name, tw.TYPE_DOUBLE, unsafe.Pointer(fieldValue.Addr().Pointer()), "")
 		}
 	}
 }
