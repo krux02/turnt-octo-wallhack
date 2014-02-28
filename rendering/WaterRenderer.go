@@ -20,10 +20,10 @@ type WaterRenderer struct {
 }
 
 type WaterRenderData struct {
-	VAO      gl.VertexArray
-	Indices  gl.Buffer
-	Vertices gl.Buffer
-	Numverts int
+	VAO, DebugVao gl.VertexArray
+	Indices       gl.Buffer
+	Vertices      gl.Buffer
+	Numverts      int
 }
 
 type WaterRenderLocations struct {
@@ -82,12 +82,20 @@ func NewWaterRenderer(heightMap *gamestate.HeightMap) (this *WaterRenderer) {
 
 	this.DebugProgram = helpers.MakeProgram3("Water.vs", "Normal.gs", "Line.fs")
 	this.DebugProgram.Use()
+
+	this.Data.DebugVao = gl.GenVertexArray()
+	this.Data.DebugVao.Bind()
+	this.Data.Indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
+	this.Data.Vertices.Bind(gl.ARRAY_BUFFER)
+
 	helpers.BindLocations(this.DebugProgram, &this.DebugRenLoc)
 
 	this.DebugRenLoc.HeightMap.Uniform1i(4)
 	this.DebugRenLoc.LowerBound.Uniform3f(0, 0, min_h)
 	this.DebugRenLoc.UpperBound.Uniform3f(W, H, max_h)
 	this.DebugRenLoc.GroundTexture.Uniform1i(1)
+
+	helpers.SetAttribPointers(&this.RenLoc, &WaterVertex{})
 
 	return
 }
@@ -120,8 +128,24 @@ func (wr *WaterRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f,
 
 	gl.DrawElements(gl.TRIANGLES, numverts, gl.UNSIGNED_INT, uintptr(0))
 
+	// debug rendering
+
 	wr.DebugProgram.Use()
-	wr.Data.VAO.Bind()
+	wr.Data.DebugVao.Bind()
+
+	Loc = wr.DebugRenLoc
+	Loc.Time.Uniform1f(float32(time))
+	Loc.ClippingPlane_ws.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
+
+	numverts = wr.Data.Numverts
+
+	Loc.Proj.UniformMatrix4f(false, (*[16]float32)(&Proj))
+	Loc.Model.UniformMatrix4f(false, (*[16]float32)(&Model))
+	Loc.View.UniformMatrix4f(false, (*[16]float32)(&View))
+	Loc.CameraPos_ws.Uniform4f(v[0], v[1], v[2], v[3])
+
+	gl.Disable(gl.CULL_FACE)
 
 	gl.DrawElements(gl.POINTS, numverts, gl.UNSIGNED_INT, uintptr(0))
+
 }
