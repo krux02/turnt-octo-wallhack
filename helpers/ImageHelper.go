@@ -156,7 +156,7 @@ func SaveTexture(target gl.GLenum, level int, filename string) {
 	gl.GetTexLevelParameteriv(target, level, gl.TEXTURE_HEIGHT, params)
 	height := int(params[0])
 
-	img := image.NewRGBA(image.Rectangle{image.Point{0, 0}, image.Point{width, height}})
+	img := image.NewRGBA(image.Rect(0, 0, width, height))
 	pixels := make([]uint8, width*height*4)
 	gl.GetTexImage(target, level, gl.RGBA, gl.UNSIGNED_BYTE, pixels)
 

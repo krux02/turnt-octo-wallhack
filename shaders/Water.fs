@@ -40,12 +40,12 @@ void main()
 	float sunIntensity = dot(-lightDir, Normal_ws);
 	vec3 light = max((sunIntensity * sunColor), ambientColor);
 	vec3 dir_ws = (pos_ws.xyz - CameraPos_ws.xyz);
-	dir_ws = refract(dir_ws, Normal_ws, 1/1.337);
-	float x = -depth / dir_ws.z;
+	vec3 ref = refract(dir_ws, Normal_ws, 1/1.337);
+	float x = -depth / ref.z;
 
-	vec4 color_refract = texture(GroundTexture, pos_ws.xy + x * (dir_ws.xy));
-	vec4 color_reflect = texture(Skybox, reflect(pos_cs.xyz, Normal_cs));
-	color = 0.33 * color_refract + 0.33 * color_reflect + 0.33 * v_color;
+	vec4 color_refract = texture(GroundTexture, pos_ws.xy + x * (ref.xy));
+	vec4 color_reflect = texture(Skybox, reflect(dir_ws, Normal_ws));
+	color = 0.45 * color_refract + 0.45 * color_reflect + 0.1 * v_color;
 	color = max(color, vec4(1-0.5*depth));
 }
 
