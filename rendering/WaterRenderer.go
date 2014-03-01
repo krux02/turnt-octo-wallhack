@@ -27,10 +27,11 @@ type WaterRenderData struct {
 }
 
 type WaterRenderLocations struct {
-	Vertex_ms, Normal_ms                          gl.AttribLocation
-	HeightMap, LowerBound, UpperBound             gl.UniformLocation
-	ClippingPlane_ws, CameraPos_ws, GroundTexture gl.UniformLocation
-	Time, Model, View, Proj                       gl.UniformLocation
+	Vertex_ms, Normal_ms              gl.AttribLocation
+	HeightMap, LowerBound, UpperBound gl.UniformLocation
+	ClippingPlane_ws, CameraPos_ws    gl.UniformLocation
+	GroundTexture, Skybox             gl.UniformLocation
+	Time, Model, View, Proj           gl.UniformLocation
 }
 
 func WaterVertices(W, H int) []WaterVertex {
@@ -59,7 +60,7 @@ func NewWaterRenderer(heightMap *gamestate.HeightMap) (this *WaterRenderer) {
 
 	this.Program = helpers.MakeProgram("Water.vs", "Water.fs")
 	this.Program.Use()
-	helpers.BindLocations(this.Program, &this.RenLoc)
+	helpers.BindLocations("water", this.Program, &this.RenLoc)
 
 	this.Data.VAO = gl.GenVertexArray()
 	this.Data.VAO.Bind()
@@ -79,6 +80,7 @@ func NewWaterRenderer(heightMap *gamestate.HeightMap) (this *WaterRenderer) {
 	this.RenLoc.LowerBound.Uniform3f(0, 0, min_h)
 	this.RenLoc.UpperBound.Uniform3f(W, H, max_h)
 	this.RenLoc.GroundTexture.Uniform1i(1)
+	this.RenLoc.Skybox.Uniform1i(7)
 
 	this.DebugProgram = helpers.MakeProgram3("Water.vs", "Normal.gs", "Line.fs")
 	this.DebugProgram.Use()
@@ -88,7 +90,7 @@ func NewWaterRenderer(heightMap *gamestate.HeightMap) (this *WaterRenderer) {
 	this.Data.Indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
 	this.Data.Vertices.Bind(gl.ARRAY_BUFFER)
 
-	helpers.BindLocations(this.DebugProgram, &this.DebugRenLoc)
+	helpers.BindLocations("water debug", this.DebugProgram, &this.DebugRenLoc)
 
 	this.DebugRenLoc.HeightMap.Uniform1i(4)
 	this.DebugRenLoc.LowerBound.Uniform3f(0, 0, min_h)
@@ -108,7 +110,7 @@ func (wr *WaterRenderer) Delete() {
 	wr.Data.Vertices.Delete()
 }
 
-func (wr *WaterRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, time float64, clippingPlane mgl.Vec4f) {
+func (wr *WaterRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, time float64, clippingPlane mgl.Vec4f, normals bool) {
 	wr.Program.Use()
 	wr.Data.VAO.Bind()
 
@@ -117,9 +119,9 @@ func (wr *WaterRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f,
 	Loc := wr.RenLoc
 	Loc.Time.Uniform1f(float32(time))
 	Loc.ClippingPlane_ws.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
-	Loc.Proj.UniformMatrix4f(false, (*[16]float32)(&Proj))
-	Loc.Model.UniformMatrix4f(false, (*[16]float32)(&Model))
-	Loc.View.UniformMatrix4f(false, (*[16]float32)(&View))
+	Loc.Proj.UniformMatrix4f(false, glMat(&Proj))
+	Loc.Model.UniformMatrix4f(false, glMat(&Model))
+	Loc.View.UniformMatrix4f(false, glMat(&View))
 	v := View.Inv().Mul4x1(mgl.Vec4f{0, 0, 0, 1})
 	Loc.CameraPos_ws.Uniform4f(v[0], v[1], v[2], v[3])
 
@@ -128,20 +130,20 @@ func (wr *WaterRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f,
 	gl.DrawElements(gl.TRIANGLES, numverts, gl.UNSIGNED_INT, uintptr(0))
 
 	// debug rendering
+	if normals {
+		wr.DebugProgram.Use()
+		wr.Data.DebugVao.Bind()
 
-	wr.DebugProgram.Use()
-	wr.Data.DebugVao.Bind()
+		Loc = wr.DebugRenLoc
+		Loc.Time.Uniform1f(float32(time))
+		Loc.ClippingPlane_ws.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
+		Loc.Proj.UniformMatrix4f(false, glMat(&Proj))
+		Loc.Model.UniformMatrix4f(false, glMat(&Model))
+		Loc.View.UniformMatrix4f(false, glMat(&View))
+		Loc.CameraPos_ws.Uniform4f(v[0], v[1], v[2], v[3])
 
-	Loc = wr.DebugRenLoc
-	Loc.Time.Uniform1f(float32(time))
-	Loc.ClippingPlane_ws.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
-	Loc.Proj.UniformMatrix4f(false, (*[16]float32)(&Proj))
-	Loc.Model.UniformMatrix4f(false, (*[16]float32)(&Model))
-	Loc.View.UniformMatrix4f(false, (*[16]float32)(&View))
-	Loc.CameraPos_ws.Uniform4f(v[0], v[1], v[2], v[3])
+		gl.Disable(gl.CULL_FACE)
 
-	gl.Disable(gl.CULL_FACE)
-
-	gl.DrawElements(gl.POINTS, numverts, gl.UNSIGNED_INT, uintptr(0))
-
+		gl.DrawElements(gl.POINTS, numverts, gl.UNSIGNED_INT, uintptr(0))
+	}
 }

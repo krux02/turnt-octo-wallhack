@@ -18,7 +18,7 @@ uniform mat4 View;
 uniform mat4 Proj;
 
 in vec4 pos_ws[];
-in vec4 Normal_ws[];
+in vec3 Normal_ws[];
 
 void main()
 {
@@ -27,7 +27,7 @@ void main()
     gl_Position = m * pos_ws[0];
     EmitVertex();
 
-    gl_Position = m* (pos_ws[0] + Normal_ws[0] * normal_scale);
+    gl_Position = m* (pos_ws[0] + vec4(Normal_ws[0] * normal_scale,0));
     EmitVertex();
 
     EndPrimitive();

@@ -61,7 +61,7 @@ func NewHeightMapRenderer(heightMap *gamestate.HeightMap) (this *HeightMapRender
 	this.Program = helpers.MakeProgram("HeightMap.vs", "HeightMap.fs")
 	this.Program.Use()
 
-	helpers.BindLocations(this.Program, &this.RenLoc)
+	helpers.BindLocations("height map", this.Program, &this.RenLoc)
 
 	this.Data.VAO = gl.GenVertexArray()
 	this.Data.VAO.Bind()
@@ -106,8 +106,8 @@ func (wr *HeightMapRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Ma
 	ProjView := Proj.Mul4(View)
 	ProjViewModel := ProjView.Mul4(Model)
 
-	wr.RenLoc.Matrix.UniformMatrix4f(false, (*[16]float32)(&ProjViewModel))
-	wr.RenLoc.Model.UniformMatrix4f(false, (*[16]float32)(&Model))
+	wr.RenLoc.Matrix.UniformMatrix4f(false, glMat(&ProjViewModel))
+	wr.RenLoc.Model.UniformMatrix4f(false, glMat(&Model))
 
 	gl.DrawElements(gl.TRIANGLES, numverts, gl.UNSIGNED_INT, uintptr(0))
 }

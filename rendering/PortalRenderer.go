@@ -30,7 +30,7 @@ func NewPortalRenderer() (mr *PortalRenderer) {
 	mr = new(PortalRenderer)
 	mr.Program = helpers.MakeProgram("Portal.vs", "Portal.fs")
 	mr.Program.Use()
-	helpers.BindLocations(mr.Program, &mr.RenLoc)
+	helpers.BindLocations("portal", mr.Program, &mr.RenLoc)
 	return
 }
 
@@ -57,10 +57,6 @@ func (this *PortalRenderer) CreateRenderData(mesh *gamestate.Mesh) (md PortalRen
 	md.Numverts = len(mesh.Indices)
 
 	return
-}
-
-func glMat(mat *mgl.Mat4f) *[16]float32 {
-	return (*[16]float32)(mat)
 }
 
 func (this *PortalRenderer) Render(meshData *PortalRenderData, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, ClippingPlane_ws mgl.Vec4f, textureUnit int) {

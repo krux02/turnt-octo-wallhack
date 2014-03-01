@@ -28,7 +28,7 @@ func NewScreenQuadRenderer() *ScreenQuadRenderer {
 	vao.Bind()
 
 	locations := ScreenQuadLocations{}
-	helpers.BindLocations(prog, &locations)
+	helpers.BindLocations("screen quad", prog, &locations)
 
 	locations.Position_ndc.EnableArray()
 	a_positionBuffer := gl.GenBuffer()

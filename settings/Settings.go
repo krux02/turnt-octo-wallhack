@@ -10,12 +10,14 @@ import (
 )
 
 type BoolOptions struct {
-	NoParticleRender,
-	NoParticlePhysics,
-	NoWorldRender,
-	NoTreeRender,
-	NoPlayerPhysics,
-	Wireframe bool
+	ParticleRender,
+	ParticlePhysics,
+	WorldRender,
+	TreeRender,
+	PlayerPhysics,
+	Skybox,
+	Wireframe,
+	WaterNormals bool
 	WaterHeight   float32
 	StartPosition mgl.Vec4f
 }

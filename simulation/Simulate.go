@@ -55,7 +55,7 @@ func UpdatePlayer(p *gamestate.Player, gs *gamestate.GameState) {
 	move_xyz = p.Camera.Orientation.Rotate(move_xyz)
 	move = mgl.Vec4f{move_xyz[0], move_xyz[1], move_xyz[2], 0}
 
-	if gs.Options.NoPlayerPhysics {
+	if !gs.Options.PlayerPhysics {
 		move = move.Mul(0.1)
 		p.Velocity = move
 		p.Camera.MoveAbsolute(move)

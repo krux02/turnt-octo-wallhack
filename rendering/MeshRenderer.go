@@ -29,7 +29,7 @@ func NewMeshRenderer() (mr *MeshRenderer) {
 	mr = new(MeshRenderer)
 	mr.Program = helpers.MakeProgram("Mesh.vs", "Mesh.fs")
 	mr.Program.Use()
-	helpers.BindLocations(mr.Program, &mr.RenLoc)
+	helpers.BindLocations("mesh", mr.Program, &mr.RenLoc)
 	return
 }
 
@@ -66,9 +66,9 @@ func (this *MeshRenderer) Render(meshData *MeshRenderData, Proj mgl.Mat4f, View 
 	gl.Disable(gl.CULL_FACE)
 
 	Loc := this.RenLoc
-	Loc.View.UniformMatrix4f(false, (*[16]float32)(&View))
-	Loc.Model.UniformMatrix4f(false, (*[16]float32)(&Model))
-	Loc.Proj.UniformMatrix4f(false, (*[16]float32)(&Proj))
+	Loc.View.UniformMatrix4f(false, glMat(&View))
+	Loc.Model.UniformMatrix4f(false, glMat(&Model))
+	Loc.Proj.UniformMatrix4f(false, glMat(&Proj))
 
 	numverts := meshData.Numverts
 

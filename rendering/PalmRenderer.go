@@ -124,7 +124,7 @@ func NewPalmTrees(gamestate *gamestate.HeightMap, count int) *PalmTrees {
 	vao.Bind()
 
 	Loc := TreeRenderLocatins{}
-	helpers.BindLocations(Prog, &Loc)
+	helpers.BindLocations("palm sprite", Prog, &Loc)
 
 	fmt.Println(Loc)
 	Loc.PalmTree.Uniform1i(5)
@@ -146,8 +146,8 @@ func (pt *PalmTrees) Render(Proj, View mgl.Mat4f, Rot2D mgl.Mat3f, clippingPlane
 	pt.Prog.Use()
 	pt.Buffers.Vao.Bind()
 
-	pt.Loc.Proj.UniformMatrix4f(false, (*[16]float32)(&Proj))
-	pt.Loc.View.UniformMatrix4f(false, (*[16]float32)(&View))
+	pt.Loc.Proj.UniformMatrix4f(false, glMat(&Proj))
+	pt.Loc.View.UniformMatrix4f(false, glMat(&View))
 	pt.Loc.Rot2D.UniformMatrix3f(false, (*[9]float32)(&Rot2D))
 	pt.Loc.ClippingPlane_ws.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
 

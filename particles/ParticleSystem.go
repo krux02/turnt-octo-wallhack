@@ -102,12 +102,12 @@ func NewParticleSystem(w *gamestate.World, numParticles int, Origin mgl.Vec3f, i
 	TransformProg.Use()
 
 	TransformLoc := ProgramLocations{}
-	helpers.BindLocations(TransformProg, &TransformLoc)
+	helpers.BindLocations("particle transform", TransformProg, &TransformLoc)
 
 	renderProgram := helpers.MakeProgram("Particle.vs", "Particle.fs")
 	renderProgram.Use()
 	RenderLoc := RenderProgramLocations{}
-	helpers.BindLocations(renderProgram, &RenderLoc)
+	helpers.BindLocations("particle render", renderProgram, &RenderLoc)
 
 	vaoTff1 := gl.GenVertexArray()
 	vaoTff2 := gl.GenVertexArray()

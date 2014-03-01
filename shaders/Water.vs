@@ -20,8 +20,9 @@ in vec3 Normal_ms;
 
 out vec4 v_color;
 out vec4 pos_ws;
-out vec4 Normal_ws;
-out vec4 Normal_cs;
+out vec4 pos_cs;
+out vec3 Normal_ws;
+out vec3 Normal_cs;
 
 void main() {
 	float wavePos = dot(Vertex_ms.xy, waveDir)+Time;
@@ -33,14 +34,14 @@ void main() {
 	vec3 waveColor = mix(waveColor1, waveColor2, (s+1)/2);
 	
 	v_color = vec4(waveColor,1);
-	Normal_ws = vec4(waveNormal,0);
-	Normal_cs = View * vec4(waveNormal, 0);
+	Normal_ws = waveNormal;
+	Normal_cs = (View * vec4(waveNormal, 0)).xyz;
 
 
 	vec3 pos = vec3( Vertex_ms.xy, WaterHeight + waveHeight + 10 );
 
 	pos_ws = Model * vec4(pos,1);
-	vec4 pos_cs = View * pos_ws;
+	pos_cs = View * pos_ws;
 
 	gl_Position =  Proj * pos_cs;
 

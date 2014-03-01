@@ -23,6 +23,7 @@ type WorldRenderer struct {
 	Portal            PortalRenderData
 	PalmTrees         *PalmTrees
 	ParticleSystem    *particles.ParticleSystem
+	SkyboxRenderer    *SkyboxRenderer
 	Framebuffer       [2]*FrameBuffer
 	ScreenQuad        *ScreenQuadRenderer
 	MaxRecursion      int
@@ -52,6 +53,7 @@ func NewWorldRenderer(window *glfw.Window, w *gamestate.World) *WorldRenderer {
 		Portal:            pr.CreateRenderData(portalData),
 		PalmTrees:         NewPalmTrees(w.HeightMap, 5000),
 		ParticleSystem:    particles.NewParticleSystem(w, 10000, mgl.Vec3f{32, 32, 32}, 1, 250),
+		SkyboxRenderer:    NewSkyboxRenderer(),
 		Framebuffer:       [2]*FrameBuffer{NewFrameBuffer(window.GetSize()), NewFrameBuffer(window.GetSize())},
 		ScreenQuad:        NewScreenQuadRenderer(),
 		MaxRecursion:      1,
@@ -66,6 +68,8 @@ func (this *WorldRenderer) Delete() {
 	// TODO delete portal data
 	this.PalmTrees.Delete()
 	this.ParticleSystem.Delete()
+	this.SkyboxRenderer.Delete()
+	this.WaterRenderer.Delete()
 	for _, Framebuffer := range this.Framebuffer {
 		Framebuffer.Delete()
 	}
@@ -94,7 +98,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 
 	currentTime := glfw.GetTime()
 
-	if !options.NoParticlePhysics {
+	if options.ParticlePhysics {
 		this.ParticleSystem.DoStep(currentTime)
 	}
 
@@ -102,6 +106,12 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 		gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
 	} else {
 		gl.PolygonMode(gl.FRONT_AND_BACK, gl.FILL)
+	}
+
+	if options.Skybox {
+		gl.Disable(gl.DEPTH_TEST)
+		this.SkyboxRenderer.Render(this.Proj, View, 7)
+		gl.Enable(gl.DEPTH_TEST)
 	}
 
 	gl.Enable(gl.CULL_FACE)
@@ -112,21 +122,21 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 		defer gl.Disable(gl.CLIP_DISTANCE0)
 	}
 
-	if !options.NoWorldRender {
+	if options.WorldRender {
 		this.HeightMapRenderer.Render(this.Proj, View, mgl.Ident4f(), clippingPlane)
-		this.WaterRenderer.Render(this.Proj, View, mgl.Ident4f(), currentTime, clippingPlane)
+		this.WaterRenderer.Render(this.Proj, View, mgl.Ident4f(), currentTime, clippingPlane, options.WaterNormals)
 	}
 
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE)
 
-	if !options.NoParticleRender {
+	if options.ParticleRender {
 		this.ParticleSystem.Render(this.Proj, View, clippingPlane)
 	}
 
 	gl.Disable(gl.CULL_FACE)
 	gl.Disable(gl.BLEND)
 
-	if !options.NoTreeRender {
+	if options.TreeRender {
 		this.PalmTrees.Render(this.Proj, View, Rot2D, clippingPlane)
 	}
 
