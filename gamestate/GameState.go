@@ -5,7 +5,7 @@ import (
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
 	glfw "github.com/go-gl/glfw3"
-	"github.com/krux02/turnt-octo-wallhack/helpers"
+	//	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/settings"
 	"github.com/krux02/tw"
 	"unsafe"
@@ -23,8 +23,6 @@ type GameState struct {
 
 func NewGameState(window *glfw.Window, world *World) (gamestate *GameState) {
 	gl.ClearColor(0., 0., 0.4, 0.0)
-
-	gl.ActiveTexture(gl.TEXTURE5)
 
 	gl.Enable(gl.DEPTH_TEST)
 
@@ -54,8 +52,6 @@ func NewGameState(window *glfw.Window, world *World) (gamestate *GameState) {
 		ptr := &(portal.(*Portal).Orientation)
 		bar.AddVarRW(fmt.Sprintf("Rotation %d", i), tw.TYPE_QUAT4F, unsafe.Pointer(ptr), "")
 	}
-
-	bar.AddButton("save image", func() { helpers.SaveImage("test.png", world.HeightMap.ExportImage()) }, "")
 
 	w, h := window.GetSize()
 	tw.WindowSize(w, h)

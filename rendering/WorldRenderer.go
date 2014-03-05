@@ -27,6 +27,7 @@ type WorldRenderer struct {
 	Framebuffer       [2]*FrameBuffer
 	ScreenQuad        *ScreenQuadRenderer
 	MaxRecursion      int
+	screenShot        bool
 }
 
 func (this *WorldRenderer) Resize(window *glfw.Window, width, height int) {
@@ -35,6 +36,10 @@ func (this *WorldRenderer) Resize(window *glfw.Window, width, height int) {
 	for _, fb := range this.Framebuffer {
 		fb.Resize(width, height)
 	}
+}
+
+func (this *WorldRenderer) ScreenShot() {
+	this.screenShot = true
 }
 
 func NewWorldRenderer(window *glfw.Window, w *gamestate.World) *WorldRenderer {
@@ -83,6 +88,11 @@ func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOpt
 	gl.ActiveTexture(gl.TEXTURE0)
 	this.Framebuffer[0].RenderTexture.Bind(gl.TEXTURE_RECTANGLE)
 	this.ScreenQuad.Render(0)
+
+	if this.screenShot {
+		this.screenShot = false
+		helpers.SaveTexture(gl.TEXTURE_RECTANGLE, 0, "screenshot.png")
+	}
 }
 
 func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOptions, View mgl.Mat4f, window *glfw.Window, recursion int, clippingPlane mgl.Vec4f, srcPortal *gamestate.Portal) {

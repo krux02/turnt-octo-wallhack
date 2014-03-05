@@ -60,6 +60,8 @@ func main() {
 	renderer := rendering.NewWorldRenderer(window, gs.World)
 	defer renderer.Delete()
 
+	gs.Bar.AddButton("screen shot", renderer.ScreenShot, "")
+
 	window.SetFramebufferSizeCallback(func(window *glfw.Window, width, height int) {
 		renderer.Resize(window, width, height)
 		tw.WindowSize(width, height)
