@@ -27,10 +27,10 @@ type HeightMapRenderData struct {
 }
 
 type HeightMapRenderLocations struct {
-	Vertex_ms, Normal_ms             gl.AttribLocation
-	Matrix, Model                    gl.UniformLocation
-	HeightMap, Color, Texture, Slope gl.UniformLocation
-	ClippingPlane_ws, Min_h, Max_h   gl.UniformLocation
+	Vertex_ms, Normal_ms                     gl.AttribLocation
+	Matrix, Model                            gl.UniformLocation
+	HeightMap, Color, Texture, Slope         gl.UniformLocation
+	ClippingPlane_ws, LowerBound, UpperBound gl.UniformLocation
 }
 
 func Vertices(m *gamestate.HeightMap) []HeightMapVertex {
@@ -78,11 +78,12 @@ func NewHeightMapRenderer(heightMap *gamestate.HeightMap) (this *HeightMapRender
 
 	this.Data.Numverts = len(indices)
 
+	this.RenLoc.HeightMap.Uniform1i(4)
 	this.RenLoc.Color.Uniform1i(3)
-	this.RenLoc.Texture.Uniform1i(1)
 	this.RenLoc.Slope.Uniform1i(2)
-	this.RenLoc.Min_h.Uniform1f(min_h)
-	this.RenLoc.Max_h.Uniform1f(max_h)
+	this.RenLoc.Texture.Uniform1i(1)
+	this.RenLoc.LowerBound.Uniform3f(0, 0, min_h)
+	this.RenLoc.UpperBound.Uniform3f(float32(heightMap.W), float32(heightMap.H), max_h)
 
 	return
 }

@@ -1,7 +1,7 @@
 #version 330 core
 
-uniform float Min_h = -17;
-uniform float Max_h = 28;
+uniform vec3 LowerBound;
+uniform vec3 UpperBound;
 
 uniform sampler1D Color;
 uniform sampler2D Texture;
@@ -21,7 +21,7 @@ void main() {
 	float sunIntensity = dot(-LightDir,normal_ws.xyz);
 	vec3 light = max((sunIntensity * SunColor),AmbientColor);
 	
-	vec3 colorA = texture(Color,(pos_ws.z-Min_h)/(Max_h-Min_h)).rgb * texture(Texture, pos_ws.xy).xyz;;
+	vec3 colorA = texture(Color,(pos_ws.z-LowerBound.z)/(UpperBound.z-LowerBound.z)).rgb * texture(Texture, pos_ws.xy).xyz;;
 	vec3 colorB = texture(Slope, pos_ws.xz).xyz;
 	vec3 colorC = texture(Slope, pos_ws.yz).xyz;
 	float fractionA = pow(max(normal_ws.z, 0), 15);
