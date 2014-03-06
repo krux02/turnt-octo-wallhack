@@ -5,21 +5,43 @@ import (
 	gs "github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	//"image"
+	"math"
 	"math/rand"
 )
+
+func sigmuid(x float32) float32 {
+	return ((x / float32(math.Sqrt(float64(1+x*x)))) + 1) / 2
+}
+
+func mix(x, y, a float32) float32 {
+	return (1-a)*x + a*y
+}
+
+func clamp(x, min, max float32) float32 {
+	if min < x {
+		return min
+	}
+	if max > x {
+		return max
+	}
+	return x
+}
 
 func GenerateWorld(W, H, N int) (world *gs.World) {
 	heights := gs.NewHeightMap(W, H)
 	DiamondSquare(heights, float32(W))
 	Portals := RandomPortals(heights, N)
-
+	for i, x := range heights.Data {
+		heights.Data[i] = mix(0, x-5, sigmuid((x-5)/10)) + 5
+	}
 	kdTree := make([]gs.KdElement, len(Portals))
 	for i, portal := range Portals {
 		kdTree[i] = portal
 	}
 	kdTree = gs.NewTree(kdTree)
 
-	world = &gs.World{heights, kdTree, Portals}
+	palms := GeneratePalmTrees(heights, 5000)
+	world = &gs.World{heights, kdTree, Portals, palms}
 	return
 }
 
@@ -49,6 +71,29 @@ func RandomPortals(hm *gs.HeightMap, N int) []*gs.Portal {
 		Portals[i].Target = Portals[j]
 	}
 	return Portals
+}
+
+func GeneratePalmTrees(hm *gs.HeightMap, count int) gs.PalmTreesInstanceData {
+	pt := gs.PalmTreesInstanceData{
+		make([]gs.PalmTree, count),
+	}
+
+	for i := 0; i < count; i++ {
+
+		var x, y float32
+		for true {
+			x = rand.Float32() * float32(hm.W)
+			y = rand.Float32() * float32(hm.H)
+			if hm.Normalf(x, y)[2] > 0.65 && hm.Get2f(x, y) > 10 {
+				break
+			}
+		}
+
+		z := hm.Get2f(x, y)
+		pt.Positions[i] = gs.PalmTree{mgl.Vec4f{x, y, z, 1}}
+	}
+
+	return pt
 }
 
 func DiamondSquare(m *gs.HeightMap, factor float32) {

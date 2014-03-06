@@ -8,6 +8,7 @@ type World struct {
 	HeightMap *HeightMap
 	KdTree    KdTree
 	Portals   []*Portal
+	Palms     PalmTreesInstanceData
 }
 
 type WrapVec4f mgl.Vec4f

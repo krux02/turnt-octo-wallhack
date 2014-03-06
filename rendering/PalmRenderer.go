@@ -5,7 +5,6 @@ import (
 	"github.com/go-gl/gl"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
-	"math/rand"
 )
 
 import "fmt"
@@ -19,11 +18,6 @@ type TreeRenderLocatins struct {
 type PalmShape struct {
 	Vertex_os mgl.Vec4f
 	TexCoord  mgl.Vec2f
-}
-
-// instance data for each tree
-type PalmTree struct {
-	Position_ws mgl.Vec4f
 }
 
 type PalmTreeFullVertex struct {
@@ -48,11 +42,11 @@ func CreateVertexDataBuffer() gl.Buffer {
 	return palmShapeBuffer
 }
 
-func (pt *PalmTreesInstanceData) CreateInstanceDataBuffer() gl.Buffer {
+func CreateInstanceDataBuffer(pt *gamestate.PalmTreesInstanceData) gl.Buffer {
 	fmt.Println("CreateInstanceDataBuffer:")
 	vertices := gl.GenBuffer()
 	vertices.Bind(gl.ARRAY_BUFFER)
-	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(pt.positions), pt.positions, gl.STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(pt.Positions), pt.Positions, gl.STATIC_DRAW)
 
 	// fmt.Println(pt.positions)
 	return vertices
@@ -61,36 +55,6 @@ func (pt *PalmTreesInstanceData) CreateInstanceDataBuffer() gl.Buffer {
 type TreeSorter struct {
 	indices []int
 	by      func(a, b int) bool
-}
-
-type PalmTreesInstanceData struct {
-	positions []PalmTree
-}
-
-func NewPalmTreesInstanceData(gamestate *gamestate.HeightMap, count int) *PalmTreesInstanceData {
-
-	pt := &PalmTreesInstanceData{
-		make([]PalmTree, count),
-	}
-
-	for i := 0; i < count; i++ {
-
-		var x, y float32
-		for true {
-			x = rand.Float32() * float32(gamestate.W)
-			y = rand.Float32() * float32(gamestate.H)
-			n := gamestate.Normalf(x, y)
-			if n.Dot(mgl.Vec3f{0, 0, 1}) > 0.65 {
-				break
-			}
-		}
-
-		z := gamestate.Get2f(x, y)
-
-		pt.positions[i] = PalmTree{mgl.Vec4f{x, y, z, 1}}
-	}
-
-	return pt
 }
 
 type PalmTreesBuffers struct {
@@ -114,8 +78,7 @@ func (this *PalmTrees) Delete() {
 	*this = PalmTrees{}
 }
 
-func NewPalmTrees(gamestate *gamestate.HeightMap, count int) *PalmTrees {
-	pt := NewPalmTreesInstanceData(gamestate, count)
+func NewPalmRenderer(pt *gamestate.PalmTreesInstanceData) *PalmTrees {
 
 	Prog := helpers.MakeProgram("Sprite.vs", "Sprite.fs")
 	Prog.Use()
@@ -132,13 +95,13 @@ func NewPalmTrees(gamestate *gamestate.HeightMap, count int) *PalmTrees {
 	vertexDataBuffer := CreateVertexDataBuffer()
 	helpers.SetAttribPointers(&Loc, &PalmShape{})
 
-	instanceDataBuffer := pt.CreateInstanceDataBuffer()
-	helpers.SetAttribPointers(&Loc, &PalmTree{})
+	instanceDataBuffer := CreateInstanceDataBuffer(pt)
+	helpers.SetAttribPointers(&Loc, &gamestate.PalmTree{})
 	Loc.Position_ws.AttribDivisor(1)
 
 	buffers := PalmTreesBuffers{vao, instanceDataBuffer, vertexDataBuffer}
 
-	return &PalmTrees{Prog, Loc, buffers, count}
+	return &PalmTrees{Prog, Loc, buffers, len(pt.Positions)}
 }
 
 func (pt *PalmTrees) Render(Proj, View mgl.Mat4f, Rot2D mgl.Mat3f, clippingPlane mgl.Vec4f) {

@@ -56,7 +56,7 @@ func NewWorldRenderer(window *glfw.Window, w *gamestate.World) *WorldRenderer {
 		MeshRenderer:      mr,
 		PortalRenderer:    pr,
 		Portal:            pr.CreateRenderData(portalData),
-		PalmTrees:         NewPalmTrees(w.HeightMap, 5000),
+		PalmTrees:         NewPalmRenderer(&w.Palms),
 		ParticleSystem:    particles.NewParticleSystem(w, 10000, mgl.Vec3f{32, 32, 32}, 1, 250),
 		SkyboxRenderer:    NewSkyboxRenderer(),
 		Framebuffer:       [2]*FrameBuffer{NewFrameBuffer(window.GetSize()), NewFrameBuffer(window.GetSize())},
