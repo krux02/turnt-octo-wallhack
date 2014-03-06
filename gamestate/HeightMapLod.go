@@ -12,6 +12,7 @@ func (this *HeightMap) MaxLod() int {
 	}
 }
 
+/*
 func (this *HeightMap) BoundsLod(x, y, lod int) (min, max float32) {
 	x = x & (this.W - 1)
 	y = y & (this.H - 1)
@@ -40,6 +41,7 @@ func (this *HeightMap) BoundsLod(x, y, lod int) (min, max float32) {
 	max = this.MaxTree[offset+w*y+x]
 	return
 }
+*/
 
 /*
 func (m *HeightMap) MinHm() (minHM *HeightMap, maxHM *HeightMap) {

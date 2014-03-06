@@ -1,8 +1,10 @@
 package gamestate
 
 import (
+	"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
+	"github.com/krux02/turnt-octo-wallhack/math32"
 	"image"
 	"image/color"
 	"math"
@@ -11,10 +13,8 @@ import (
 // import "fmt"
 
 type HeightMap struct {
-	W, H    int
-	Data    []float32
-	MinTree []float32
-	MaxTree []float32
+	W, H int
+	Data []float32
 }
 
 func NewHeightMap(w, h int) (out *HeightMap) {
@@ -27,27 +27,19 @@ func NewHeightMap(w, h int) (out *HeightMap) {
 	if w != h {
 		panic("width and height needs to be equal")
 	}
-	lodSize := 0
-	for h2, w2 := h>>1, w>>1; h2 > 0 && w2 > 0; h2, w2 = h2>>1, w2>>1 {
-		lodSize += h2 * w2
-	}
-	out = &HeightMap{w, h, make([]float32, w*h), make([]float32, lodSize), make([]float32, lodSize)}
-
-	return
-}
-
-var gauss_factor = 1 / math.Sqrt(2*math.Pi)
-
-func Gauss(x float32) float32 {
-	return float32(math.Exp(float64(-x*x/2)) * gauss_factor)
+	return &HeightMap{w, h, make([]float32, w*h)}
 }
 
 func Gauss2f(v mgl.Vec2f) mgl.Vec2f {
-	return mgl.Vec2f{Gauss(v[0]), Gauss(v[1])}
+	return mgl.Vec2f{math32.Gauss(v[0]), math32.Gauss(v[1])}
 }
 
 func Bump(center mgl.Vec2f, height float32) {
 
+}
+
+func (this *HeightMap) InRange(x, y int) bool {
+	return 0 <= x && x < this.W && 0 <= y && y < this.H
 }
 
 func (this *HeightMap) Get(x, y int) float32 {
@@ -57,10 +49,10 @@ func (this *HeightMap) Get(x, y int) float32 {
 }
 
 func (this *HeightMap) Get2f(x, y float32) float32 {
-	l := float32(math.Floor(float64(x)))
-	r := float32(math.Floor(float64(x + 1)))
-	b := float32(math.Floor(float64(y)))
-	t := float32(math.Floor(float64(y + 1)))
+	l := math32.Floor(x)
+	r := math32.Floor(x + 1)
+	b := math32.Floor(y)
+	t := math32.Floor(y + 1)
 
 	bl := this.Get(int(l), int(b))
 	br := this.Get(int(r), int(b))
@@ -115,9 +107,9 @@ func (m *HeightMap) Normal(x int, y int) mgl.Vec3f {
 }
 
 func (m *HeightMap) Normalf(x float32, y float32) (n mgl.Vec3f) {
-	x0 := int(math.Floor(float64(x)))
+	x0 := int(math32.Floor(x))
 	x1 := x0 + 1
-	y0 := int(math.Floor(float64(y)))
+	y0 := int(math32.Floor(y))
 	y1 := y0 + 1
 
 	n00 := m.Normal(x0, y0)
@@ -194,4 +186,137 @@ func NewHeightMapFromFile(filename string) *HeightMap {
 		dst[i>>1] = float32(int(src[i])|(int(src[i+1])<<8)) / math.MaxUint16
 	}
 	return m
+}
+
+func (m *HeightMap) RayCast(pos mgl.Vec3f, dir mgl.Vec3f) (out mgl.Vec3f, hit bool) {
+	var visit = func(x, y int) bool {
+		fmt.Println("visit ", x, y)
+		if !m.InRange(x, y) {
+			fmt.Println("out of range")
+			return false
+		}
+
+		p1 := mgl.Vec3f{float32(x), float32(y), m.Get(x, y)}
+		p2 := mgl.Vec3f{float32(x + 1), float32(y), m.Get(x+1, y)}
+		p3 := mgl.Vec3f{float32(x + 1), float32(y + 1), m.Get(x+1, y+1)}
+		p4 := mgl.Vec3f{float32(x), float32(y + 1), m.Get(x, y+1)}
+
+		var factor float32
+
+		factor, hit = triangle_intersection(p1, p2, p3, pos, dir)
+		if hit {
+			out = dir.Mul(factor).Add(pos)
+			fmt.Println("hit 1 ", out, hit)
+			return false
+		}
+		factor, hit = triangle_intersection(p3, p4, p1, pos, dir)
+		if hit {
+			out = dir.Mul(factor).Add(pos)
+			fmt.Println("hit2 ", out, hit)
+			return false
+		}
+
+		return true
+	}
+
+	x0 := pos[0]
+	y0 := pos[1]
+	x1 := pos[0] + dir[0]
+	y1 := pos[1] + dir[1]
+
+	raytrace(x0, y0, x1, y1, visit)
+	return
+}
+
+func triangle_intersection(V1, V2, V3, O, D mgl.Vec3f) (out float32, hit bool) {
+	const EPSILON = 0.000001
+	var e1, e2 mgl.Vec3f //Edge1, Edge2
+	var P, Q, T mgl.Vec3f
+	var det, inv_det, u, v, t float32
+
+	//Find vectors for two edges sharing V1
+	e1 = V2.Sub(V1)
+	e2 = V3.Sub(V1)
+	//Begin calculating determinant - also used to calculate u parameter
+	P = D.Cross(e2)
+	//if determinant is near zero, ray lies in plane of triangle
+	det = e1.Dot(P)
+	//NOT CULLING
+	if det > -EPSILON && det < EPSILON {
+		return 0, false
+	}
+	inv_det = 1 / det
+
+	//calculate distance from V1 to ray origin
+	T = O.Sub(V1)
+
+	//Calculate u parameter and test bound
+	u = T.Dot(P) * inv_det
+	//The intersection lies outside of the triangle
+	if u < 0 || u > 1 {
+		return 0, false
+	}
+
+	//Prepare to test v parameter
+	Q = T.Cross(e1)
+
+	//Calculate V parameter and test bound
+	v = D.Dot(Q) * inv_det
+	//The intersection lies outside of the triangle
+	if v < 0 || u+v > 1 {
+		return 0, false
+	}
+
+	t = e2.Dot(Q) * inv_det
+
+	if t > EPSILON { //ray intersection
+		return t, true
+	}
+
+	// No hit, no win
+	return 0, false
+}
+
+func raytrace(x0, y0, x1, y1 float32, visit func(x, y int) bool) {
+
+	dx := math32.Abs(x1 - x0)
+	dy := math32.Abs(y1 - y0)
+
+	x := int(math32.Floor(x0))
+	y := int(math32.Floor(y0))
+
+	var x_inc, y_inc int
+	var err float32
+
+	if dx == 0 {
+		x_inc = 0
+		err = math32.Inf(1)
+	} else if x1 > x0 {
+		x_inc = 1
+		err = (math32.Floor(x0) + 1 - x0) * dy
+	} else {
+		x_inc = -1
+		err = (x0 - math32.Floor(x0)) * dy
+	}
+
+	if dy == 0 {
+		y_inc = 0
+		err -= math32.Inf(1)
+	} else if y1 > y0 {
+		y_inc = 1
+		err -= (math32.Floor(y0) + 1 - y0) * dx
+	} else {
+		y_inc = -1
+		err -= (y0 - math32.Floor(y0)) * dx
+	}
+
+	for visit(x, y) {
+		if err > 0 {
+			y += y_inc
+			err -= dx
+		} else {
+			x += x_inc
+			err += dy
+		}
+	}
 }

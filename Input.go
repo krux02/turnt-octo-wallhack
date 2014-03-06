@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
 	glfw "github.com/go-gl/glfw3"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
@@ -26,6 +27,27 @@ func InitInput(gs *gamestate.GameState) {
 		}
 		if state == glfw.Release && drag == button {
 			drag = -1
+		}
+
+		// ray cast testing
+		if state == glfw.Press {
+
+			mx, my := window.GetCursorPosition()
+			_, H := window.GetSize()
+			x := 2*float32(mx)/float32(H) - 1
+			y := 2*float32(my)/float32(H) - 1
+
+			dir_cs := mgl.Vec4f{x, y, -1, 0}
+			m := gs.Camera.Model()
+			pos_ws := gs.Camera.Position
+			dir_ws := m.Mul4x1(dir_cs)
+
+			pos_ws_v3 := mgl.Vec3f{pos_ws[0], pos_ws[1], pos_ws[2]}
+			dir_ws_v3 := mgl.Vec3f{dir_ws[0], dir_ws[1], dir_ws[2]}
+
+			fmt.Println(pos_ws_v3, dir_ws_v3)
+			out, hit := gs.World.HeightMap.RayCast(pos_ws_v3, dir_ws_v3)
+			fmt.Println(out, hit)
 		}
 
 		tw.EventMouseButtonGLFW(int(button), int(state))

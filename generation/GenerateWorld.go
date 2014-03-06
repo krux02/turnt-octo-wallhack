@@ -4,27 +4,13 @@ import (
 	mgl "github.com/Jragonmiris/mathgl"
 	gs "github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
+	"github.com/krux02/turnt-octo-wallhack/math32"
 	//"image"
-	"math"
 	"math/rand"
 )
 
 func sigmuid(x float32) float32 {
-	return ((x / float32(math.Sqrt(float64(1+x*x)))) + 1) / 2
-}
-
-func mix(x, y, a float32) float32 {
-	return (1-a)*x + a*y
-}
-
-func clamp(x, min, max float32) float32 {
-	if min < x {
-		return min
-	}
-	if max > x {
-		return max
-	}
-	return x
+	return ((x / math32.Sqrt(1+x*x)) + 1) / 2
 }
 
 func GenerateWorld(W, H, N int) (world *gs.World) {
@@ -32,7 +18,7 @@ func GenerateWorld(W, H, N int) (world *gs.World) {
 	DiamondSquare(heights, float32(W))
 	Portals := RandomPortals(heights, N)
 	for i, x := range heights.Data {
-		heights.Data[i] = mix(0, x-5, sigmuid((x-5)/10)) + 5
+		heights.Data[i] = math32.Mix(0, x-5, sigmuid((x-5)/10)) + 5
 	}
 	kdTree := make([]gs.KdElement, len(Portals))
 	for i, portal := range Portals {
