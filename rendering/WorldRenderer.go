@@ -88,8 +88,6 @@ func (this *WorldRenderer) Delete() {
 func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOptions, View mgl.Mat4f, window *glfw.Window) {
 	this.render(ww, options, View, window, 0, mgl.Vec4f{3 / 5.0, 4 / 5.0, 0, math.MaxFloat32}, nil)
 
-	this.DebugRenderer.Render(this.Proj, View)
-
 	gl.ActiveTexture(gl.TEXTURE0)
 	this.Framebuffer[0].RenderTexture.Bind(gl.TEXTURE_RECTANGLE)
 	this.ScreenQuad.Render(0)
@@ -175,6 +173,15 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 
 	gl.Disable(gl.BLEND)
 	gl.Disable(gl.CULL_FACE)
+
+	if options.DebugLines {
+
+		if options.AlwaysInFront {
+			gl.Disable(gl.DEPTH_TEST)
+		}
+		this.DebugRenderer.Render(this.Proj, View)
+		gl.Enable(gl.DEPTH_TEST)
+	}
 
 	// draw
 	if recursion < this.MaxRecursion {

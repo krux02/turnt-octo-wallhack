@@ -17,7 +17,9 @@ type BoolOptions struct {
 	PlayerPhysics,
 	Skybox,
 	Wireframe,
-	WaterNormals bool
+	WaterNormals,
+	DebugLines,
+	AlwaysInFront bool
 	WaterHeight   float32
 	StartPosition mgl.Vec4f
 }

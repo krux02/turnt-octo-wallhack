@@ -28,17 +28,22 @@ func NewLineRenderer() *LineRenderer {
 	renderer.vao.Bind()
 	helpers.BindLocations("line", renderer.Prog, &renderer.Loc)
 	renderer.buffer = gl.GenBuffer()
+	renderer.buffer.Bind(gl.ARRAY_BUFFER)
 	helpers.SetAttribPointers(&renderer.Loc, &debug.LineVertex{})
+
+	fmt.Println("Line render location ", renderer.Loc)
 	return &renderer
 }
 
 func (this *LineRenderer) Render(Proj, View mgl.Mat4f) {
-	this.Prog.Use()
-	this.vao.Bind()
+
 	data := debug.Read()
 	if len(data) > 0 {
-		fmt.Println(data)
+		this.Prog.Use()
+		this.vao.Bind()
+		this.buffer.Bind(gl.ARRAY_BUFFER)
 		gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(data), data, gl.STREAM_DRAW)
+		//helpers.SetAttribPointers(&this.Loc, &debug.LineVertex{})
 		this.Loc.Proj.UniformMatrix4f(false, glMat(&Proj))
 		this.Loc.View.UniformMatrix4f(false, glMat(&View))
 		gl.DrawArrays(gl.LINES, 0, len(data))

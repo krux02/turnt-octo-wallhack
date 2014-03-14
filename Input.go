@@ -1,10 +1,12 @@
 package main
 
 import (
-	"fmt"
+	//	"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
 	glfw "github.com/go-gl/glfw3"
+	"github.com/krux02/turnt-octo-wallhack/debug"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
+	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/tw"
 	"math"
 )
@@ -30,12 +32,12 @@ func InitInput(gs *gamestate.GameState) {
 		}
 
 		// ray cast testing
-		if state == glfw.Press {
+		if state == glfw.Press && button == 0 {
 
 			mx, my := window.GetCursorPosition()
-			_, H := window.GetSize()
-			x := 2*float32(mx)/float32(H) - 1
-			y := 2*float32(my)/float32(H) - 1
+			W, H := window.GetSize()
+			x := (2*float32(mx) - float32(W)) / float32(H)
+			y := (float32(H) - 2*float32(my)) / float32(H)
 
 			dir_cs := mgl.Vec4f{x, y, -1, 0}
 			m := gs.Camera.Model()
@@ -45,9 +47,14 @@ func InitInput(gs *gamestate.GameState) {
 			pos_ws_v3 := mgl.Vec3f{pos_ws[0], pos_ws[1], pos_ws[2]}
 			dir_ws_v3 := mgl.Vec3f{dir_ws[0], dir_ws[1], dir_ws[2]}
 
-			fmt.Println(pos_ws_v3, dir_ws_v3)
 			out, hit := gs.World.HeightMap.RayCast(pos_ws_v3, dir_ws_v3)
-			fmt.Println(out, hit)
+
+			if hit {
+				n := helpers.Normal(gs.World.HeightMap.Normalf(out[0], out[1]))
+				p := helpers.Point(out)
+				debug.Color(mgl.Vec4f{0, 1, 0, 1})
+				debug.Line(p, p.Add(n))
+			}
 		}
 
 		tw.EventMouseButtonGLFW(int(button), int(state))
