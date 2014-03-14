@@ -26,6 +26,7 @@ type WorldRenderer struct {
 	SkyboxRenderer    *SkyboxRenderer
 	Framebuffer       [2]*FrameBuffer
 	ScreenQuad        *ScreenQuadRenderer
+	DebugRenderer     *LineRenderer
 	MaxRecursion      int
 	screenShot        bool
 }
@@ -61,6 +62,7 @@ func NewWorldRenderer(window *glfw.Window, w *gamestate.World) *WorldRenderer {
 		SkyboxRenderer:    NewSkyboxRenderer(),
 		Framebuffer:       [2]*FrameBuffer{NewFrameBuffer(window.GetSize()), NewFrameBuffer(window.GetSize())},
 		ScreenQuad:        NewScreenQuadRenderer(),
+		DebugRenderer:     NewLineRenderer(),
 		MaxRecursion:      1,
 	}
 }
@@ -79,11 +81,14 @@ func (this *WorldRenderer) Delete() {
 		Framebuffer.Delete()
 	}
 	this.ScreenQuad.Delete()
+	this.DebugRenderer.Delete()
 	*this = WorldRenderer{}
 }
 
 func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOptions, View mgl.Mat4f, window *glfw.Window) {
 	this.render(ww, options, View, window, 0, mgl.Vec4f{3 / 5.0, 4 / 5.0, 0, math.MaxFloat32}, nil)
+
+	this.DebugRenderer.Render(this.Proj, View)
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	this.Framebuffer[0].RenderTexture.Bind(gl.TEXTURE_RECTANGLE)

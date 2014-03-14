@@ -3,6 +3,7 @@ package gamestate
 import (
 	"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
+	"github.com/krux02/turnt-octo-wallhack/debug"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/math32"
 	"image"
@@ -189,8 +190,15 @@ func NewHeightMapFromFile(filename string) *HeightMap {
 }
 
 func (m *HeightMap) RayCast(pos mgl.Vec3f, dir mgl.Vec3f) (out mgl.Vec3f, hit bool) {
+	debug.Reset()
 	var visit = func(x, y int) bool {
 		fmt.Println("visit ", x, y)
+
+		fx, fy := float32(x), float32(y)
+		debug.Color(mgl.Vec4f{1, 1, 0, 1})
+		debug.Line(mgl.Vec4f{fx, fy, 0, 1}, mgl.Vec4f{fx + 1, fy + 1, 0, 1})
+		debug.Line(mgl.Vec4f{fx + 1, fy, 0, 1}, mgl.Vec4f{fx, fy + 1, 0, 1})
+
 		if !m.InRange(x, y) {
 			fmt.Println("out of range")
 			return false

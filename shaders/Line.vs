@@ -1,13 +1,13 @@
 #version 330 core
 
-uniform Mat4 View;
-uniform Mat4 Proj;
+uniform mat4 View;
+uniform mat4 Proj;
 
-in Vec4 Vertex_ws;
-in Vec4 Color;
+in vec4 Vertex_ws;
+in vec4 Color;
 
-out vColor;
+out vec4 vColor;
 
 void main() {
-	out.vColor = in.Color;
+	vColor = Color;
 }

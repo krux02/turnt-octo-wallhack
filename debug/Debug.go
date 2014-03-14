@@ -25,8 +25,10 @@ func Color(_color mgl.Vec4f) {
 	color = _color
 }
 
-func ReadAndReset() []LineVertex {
-	d := data
+func Read() []LineVertex {
+	return data
+}
+
+func Reset() {
 	data = data[0:0]
-	return d
 }
