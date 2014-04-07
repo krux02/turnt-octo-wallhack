@@ -16,6 +16,14 @@ func Clamp(x, min, max float32) float32 {
 	return x
 }
 
+func RoundInt(x float32) int {
+	if x >= -0.5 {
+		return int(x + 0.5)
+	} else {
+		return int(x - 0.5)
+	}
+}
+
 func Abs(x float32) float32 {
 	if x < 0 {
 		return -x

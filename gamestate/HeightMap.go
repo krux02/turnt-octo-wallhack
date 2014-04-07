@@ -4,6 +4,7 @@ import (
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/math32"
+	"github.com/krux02/turnt-octo-wallhack/mathint"
 	"image"
 	"image/color"
 	"math"
@@ -29,12 +30,25 @@ func NewHeightMap(w, h int) (out *HeightMap) {
 	return &HeightMap{w, h, make([]float32, w*h)}
 }
 
-func Gauss2f(v mgl.Vec2f) mgl.Vec2f {
-	return mgl.Vec2f{math32.Gauss(v[0]), math32.Gauss(v[1])}
+func Gauss2fv(v mgl.Vec2f) float32 {
+	return math32.Gauss(v.Len())
 }
 
-func Bump(center mgl.Vec2f, height float32) {
+func (this *HeightMap) Bump(center mgl.Vec2f, height float32) {
+	minX := mathint.Max(math32.RoundInt(center[0])-5, 0)
+	maxX := mathint.Min(math32.RoundInt(center[0])+5, this.W)
+	minY := mathint.Max(math32.RoundInt(center[1])-5, 0)
+	maxY := mathint.Min(math32.RoundInt(center[1])+5, this.H)
 
+	for x := minX; x < maxX; x++ {
+		for y := minY; y < maxY; y++ {
+			v := mgl.Vec2f{float32(x), float32(y)}
+			v = v.Sub(center)
+			bump := math32.Gauss(v.Len())
+			h := this.Get(x, y)
+			this.Set(x, y, h+bump)
+		}
+	}
 }
 
 func (this *HeightMap) InRange(x, y int) bool {
@@ -201,12 +215,12 @@ func (m *HeightMap) RayCast(pos mgl.Vec3f, dir mgl.Vec3f) (out mgl.Vec3f, hit bo
 
 		var factor float32
 
-		factor, hit = triangle_intersection(p1, p2, p3, pos, dir)
+		factor, hit = triangle_intersection(p4, p1, p2, pos, dir)
 		if hit {
 			out = dir.Mul(factor).Add(pos)
 			return false
 		}
-		factor, hit = triangle_intersection(p3, p4, p1, pos, dir)
+		factor, hit = triangle_intersection(p2, p3, p4, pos, dir)
 		if hit {
 			out = dir.Mul(factor).Add(pos)
 			return false
