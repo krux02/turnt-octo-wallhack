@@ -4,6 +4,7 @@ import (
 	//	"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
+	"github.com/krux02/turnt-octo-wallhack/helpers"
 )
 
 func PortalPassed(portal *gamestate.Portal, pos1, pos2 mgl.Vec4f) bool {
@@ -64,7 +65,10 @@ func UpdatePlayer(p *gamestate.Player, gs *gamestate.GameState) {
 		p.Velocity = p.Velocity.Add(move)
 		p.Camera.MoveAbsolute(p.Velocity)
 
-		groundHeight := gs.World.HeightMap.Get2f(p.Position()[0], p.Position()[1])
+		pos := p.Position()
+
+		groundHeight := gs.World.HeightMap.Get2f(pos[0], pos[1])
+		groundNormal := gs.World.HeightMap.Normal2f(pos[0], pos[1])
 
 		height := p.Camera.Position[2]
 		minHeight := groundHeight + 1.5
@@ -72,8 +76,8 @@ func UpdatePlayer(p *gamestate.Player, gs *gamestate.GameState) {
 
 		if height < minHeight {
 			diff := minHeight - height
-			p.Velocity[2] += diff
-			p.Camera.Position[2] += diff
+			p.Velocity = p.Velocity.Add(helpers.Vector(groundNormal.Mul(diff)))
+			//p.Camera.Position[2] += diff
 		}
 
 		p.Velocity = p.Velocity.Mul(0.95)

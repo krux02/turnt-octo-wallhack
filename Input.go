@@ -1,7 +1,7 @@
 package main
 
 import (
-	//	"fmt"
+	//"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
 	glfw "github.com/go-gl/glfw3"
 	"github.com/krux02/turnt-octo-wallhack/debug"
@@ -11,14 +11,23 @@ import (
 	"math"
 )
 
-// import "fmt"
-
 var drag glfw.MouseButton = -1
-var lastMousePos = mgl.Vec2f{0, 0}
-var highlight = 0
 
+/*
+var lastMousePos = mgl.Vec2f{0, 0}
 var currentMousePos func() mgl.Vec2f
 var updateLastMousePos func()
+*/
+
+func GrabCursor(window *glfw.Window) {
+	switch window.GetInputMode(glfw.Cursor) {
+	case glfw.CursorNormal:
+		window.SetInputMode(glfw.Cursor, glfw.CursorDisabled)
+		window.SetCursorPosition(0, 0)
+	case glfw.CursorDisabled:
+		window.SetInputMode(glfw.Cursor, glfw.CursorNormal)
+	}
+}
 
 func InitInput(gs *gamestate.GameState) {
 	window := gs.Window
@@ -31,9 +40,12 @@ func InitInput(gs *gamestate.GameState) {
 			drag = -1
 		}
 
-		// ray cast testing
-		if state == glfw.Press && button == 0 {
+		if state == glfw.Press && button == 1 {
+			GrabCursor(window)
+		}
 
+		// ray cast testing
+		if window.GetInputMode(glfw.Cursor) == glfw.CursorNormal && state == glfw.Press && button == 0 {
 			mx, my := window.GetCursorPosition()
 			W, H := window.GetSize()
 			x := (2*float32(mx) - float32(W)) / float32(H)
@@ -44,43 +56,27 @@ func InitInput(gs *gamestate.GameState) {
 			pos_ws := gs.Camera.Position
 			dir_ws := m.Mul4x1(dir_cs)
 
-			pos_ws_v3 := mgl.Vec3f{pos_ws[0], pos_ws[1], pos_ws[2]}
-			dir_ws_v3 := mgl.Vec3f{dir_ws[0], dir_ws[1], dir_ws[2]}
+			pos_ws_v3 := helpers.XYZ(pos_ws)
+			dir_ws_v3 := helpers.XYZ(dir_ws)
 
-			out, hit := gs.World.HeightMap.RayCast(pos_ws_v3, dir_ws_v3)
+			factor, hit := gs.World.HeightMap.RayCast(pos_ws_v3, dir_ws_v3)
 
 			if hit {
-				n := helpers.Normal(gs.World.HeightMap.Normalf(out[0], out[1]))
-				p := helpers.Point(out)
+				out := pos_ws.Add(dir_ws.Mul(factor))
+				n := helpers.Vector(gs.World.HeightMap.Normal2f(out[0], out[1]))
 				debug.Color(mgl.Vec4f{0, 1, 0, 1})
-				debug.Line(p, p.Add(n))
+				debug.Line(out, out.Add(n))
 			}
 		}
 
 		tw.EventMouseButtonGLFW(int(button), int(state))
 	}
 
-	MouseWheel := func(window *glfw.Window, xoffset, yoffset float64) {
-		highlight += int(yoffset)
-		tw.MouseWheel(int(yoffset)) // falsch glfw3 ist relativ
-	}
-
 	KeyPress := func(window *glfw.Window, key glfw.Key, _ int, state glfw.Action, modifiers glfw.ModifierKey) {
 		if state == glfw.Press {
 			switch key {
-			case glfw.KeyKpAdd:
-				highlight += 1
-				// highlightLoc.Uniform1f(float32(highlight))
-			case glfw.KeyKpSubtract:
-				highlight -= 1
-				// highlightLoc.Uniform1f(float32(highlight))
 			case glfw.KeyEnter:
-				switch window.GetInputMode(glfw.Cursor) {
-				case glfw.CursorNormal:
-					window.SetInputMode(glfw.Cursor, glfw.CursorDisabled)
-				default:
-					window.SetInputMode(glfw.Cursor, glfw.CursorNormal)
-				}
+				GrabCursor(window)
 			case glfw.KeySpace:
 				gs.Player.Camera.Position = gs.Options.StartPosition
 			default:
@@ -88,15 +84,6 @@ func InitInput(gs *gamestate.GameState) {
 		}
 
 		tw.EventKeyGLFW(int(key), int(state)) // falsch, glfw3 hat scancodes
-	}
-
-	currentMousePos = func() mgl.Vec2f {
-		mx, my := window.GetCursorPosition()
-		return mgl.Vec2f{float32(mx), float32(my)}
-	}
-
-	updateLastMousePos = func() {
-		lastMousePos = currentMousePos()
 	}
 
 	MouseMove := func(window *glfw.Window, mouseX, mouseY float64) {
@@ -108,7 +95,6 @@ func InitInput(gs *gamestate.GameState) {
 	}
 
 	window.SetCursorPositionCallback(MouseMove)
-	window.SetScrollCallback(MouseWheel)
 	window.SetKeyCallback(KeyPress)
 	window.SetMouseButtonCallback(MouseButton)
 
@@ -116,22 +102,14 @@ func InitInput(gs *gamestate.GameState) {
 }
 
 func Input(gs *gamestate.GameState) {
-
 	window := gs.Window
-	delta := currentMousePos().Sub(lastMousePos)
 	inp := gamestate.PlayerInput{}
 
-	switch drag {
-	case 1:
-		if delta.Len() > 0 {
-			inp.Rotate[0] -= delta[1]
-			inp.Rotate[1] -= delta[0]
-		}
-	case 2:
-		if delta.Len() > 0 {
-			inp.Rotate[1] -= delta[0]
-			inp.Rotate[2] -= delta[1]
-		}
+	if window.GetInputMode(glfw.Cursor) == glfw.CursorDisabled {
+		mx64, my64 := window.GetCursorPosition()
+		window.SetCursorPosition(0, 0)
+		inp.Rotate[0] = -float32(my64) / 10
+		inp.Rotate[1] = -float32(mx64) / 10
 	}
 
 	if window.GetKey(glfw.KeyE) == glfw.Press {
@@ -154,5 +132,6 @@ func Input(gs *gamestate.GameState) {
 	}
 
 	gs.Player.Input = inp
-	updateLastMousePos()
+
+	//updateLastMousePos()
 }

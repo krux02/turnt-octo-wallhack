@@ -70,7 +70,7 @@ func GeneratePalmTrees(hm *gs.HeightMap, count int) gs.PalmTreesInstanceData {
 		for true {
 			x = rand.Float32() * float32(hm.W)
 			y = rand.Float32() * float32(hm.H)
-			if hm.Normalf(x, y)[2] > 0.65 && hm.Get2f(x, y) > 10 {
+			if hm.Normal2f(x, y)[2] > 0.65 && hm.Get2f(x, y) > 10 {
 				break
 			}
 		}
