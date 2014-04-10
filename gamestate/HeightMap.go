@@ -13,8 +13,9 @@ import (
 // import "fmt"
 
 type HeightMap struct {
-	W, H int
-	Data []float32
+	W, H       int
+	Data       []float32
+	HasChanges bool
 }
 
 func NewHeightMap(w, h int) (out *HeightMap) {
@@ -27,7 +28,12 @@ func NewHeightMap(w, h int) (out *HeightMap) {
 	if w != h {
 		panic("width and height needs to be equal")
 	}
-	return &HeightMap{w, h, make([]float32, w*h)}
+	return &HeightMap{
+		W:          w,
+		H:          h,
+		Data:       make([]float32, w*h),
+		HasChanges: true,
+	}
 }
 
 func Gauss2fv(v mgl.Vec2f) float32 {
@@ -49,6 +55,7 @@ func (this *HeightMap) Bump(center mgl.Vec2f, height float32) {
 			this.Set(x, y, h+bump)
 		}
 	}
+	this.HasChanges = true
 }
 
 func (this *HeightMap) InRange(x, y int) bool {
@@ -150,9 +157,7 @@ func (m *HeightMap) TexturePixels() (pixels []float32) {
 }
 
 func (m *HeightMap) Bounds() (float32, float32) {
-
-	var min_h, max_h float32 = 10000.0, -10000.0
-
+	var min_h, max_h float32 = math.MaxFloat32, -math.MaxFloat32
 	for _, v := range m.Data {
 		if v < min_h {
 			min_h = v
@@ -161,7 +166,6 @@ func (m *HeightMap) Bounds() (float32, float32) {
 			max_h = v
 		}
 	}
-
 	return min_h, max_h
 }
 

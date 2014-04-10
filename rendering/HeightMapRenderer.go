@@ -54,7 +54,6 @@ func Vertices(m *gamestate.HeightMap) []HeightMapVertex {
 func NewHeightMapRenderer(heightMap *gamestate.HeightMap) (this *HeightMapRenderer) {
 	vertices := Vertices(heightMap)
 	indices := TriangulationIndices(heightMap.W, heightMap.H)
-	min_h, max_h := heightMap.Bounds()
 
 	this = new(HeightMapRenderer)
 
@@ -82,8 +81,6 @@ func NewHeightMapRenderer(heightMap *gamestate.HeightMap) (this *HeightMapRender
 	this.RenLoc.Color.Uniform1i(3)
 	this.RenLoc.Slope.Uniform1i(2)
 	this.RenLoc.Texture.Uniform1i(1)
-	this.RenLoc.LowerBound.Uniform3f(0, 0, min_h)
-	this.RenLoc.UpperBound.Uniform3f(float32(heightMap.W), float32(heightMap.H), max_h)
 
 	return
 }
@@ -95,20 +92,32 @@ func (wr *HeightMapRenderer) Delete() {
 	wr.Data.Vertices.Delete()
 }
 
-func (wr *HeightMapRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, clippingPlane mgl.Vec4f) {
-	wr.Program.Use()
-	wr.Data.VAO.Bind()
+func (this *HeightMapRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, heightMap *gamestate.HeightMap, clippingPlane mgl.Vec4f) {
+	this.Program.Use()
+	this.Data.VAO.Bind()
 
-	Loc := wr.RenLoc
+	Loc := this.RenLoc
 	Loc.ClippingPlane_ws.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
 
-	numverts := wr.Data.Numverts
+	numverts := this.Data.Numverts
 
 	ProjView := Proj.Mul4(View)
 	ProjViewModel := ProjView.Mul4(Model)
 
-	wr.RenLoc.Matrix.UniformMatrix4f(false, glMat(&ProjViewModel))
-	wr.RenLoc.Model.UniformMatrix4f(false, glMat(&Model))
+	if heightMap.HasChanges {
+		min_h, max_h := heightMap.Bounds()
+		this.RenLoc.LowerBound.Uniform3f(0, 0, min_h)
+		this.RenLoc.UpperBound.Uniform3f(float32(heightMap.W), float32(heightMap.H), max_h)
+
+		gl.ActiveTexture(gl.TEXTURE4)
+		gl.TexImage2D(gl.TEXTURE_2D, 0, gl.R16, heightMap.W, heightMap.H, 0, gl.RED, gl.FLOAT, heightMap.TexturePixels())
+		gl.ActiveTexture(gl.TEXTURE0)
+
+		heightMap.HasChanges = false
+	}
+
+	this.RenLoc.Matrix.UniformMatrix4f(false, glMat(&ProjViewModel))
+	this.RenLoc.Model.UniformMatrix4f(false, glMat(&Model))
 
 	gl.DrawElements(gl.TRIANGLES, numverts, gl.UNSIGNED_INT, uintptr(0))
 }

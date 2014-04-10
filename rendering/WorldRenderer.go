@@ -136,7 +136,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 	}
 
 	if options.WorldRender {
-		this.HeightMapRenderer.Render(this.Proj, View, mgl.Ident4f(), clippingPlane)
+		this.HeightMapRenderer.Render(this.Proj, View, mgl.Ident4f(), ww.HeightMap, clippingPlane)
 		this.WaterRenderer.Render(this.Proj, View, mgl.Ident4f(), currentTime, clippingPlane, options.WaterNormals)
 	}
 

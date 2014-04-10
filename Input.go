@@ -45,13 +45,19 @@ func InitInput(gs *gamestate.GameState) {
 		}
 
 		// ray cast testing
-		if window.GetInputMode(glfw.Cursor) == glfw.CursorNormal && state == glfw.Press && button == 0 {
-			mx, my := window.GetCursorPosition()
-			W, H := window.GetSize()
-			x := (2*float32(mx) - float32(W)) / float32(H)
-			y := (float32(H) - 2*float32(my)) / float32(H)
+		if state == glfw.Press && button == 0 {
 
-			dir_cs := mgl.Vec4f{x, y, -1, 0}
+			var dir_cs mgl.Vec4f
+			if window.GetInputMode(glfw.Cursor) == glfw.CursorNormal {
+				mx, my := window.GetCursorPosition()
+				W, H := window.GetSize()
+				x := (2*float32(mx) - float32(W)) / float32(H)
+				y := (float32(H) - 2*float32(my)) / float32(H)
+				dir_cs = mgl.Vec4f{x, y, -1, 0}
+			} else {
+				dir_cs = mgl.Vec4f{0, 0, -1, 0}
+			}
+
 			m := gs.Camera.Model()
 			pos_ws := gs.Camera.Position
 			dir_ws := m.Mul4x1(dir_cs)
@@ -66,6 +72,9 @@ func InitInput(gs *gamestate.GameState) {
 				n := helpers.Vector(gs.World.HeightMap.Normal2f(out[0], out[1]))
 				debug.Color(mgl.Vec4f{0, 1, 0, 1})
 				debug.Line(out, out.Add(n))
+
+				heightMap := gs.World.HeightMap
+				heightMap.Bump(mgl.Vec2f{out[0], out[1]}, 3)
 			}
 		}
 
@@ -108,8 +117,8 @@ func Input(gs *gamestate.GameState) {
 	if window.GetInputMode(glfw.Cursor) == glfw.CursorDisabled {
 		mx64, my64 := window.GetCursorPosition()
 		window.SetCursorPosition(0, 0)
-		inp.Rotate[0] = -float32(my64) / 10
-		inp.Rotate[1] = -float32(mx64) / 10
+		inp.Rotate[0] = -float32(my64) / 5
+		inp.Rotate[1] = -float32(mx64) / 5
 	}
 
 	if window.GetKey(glfw.KeyE) == glfw.Press {
