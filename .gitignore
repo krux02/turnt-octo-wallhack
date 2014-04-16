@@ -1,6 +1,7 @@
 settings.txt
 test.png
 screenshot.png
+.DS_Store
 
 *.test
 turnt-octo-wallhack

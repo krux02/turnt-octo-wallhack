@@ -15,11 +15,13 @@ type SkyboxRenderer struct {
 
 type SkyboxRenderLocations struct {
 	Proj, View, Skybox gl.UniformLocation
+	InTexCoord gl.AttribLocation
 }
 
 type SkyboxRenderData struct {
 	VAO     gl.VertexArray
 	Indices gl.Buffer
+	VertexDataBuffer gl.Buffer
 }
 
 func NewSkyboxRenderer() *SkyboxRenderer {
@@ -38,6 +40,10 @@ func (this *SkyboxRenderer) Delete() {
 	*this = SkyboxRenderer{}
 }
 
+type SkyboxVertex struct {
+	InTexCoord mgl.Vec3f
+}
+
 func (this *SkyboxRenderer) createRenderData() {
 	this.RenData.VAO = gl.GenVertexArray()
 	this.RenData.VAO.Bind()
@@ -53,6 +59,22 @@ func (this *SkyboxRenderer) createRenderData() {
 		6, 7, 2, 2, 7, 3,
 	}
 	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, helpers.ByteSizeOfSlice(indices), indices, gl.STATIC_DRAW)
+
+	vertices := []mgl.Vec3f{
+		mgl.Vec3f{ -1,-1,-1 },
+		mgl.Vec3f{  1,-1,-1 },
+		mgl.Vec3f{ -1, 1,-1 },
+		mgl.Vec3f{  1, 1,-1 },
+		mgl.Vec3f{ -1,-1, 1 },
+		mgl.Vec3f{  1,-1, 1 },
+		mgl.Vec3f{ -1, 1, 1 },
+		mgl.Vec3f{  1, 1, 1 },
+	}
+
+	this.RenData.VertexDataBuffer = gl.GenBuffer()
+	this.RenData.VertexDataBuffer.Bind(gl.ARRAY_BUFFER)
+	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(vertices), vertices, gl.STATIC_DRAW)
+	helpers.SetAttribPointers(&this.RenLoc, &SkyboxVertex{})
 	return
 }
 

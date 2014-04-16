@@ -54,7 +54,8 @@ func MakeProgram3(vertFname, geomFname, fragFname string) gl.Program {
 
 	log := program.GetInfoLog()
 	if log != "" {
-		panic(fmt.Sprint("linking ", vertFname, geomFname, fragFname, log))
+		// panic(fmt.Sprint("linking ", vertFname, geomFname, fragFname, log))
+		fmt.Printf("linking ", vertFname, geomFname, fragFname, log)
 	}
 
 	return program
@@ -73,18 +74,19 @@ func MakeProgram(vertFname, fragFname string) gl.Program {
 
 	linkstat := program.Get(gl.LINK_STATUS)
 	if linkstat != 1 {
-		log.Panic("Program link failed, sources=", vertFname, fragFname, "\nstatus=", linkstat, "\nInfo log: ", program.GetInfoLog())
+		// log.Panic("Program link failed, sources=", vertFname, fragFname, "\nstatus=", linkstat, "\nInfo log: ", program.GetInfoLog())
 	}
 
 	program.Validate()
 	valstat := program.Get(gl.VALIDATE_STATUS)
 	if valstat != 1 {
-		log.Panic("Program validation failed: ", valstat)
+		// log.Panic("Program validation failed: ", valstat)
 	}
 
 	infoLog := program.GetInfoLog()
 	if infoLog != "" {
-		log.Panic(fmt.Sprint("linking ", vertFname, fragFname, infoLog))
+		// log.Panic(fmt.Sprint("linking ", vertFname, fragFname, infoLog))
+		fmt.Printf("linking ", vertFname, fragFname, infoLog)
 	}
 
 	return program

@@ -28,6 +28,7 @@ func main() {
 	glfw.WindowHint(glfw.ContextVersionMajor, 3)
 	glfw.WindowHint(glfw.ContextVersionMinor, 3)
 	glfw.WindowHint(glfw.OpenglProfile, glfw.OpenglCoreProfile)
+	glfw.WindowHint(glfw.OpenglForwardCompatible, gl.TRUE)
 	glfw.WindowHint(glfw.OpenglDebugContext, gl.TRUE)
 
 	glfw.SwapInterval(60)

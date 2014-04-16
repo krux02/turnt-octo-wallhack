@@ -2,6 +2,7 @@ package debugContext
 
 /*
 #cgo linux LDFLAGS: -lGL -lGLEW
+#cgo darwin LDFLAGS: -framework OpenGL -L/usr/include/GL/ -lGLEW
 #include "initDebugContext.h"
 */
 import "C"

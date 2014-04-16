@@ -29,7 +29,7 @@ void main() {
 	float fractionC = pow(abs(normal_ws.x), 15);
 	float len = fractionA+fractionB+fractionC;
 	color.rgb = colorA*vec3(fractionA/len)+colorB*vec3(fractionB/len)+colorC*vec3(fractionC/len);
-	color.rgb =  light * mix(v_color.xyz, color.rgb, v_color.w);
+	//color.rgb =  light * mix(v_color.xyz, color.rgb, v_color.w);
 	color.a = 1;
 }
 
