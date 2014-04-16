@@ -99,6 +99,7 @@ func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOpt
 }
 
 func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOptions, View mgl.Mat4f, window *glfw.Window, recursion int, clippingPlane mgl.Vec4f, srcPortal *gamestate.Portal) {
+
 	this.Framebuffer[recursion].Bind()
 	defer this.Framebuffer[recursion].Unbind()
 
@@ -110,10 +111,6 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 	gl.CullFace(gl.BACK)
 
 	currentTime := glfw.GetTime()
-
-	if options.ParticlePhysics {
-		this.ParticleSystem.DoStep(currentTime)
-	}
 
 	if options.Wireframe {
 		gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
@@ -137,6 +134,8 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 
 	if options.WorldRender {
 		this.HeightMapRenderer.Render(this.Proj, View, mgl.Ident4f(), ww.HeightMap, clippingPlane)
+	}
+	if options.WaterRender {
 		this.WaterRenderer.Render(this.Proj, View, mgl.Ident4f(), currentTime, clippingPlane, options.WaterNormals)
 	}
 

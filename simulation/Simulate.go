@@ -5,6 +5,7 @@ import (
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
+	"github.com/krux02/turnt-octo-wallhack/particles"
 )
 
 func PortalPassed(portal *gamestate.Portal, pos1, pos2 mgl.Vec4f) bool {
@@ -25,7 +26,7 @@ func PortalPassed(portal *gamestate.Portal, pos1, pos2 mgl.Vec4f) bool {
 	}
 }
 
-func Simulate(gs *gamestate.GameState) {
+func Simulate(gs *gamestate.GameState, ps *particles.ParticleSystem) {
 	player := gs.Player
 	cam := &gs.Player.Camera
 	oldPos := cam.Position
@@ -39,6 +40,10 @@ func Simulate(gs *gamestate.GameState) {
 		transform := nearestPortal.Transform()
 		cam.SetModel(transform.Mul4(cam.Model()))
 		player.Velocity = transform.Mul4x1(player.Velocity)
+	}
+
+	if gs.Options.ParticlePhysics {
+		ps.DoStep(gs)
 	}
 }
 

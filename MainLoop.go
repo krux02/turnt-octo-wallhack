@@ -34,7 +34,7 @@ func MainLoop(gs *gamestate.GameState, renderer *rendering.WorldRenderer) {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 		gl.Disable(gl.BLEND)
 
-		simulation.Simulate(gs)
+		simulation.Simulate(gs, renderer.ParticleSystem)
 		renderer.Render(gs.World, &gs.Options, gs.Camera.View(), window)
 
 		tw.Draw()

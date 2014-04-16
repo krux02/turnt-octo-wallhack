@@ -9,10 +9,13 @@ out vec3 v_Pos1;
 out vec3 v_Pos2;
 out float v_Lifetime;
 
+uniform float FrictionFactor = 0.99 ;
+uniform float Timestep = 0.016666666;
 uniform vec3 RandomDirs[64];
 uniform vec3 Origin;
 uniform float Gravity;
 uniform float MaxLifetime;
+uniform vec3 Dir = vec3(0);
 
 uniform sampler2D HeightMap;
 uniform vec3 LowerBound;
@@ -39,7 +42,7 @@ vec3 normalAt(vec2 pos) {
 void main() {
 	if(Lifetime > 0) {
 		v_Pos2 = Pos1;
-		v_Pos1 = Pos1+(Pos1-Pos2)+vec3(0,0,Gravity);
+		v_Pos1 = Pos1+(Pos1-Pos2)*FrictionFactor+vec3(0,0,Gravity)*Timestep;
 
 		float h = heightAt(v_Pos1.xy);
 
@@ -51,12 +54,11 @@ void main() {
 			v_Pos2 = v_Pos1-dir * 0.5;
 		}
 		
-		v_Lifetime = Lifetime-1;
+		v_Lifetime = Lifetime-Timestep;
 	}
 	else {
 		v_Pos1 = Origin;
-		//v_Pos2 = Origin+RandomDirs[gl_VertexID % 64];
-		v_Pos2 = Origin+StartDir;
+		v_Pos2 = Origin + StartDir*Timestep + Dir*Timestep;
 		v_Lifetime = MaxLifetime;
 	}
 }

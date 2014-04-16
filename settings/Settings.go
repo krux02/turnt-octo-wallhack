@@ -13,6 +13,7 @@ type BoolOptions struct {
 	ParticleRender,
 	ParticlePhysics,
 	WorldRender,
+	WaterRender,
 	TreeRender,
 	PlayerPhysics,
 	Skybox,
