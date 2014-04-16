@@ -54,14 +54,20 @@ func MakeProgram3(vertFname, geomFname, fragFname string) gl.Program {
 
 	log := program.GetInfoLog()
 	if log != "" {
-		// panic(fmt.Sprint("linking ", vertFname, geomFname, fragFname, log))
-		fmt.Printf("linking ", vertFname, geomFname, fragFname, log)
+		if program.Get(gl.LINK_STATUS) == gl.FALSE {
+			panic(fmt.Sprint("linking ", vertFname, geomFname, fragFname, log))
+		} else {
+			fmt.Print("linking ", vertFname, geomFname, fragFname, log)
+		}
 	}
 
 	return program
 }
 
 func MakeProgram(vertFname, fragFname string) gl.Program {
+	vao := gl.GenVertexArray()
+	vao.Bind()
+
 	vertShader := MakeShader(gl.VERTEX_SHADER, vertFname)
 	defer vertShader.Delete()
 	fragShader := MakeShader(gl.FRAGMENT_SHADER, fragFname)
@@ -83,11 +89,16 @@ func MakeProgram(vertFname, fragFname string) gl.Program {
 		// log.Panic("Program validation failed: ", valstat)
 	}
 
-	infoLog := program.GetInfoLog()
-	if infoLog != "" {
-		// log.Panic(fmt.Sprint("linking ", vertFname, fragFname, infoLog))
-		fmt.Printf("linking ", vertFname, fragFname, infoLog)
+	log := program.GetInfoLog()
+	if log != "" {
+		if program.Get(gl.LINK_STATUS) == gl.FALSE {
+			panic(fmt.Sprint("linking ", vertFname, fragFname, log))
+		} else {
+			fmt.Print("linking ", vertFname, fragFname, log)
+		}
 	}
+
+	vao.Delete()
 
 	return program
 }

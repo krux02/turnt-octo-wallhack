@@ -17,26 +17,6 @@ func InitDebugContext() bool {
 	return C.initDebugContext() == 1
 }
 
-func PointParameterf(pname gl.GLenum, param float32) {
-	C.glPointParameterf(C.GLenum(pname), C.GLfloat(param))
-}
-
-func PointParameterfv(pname gl.GLenum, params []float32) {
-
-	if len(params) == 0 {
-		panic("Invalid slice length")
-	}
-
-	C.glPointParameterfv(C.GLenum(pname), (*C.GLfloat)(&params[0]))
-}
-
-const (
-	POINT_DISTANCE_ATTENUATION_ARB = C.GL_POINT_DISTANCE_ATTENUATION_ARB
-	POINT_SIZE_MAX_ARB             = C.GL_POINT_SIZE_MAX_ARB
-	POINT_SIZE_MIN_ARB             = C.GL_POINT_SIZE_MIN_ARB
-	POINT_SPRITE_ARB               = C.GL_POINT_SPRITE_ARB
-)
-
 //export goDebugCallback
 func goDebugCallback(source, _type, id, severity C.uint, length C.int, message *C.char, userParam unsafe.Pointer) {
 	switch source {

@@ -40,15 +40,14 @@ func main() {
 		return
 	}
 
-	maj, min, rev := glfw.GetVersion()
-	fmt.Printf("glVersion %d.%d.%d\n", maj, min, rev)
-
 	window.MakeContextCurrent()
+
+	gl.Init()
+	fmt.Println("glVersion", gl.GetString(gl.VERSION))
 
 	tw.Init(tw.OPENGL_CORE, nil)
 	defer tw.Terminate()
 
-	gl.Init()
 	gl.GetError() // Ignore error
 
 	window.SetInputMode(glfw.StickyKeys, gl.TRUE)

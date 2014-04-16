@@ -111,6 +111,48 @@ func NewTextures(heightMap *gamestate.HeightMap) *Textures {
 	return &Textures{textures}
 }
 
+func TexturesTest() {
+	out := make([]int32, 1)
+	gl.GetIntegerv(gl.MAX_TEXTURE_IMAGE_UNITS, out)
+	maxUnits := int(out[0])
+
+	for i := 0; i < maxUnits; i++ {
+		gl.ActiveTexture(gl.GLenum(gl.TEXTURE0 + i))
+
+		gl.GetIntegerv(gl.TEXTURE_BINDING_1D, out)
+		texture := gl.Texture(out[0])
+		if texture != 0 {
+			fmt.Println("unit: ", i, " texture1d: ", texture)
+		}
+
+		gl.GetIntegerv(gl.TEXTURE_BINDING_2D, out)
+		texture = gl.Texture(out[0])
+		if texture != 0 {
+			fmt.Println("unit: ", i, " texture2d: ", texture)
+		}
+
+		gl.GetIntegerv(gl.TEXTURE_BINDING_RECTANGLE, out)
+		texture = gl.Texture(out[0])
+		if texture != 0 {
+			fmt.Println("unit: ", i, " textureRect: ", texture)
+		}
+
+		gl.GetIntegerv(gl.TEXTURE_BINDING_CUBE_MAP, out)
+		texture = gl.Texture(out[0])
+		if texture != 0 {
+			fmt.Println("unit: ", i, " textureCube: ", texture)
+		}
+
+		gl.GetIntegerv(gl.TEXTURE_BINDING_3D, out)
+		texture = gl.Texture(out[0])
+		if texture != 0 {
+			fmt.Println("unit: ", i, " texture3d: ", texture)
+		}
+	}
+
+	gl.ActiveTexture(gl.TEXTURE0)
+}
+
 func (this *Textures) Delete() {
 	gl.DeleteTextures(this.Textures)
 }
