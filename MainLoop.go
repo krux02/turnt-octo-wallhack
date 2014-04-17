@@ -2,26 +2,23 @@ package main
 
 import (
 	//	"fmt"
-	//mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
-	glfw "github.com/go-gl/glfw3"
+	"github.com/jackyb/go-sdl2/sdl"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/rendering"
 	"github.com/krux02/turnt-octo-wallhack/simulation"
 	"github.com/krux02/tw"
-	//"math"
 )
 
 func MainLoop(gs *gamestate.GameState, renderer *rendering.WorldRenderer) {
 	var frames int
-	time := glfw.GetTime()
-
+	time := float32(sdl.GetTicks()) / 1000
 	window := gs.Window
+	running := true
 
-	for !window.ShouldClose() && window.GetKey(glfw.KeyEscape) != glfw.Press {
+	for running {
 
-		currentTime := glfw.GetTime()
-
+		currentTime := float32(sdl.GetTicks()) / 1000
 		if currentTime > time+1 {
 			gs.Fps = float32(frames)
 			frames = 0
@@ -29,7 +26,7 @@ func MainLoop(gs *gamestate.GameState, renderer *rendering.WorldRenderer) {
 		}
 		frames += 1
 
-		Input(gs)
+		running = Input(gs, renderer)
 
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 		gl.Disable(gl.BLEND)
@@ -38,7 +35,6 @@ func MainLoop(gs *gamestate.GameState, renderer *rendering.WorldRenderer) {
 		renderer.Render(gs.World, &gs.Options, gs.Camera.View(), window)
 
 		tw.Draw()
-		window.SwapBuffers()
-		glfw.PollEvents()
+		sdl.GL_SwapWindow(window)
 	}
 }

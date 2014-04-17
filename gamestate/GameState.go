@@ -4,7 +4,8 @@ import (
 	"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
-	glfw "github.com/go-gl/glfw3"
+	//glfw "github.com/go-gl/glfw3"
+	"github.com/jackyb/go-sdl2/sdl"
 	//	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/settings"
 	"github.com/krux02/tw"
@@ -12,7 +13,7 @@ import (
 )
 
 type GameState struct {
-	Window  *glfw.Window
+	Window  *sdl.Window
 	Camera  *Camera
 	Bar     *tw.Bar
 	World   *World
@@ -21,7 +22,7 @@ type GameState struct {
 	Options settings.BoolOptions
 }
 
-func NewGameState(window *glfw.Window, world *World) (gamestate *GameState) {
+func NewGameState(window *sdl.Window, world *World) (gamestate *GameState) {
 	gl.ClearColor(0., 0., 0.4, 0.0)
 
 	gl.Enable(gl.DEPTH_TEST)
@@ -44,7 +45,7 @@ func NewGameState(window *glfw.Window, world *World) (gamestate *GameState) {
 	opt.Load()
 	gamestate.Camera = gamestate.Player.GetCamera()
 
-	tw.Define(" GLOBAL help='This example shows how to integrate AntTweakBar with GLFW and OpenGL.' ")
+	tw.Define(" GLOBAL help='This example shows how to integrate AntTweakBar with SDL2 and OpenGL.' ")
 	bar.AddVarRO("fps", tw.TYPE_FLOAT, unsafe.Pointer(&gamestate.Fps), "")
 	opt.CreateGui(bar)
 
@@ -53,6 +54,7 @@ func NewGameState(window *glfw.Window, world *World) (gamestate *GameState) {
 		bar.AddVarRW(fmt.Sprintf("Rotation %d", i), tw.TYPE_QUAT4F, unsafe.Pointer(ptr), "")
 	}
 
+	//window.GetSize(w, h)
 	w, h := window.GetSize()
 	tw.WindowSize(w, h)
 

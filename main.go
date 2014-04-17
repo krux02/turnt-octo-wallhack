@@ -3,46 +3,86 @@ package main
 import (
 	"fmt"
 	"github.com/go-gl/gl"
-	glfw "github.com/go-gl/glfw3"
+	"github.com/jackyb/go-sdl2/sdl"
 	"github.com/krux02/turnt-octo-wallhack/debugContext"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/generation"
 	"github.com/krux02/turnt-octo-wallhack/rendering"
 	"github.com/krux02/tw"
-	"os"
 	"runtime"
 )
 
-func errorCallback(err glfw.ErrorCode, desc string) {
-	fmt.Printf("%v: %v\n", err, desc)
+var counter = 1
+
+func SdlError() {
+	fmt.Println("errtest", counter)
+	counter = counter + 1
+	err := sdl.GetError()
+	if err != nil {
+		panic(err)
+	}
 }
 
 func main() {
 
 	runtime.LockOSThread()
 
-	glfw.Init()
-	defer glfw.Terminate()
+	if sdl.Init(sdl.INIT_EVERYTHING) < 0 {
+		panic("Unable to initialize SDL")
+	}
+	defer sdl.Quit()
 
-	glfw.WindowHint(glfw.Samples, 4)
-	glfw.WindowHint(glfw.ContextVersionMajor, 3)
-	glfw.WindowHint(glfw.ContextVersionMinor, 3)
-	glfw.WindowHint(glfw.OpenglProfile, glfw.OpenglCoreProfile)
-	glfw.WindowHint(glfw.OpenglForwardCompatible, gl.TRUE)
-	glfw.WindowHint(glfw.OpenglDebugContext, gl.TRUE)
+	sdl.GL_SetAttribute(sdl.GL_MULTISAMPLESAMPLES, 4)
+	sdl.GL_SetAttribute(sdl.GL_CONTEXT_MAJOR_VERSION, 3)
+	sdl.GL_SetAttribute(sdl.GL_CONTEXT_MINOR_VERSION, 3)
+	sdl.GL_SetAttribute(sdl.GL_CONTEXT_PROFILE_MASK, sdl.GL_CONTEXT_PROFILE_CORE)
+	sdl.GL_SetAttribute(sdl.GL_DOUBLEBUFFER, 1)
+	sdl.GL_SetAttribute(sdl.GL_DEPTH_SIZE, 24)
+	sdl.GL_SetAttribute(sdl.GL_CONTEXT_FLAGS, sdl.GL_CONTEXT_DEBUG_FLAG|sdl.GL_CONTEXT_FORWARD_COMPATIBLE_FLAG)
 
-	glfw.SwapInterval(60)
-
-	window, err := glfw.CreateWindow(1024, 768, "Turnt Octo Wallhack", nil, nil)
+	window := sdl.CreateWindow("TOW", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, 1024, 768, sdl.WINDOW_OPENGL|sdl.WINDOW_SHOWN)
 	if window == nil {
-		fmt.Println("error")
-		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
-		return
+		panic("cant create window")
 	}
 
-	window.MakeContextCurrent()
+	//window, renderer := sdl.CreateWindowAndRenderer(1024, 768, sdl.RENDERER_PRESENTVSYNC|sdl.RENDERER_ACCELERATED)
+	defer window.Destroy()
 
-	gl.Init()
+	//defer renderer.Destroy()
+
+	glcontext := sdl.GL_CreateContext(window)
+	if glcontext == nil {
+		fmt.Sprintf("can't create context %v", sdl.GetError())
+	}
+
+	sdl.GL_MakeCurrent(window, glcontext)
+
+	SdlError()
+
+	err := gl.GlewInit()
+	fmt.Println(gl.GlewGetErrorString(err))
+
+	defer sdl.GL_DeleteContext(glcontext)
+
+	sdl.GL_SetSwapInterval(1)
+
+	/*
+		glfw.WindowHint(glfw.Samples, 4)
+		glfw.WindowHint(glfw.ContextVersionMajor, 3)
+		glfw.WindowHint(glfw.ContextVersionMinor, 3)
+		glfw.WindowHint(glfw.OpenglProfile, glfw.OpenglCoreProfile)
+		glfw.WindowHint(glfw.OpenglForwardCompatible, gl.TRUE)
+		glfw.WindowHint(glfw.OpenglDebugContext, gl.TRUE)
+		glfw.SwapInterval(60)
+		window, err := glfw.CreateWindow(1024, 768, "Turnt Octo Wallhack", nil, nil)
+		if window == nil {
+			fmt.Println("error")
+			fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+			return
+		}
+		window.MakeContextCurrent()
+	*/
+
 	fmt.Println("glVersion", gl.GetString(gl.VERSION))
 
 	tw.Init(tw.OPENGL_CORE, nil)
@@ -50,24 +90,17 @@ func main() {
 
 	gl.GetError() // Ignore error
 
-	window.SetInputMode(glfw.StickyKeys, gl.TRUE)
+	//window.SetInputMode(glfw.StickyKeys, gl.TRUE)
 
 	debugContext.InitDebugContext()
 
 	world := generation.GenerateWorld(64, 64, 2)
 	gs := gamestate.NewGameState(window, world)
 	defer gs.Delete()
-	renderer := rendering.NewWorldRenderer(window, gs.World)
-	defer renderer.Delete()
+	worldRenderer := rendering.NewWorldRenderer(window, gs.World)
+	defer worldRenderer.Delete()
 
-	gs.Bar.AddButton("screen shot", renderer.ScreenShot, "")
+	gs.Bar.AddButton("screen shot", worldRenderer.ScreenShot, "")
 
-	window.SetFramebufferSizeCallback(func(window *glfw.Window, width, height int) {
-		renderer.Resize(window, width, height)
-		tw.WindowSize(width, height)
-	})
-
-	InitInput(gs)
-
-	MainLoop(gs, renderer)
+	MainLoop(gs, worldRenderer)
 }

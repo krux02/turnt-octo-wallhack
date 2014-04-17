@@ -4,7 +4,7 @@ import (
 	//	"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
-	glfw "github.com/go-gl/glfw3"
+	"github.com/jackyb/go-sdl2/sdl"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/particles"
@@ -31,7 +31,7 @@ type WorldRenderer struct {
 	screenShot        bool
 }
 
-func (this *WorldRenderer) Resize(window *glfw.Window, width, height int) {
+func (this *WorldRenderer) Resize(width, height int) {
 	this.Proj = mgl.Perspective(90, float32(width)/float32(height), 0.3, 1000)
 	gl.Viewport(0, 0, width, height)
 	for _, fb := range this.Framebuffer {
@@ -43,7 +43,7 @@ func (this *WorldRenderer) ScreenShot() {
 	this.screenShot = true
 }
 
-func NewWorldRenderer(window *glfw.Window, w *gamestate.World) *WorldRenderer {
+func NewWorldRenderer(window *sdl.Window, w *gamestate.World) *WorldRenderer {
 	width, height := window.GetSize()
 
 	portalData := w.Portals[0].Mesh
@@ -85,7 +85,7 @@ func (this *WorldRenderer) Delete() {
 	*this = WorldRenderer{}
 }
 
-func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOptions, View mgl.Mat4f, window *glfw.Window) {
+func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOptions, View mgl.Mat4f, window *sdl.Window) {
 	this.render(ww, options, View, window, 0, mgl.Vec4f{3 / 5.0, 4 / 5.0, 0, math.MaxFloat32}, nil)
 
 	gl.ActiveTexture(gl.TEXTURE0)
@@ -98,7 +98,7 @@ func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOpt
 	}
 }
 
-func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOptions, View mgl.Mat4f, window *glfw.Window, recursion int, clippingPlane mgl.Vec4f, srcPortal *gamestate.Portal) {
+func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOptions, View mgl.Mat4f, window *sdl.Window, recursion int, clippingPlane mgl.Vec4f, srcPortal *gamestate.Portal) {
 
 	this.Framebuffer[recursion].Bind()
 	defer this.Framebuffer[recursion].Unbind()
@@ -110,7 +110,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 
 	gl.CullFace(gl.BACK)
 
-	currentTime := glfw.GetTime()
+	currentTime := float64(sdl.GetTicks()) / 1000
 
 	if options.Wireframe {
 		gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
