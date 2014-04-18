@@ -1,7 +1,7 @@
 package main
 
 import (
-	//"fmt"
+	"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/jackyb/go-sdl2/sdl"
 	"github.com/krux02/turnt-octo-wallhack/debug"
@@ -17,7 +17,6 @@ var drag uint8
 func GrabCursor() {
 	if sdl.GetRelativeMouseMode() {
 		sdl.SetRelativeMouseMode(false)
-		//window.SetCursorPosition(0, 0)
 	} else {
 		sdl.SetRelativeMouseMode(true)
 	}
@@ -31,7 +30,9 @@ func Input(gs *gamestate.GameState, worldRenderer *rendering.WorldRenderer) bool
 	inp := gamestate.PlayerInput{}
 
 	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-		tw.EventSDL(event, 1, 3)
+		if !tw.EventSDL(event, 2, 0) {
+			fmt.Println(tw.GetLastError())
+		}
 		switch e := event.(type) {
 		case *sdl.WindowEvent:
 			switch e.Event {
@@ -52,12 +53,12 @@ func Input(gs *gamestate.GameState, worldRenderer *rendering.WorldRenderer) bool
 				drag = 255
 			}
 
-			if e.State == sdl.PRESSED && button == 1 {
+			if e.State == sdl.PRESSED && button == sdl.BUTTON_RIGHT {
 				GrabCursor()
 			}
 
 			// ray cast testing
-			if e.State == sdl.PRESSED && button == 0 {
+			if e.State == sdl.PRESSED && button == sdl.BUTTON_LEFT {
 				var dir_cs mgl.Vec4f
 				if !sdl.GetRelativeMouseMode() {
 					mx, my := e.X, e.Y

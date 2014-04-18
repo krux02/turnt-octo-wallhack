@@ -40,7 +40,7 @@ func main() {
 	sdl.GL_SetAttribute(sdl.GL_DEPTH_SIZE, 24)
 	sdl.GL_SetAttribute(sdl.GL_CONTEXT_FLAGS, sdl.GL_CONTEXT_DEBUG_FLAG|sdl.GL_CONTEXT_FORWARD_COMPATIBLE_FLAG)
 
-	window := sdl.CreateWindow("TOW", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, 1024, 768, sdl.WINDOW_OPENGL|sdl.WINDOW_SHOWN)
+	window := sdl.CreateWindow("TOW", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, 1024, 768, sdl.WINDOW_OPENGL|sdl.WINDOW_SHOWN|sdl.WINDOW_RESIZABLE)
 	if window == nil {
 		panic("cant create window")
 	}
