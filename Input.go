@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	//"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/jackyb/go-sdl2/sdl"
 	"github.com/krux02/turnt-octo-wallhack/debug"
@@ -22,7 +22,7 @@ func GrabCursor() {
 	}
 }
 
-func GetMouseDirection(window *sdl.Window, mx, my int32) (dir_cs mgl.Vec4f) {
+func GetMouseDirection(window *sdl.Window, mx, my int) (dir_cs mgl.Vec4f) {
 	if !sdl.GetRelativeMouseMode() {
 		W, H := window.GetSize()
 		x := (2*float32(mx) - float32(W)) / float32(H)
@@ -51,61 +51,60 @@ func RayCastInCameraSpace(gs *gamestate.GameState, dir_cs mgl.Vec4f) (hit_ws mgl
 // returns false if the player wants to quit
 func Input(gs *gamestate.GameState, worldRenderer *rendering.WorldRenderer) bool {
 	running := true
-
 	window := gs.Window
 	inp := gamestate.PlayerInput{}
 
 	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-		if !tw.EventSDL(event, 2, 0) {
-			fmt.Println(tw.GetLastError())
+		consumeEvent := true
+		if !sdl.GetRelativeMouseMode() {
+			consumeEvent = tw.EventSDL(event, 2, 0)
 		}
-		switch e := event.(type) {
-		case *sdl.WindowEvent:
-			switch e.Event {
-			case sdl.WINDOWEVENT_CLOSE:
-				running = false
-			case sdl.WINDOWEVENT_RESIZED:
-				width, height := int(e.Data1), int(e.Data2)
-				worldRenderer.Resize(width, height)
-				tw.WindowSize(width, height)
-			}
-		case *sdl.MouseButtonEvent:
-			button := e.Button
-
-			if e.State == sdl.PRESSED && drag == 255 {
-				drag = e.Button
-			}
-			if e.State == sdl.RELEASED && drag == button {
-				drag = 255
-			}
-
-			if e.State == sdl.PRESSED && button == sdl.BUTTON_RIGHT {
-				GrabCursor()
-			}
-
-			// ray cast testing
-			if e.State == sdl.PRESSED && button == sdl.BUTTON_LEFT {
-				dir_cs := GetMouseDirection(window, e.X, e.Y)
-				out, hit := RayCastInCameraSpace(gs, dir_cs)
-				if hit {
-					n := helpers.Vector(gs.World.HeightMap.Normal2f(out[0], out[1]))
-					debug.Color(mgl.Vec4f{0, 1, 0, 1})
-					debug.Line(out, out.Add(n))
-
-					heightMap := gs.World.HeightMap
-					heightMap.Bump(mgl.Vec2f{out[0], out[1]}, 3)
+		if consumeEvent {
+			switch e := event.(type) {
+			case *sdl.WindowEvent:
+				switch e.Event {
+				case sdl.WINDOWEVENT_CLOSE:
+					running = false
+				case sdl.WINDOWEVENT_RESIZED:
+					width, height := int(e.Data1), int(e.Data2)
+					worldRenderer.Resize(width, height)
+					tw.WindowSize(width, height)
 				}
+			case *sdl.MouseButtonEvent:
+				button := e.Button
+
+				if e.State == sdl.PRESSED && drag == 255 {
+					drag = e.Button
+				}
+				if e.State == sdl.RELEASED && drag == button {
+					drag = 255
+				}
+
+				if e.State == sdl.PRESSED && button == sdl.BUTTON_RIGHT {
+					GrabCursor()
+				}
+
+				// ray cast testing
+				if e.State == sdl.PRESSED && button == sdl.BUTTON_LEFT {
+					dir_cs := GetMouseDirection(window, int(e.X), int(e.Y))
+					out, hit := RayCastInCameraSpace(gs, dir_cs)
+					if hit {
+						n := helpers.Vector(gs.World.HeightMap.Normal2f(out[0], out[1]))
+						debug.Color(mgl.Vec4f{0, 1, 0, 1})
+						debug.Line(out, out.Add(n))
+					}
+				}
+			case *sdl.KeyDownEvent:
+				switch e.Keysym.Scancode {
+				case sdl.SCANCODE_RETURN:
+					GrabCursor()
+				case sdl.SCANCODE_SPACE:
+					gs.Player.Camera.Position = gs.Options.StartPosition
+				case sdl.SCANCODE_ESCAPE:
+					running = false
+				}
+			case *sdl.KeyUpEvent:
 			}
-		case *sdl.KeyDownEvent:
-			switch e.Keysym.Scancode {
-			case sdl.SCANCODE_RETURN:
-				GrabCursor()
-			case sdl.SCANCODE_SPACE:
-				gs.Player.Camera.Position = gs.Options.StartPosition
-			case sdl.SCANCODE_ESCAPE:
-				running = false
-			}
-		case *sdl.KeyUpEvent:
 		}
 	}
 
@@ -115,25 +114,35 @@ func Input(gs *gamestate.GameState, worldRenderer *rendering.WorldRenderer) bool
 		inp.Rotate[1] = -float32(x) / 5
 	}
 
-	state := sdl.GetKeyboardState()
+	keyState := sdl.GetKeyboardState()
 
-	if state[sdl.SCANCODE_E] == 1 {
+	if keyState[sdl.SCANCODE_E] == 1 {
 		inp.Move[2] -= 1
 	}
-	if state[sdl.SCANCODE_D] == 1 {
+	if keyState[sdl.SCANCODE_D] == 1 {
 		inp.Move[2] += 1
 	}
-	if state[sdl.SCANCODE_S] == 1 {
+	if keyState[sdl.SCANCODE_S] == 1 {
 		inp.Move[0] -= 1
 	}
-	if state[sdl.SCANCODE_F] == 1 {
+	if keyState[sdl.SCANCODE_F] == 1 {
 		inp.Move[0] += 1
 	}
-	if state[sdl.SCANCODE_R] == 1 {
+	if keyState[sdl.SCANCODE_R] == 1 {
 		inp.Rotate[2] -= 1
 	}
-	if state[sdl.SCANCODE_W] == 1 {
+	if keyState[sdl.SCANCODE_W] == 1 {
 		inp.Rotate[2] += 1
+	}
+
+	x, y, button_state := sdl.GetMouseState()
+	if button_state&sdl.BUTTON_LEFT != 0 {
+		dir_cs := GetMouseDirection(window, x, y)
+		out, hit := RayCastInCameraSpace(gs, dir_cs)
+		if hit {
+			heightMap := gs.World.HeightMap
+			heightMap.Bump(mgl.Vec2f{out[0], out[1]}, 3)
+		}
 	}
 
 	gs.Player.Input = inp

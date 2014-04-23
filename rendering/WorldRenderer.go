@@ -139,6 +139,8 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 		this.WaterRenderer.Render(this.Proj, View, mgl.Ident4f(), currentTime, clippingPlane, options.WaterNormals)
 	}
 
+	gl.Disable(gl.CULL_FACE)
+
 	gl.Disable(gl.BLEND)
 	if options.TreeRender {
 		this.PalmTrees.Render(this.Proj, View, Rot2D, clippingPlane)
@@ -150,7 +152,6 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 		this.ParticleSystem.Render(this.Proj, View, clippingPlane)
 	}
 
-	gl.Disable(gl.CULL_FACE)
 	gl.Disable(gl.BLEND)
 
 	boxVertices := ww.Portals[0].Mesh.MakeBoxVertices()

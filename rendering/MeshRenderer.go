@@ -9,8 +9,9 @@ import (
 )
 
 type MeshRenderer struct {
-	Program gl.Program
-	RenLoc  MeshRenderLocations
+	Program  gl.Program
+	RenLoc   MeshRenderLocations
+	MeshData map[*gamestate.Mesh]*MeshRenderData
 }
 
 type MeshRenderLocations struct {
@@ -25,6 +26,13 @@ type MeshRenderData struct {
 	Numverts int
 }
 
+func (this *MeshRenderData) Delete() {
+	this.VAO.Delete()
+	this.Indices.Delete()
+	this.Vertices.Delete()
+	*this = MeshRenderData{}
+}
+
 func NewMeshRenderer() (mr *MeshRenderer) {
 	mr = new(MeshRenderer)
 	mr.Program = helpers.MakeProgram("Mesh.vs", "Mesh.fs")
@@ -35,10 +43,13 @@ func NewMeshRenderer() (mr *MeshRenderer) {
 
 func (this *MeshRenderer) Delete() {
 	this.Program.Delete()
-	this.Program = 0
+	for _, rd := range this.MeshData {
+		rd.Delete()
+	}
+	*this = MeshRenderer{}
 }
 
-func (this *MeshRenderer) CreateRenderData(mesh *gamestate.Mesh) (md MeshRenderData) {
+func (this *MeshRenderer) createRenderData(mesh *gamestate.Mesh) (md MeshRenderData) {
 
 	md.VAO = gl.GenVertexArray()
 	md.VAO.Bind()
@@ -58,8 +69,16 @@ func (this *MeshRenderer) CreateRenderData(mesh *gamestate.Mesh) (md MeshRenderD
 	return
 }
 
-func (this *MeshRenderer) Render(meshData *MeshRenderData, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f) {
+func (this *MeshRenderer) Render(mesh *gamestate.Mesh, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f) {
 	this.Program.Use()
+
+	meshData := this.MeshData[mesh]
+	if meshData == nil {
+		tmp := this.createRenderData(mesh)
+		meshData = &tmp
+		this.MeshData[mesh] = meshData
+	}
+
 	meshData.VAO.Bind()
 
 	gl.Disable(gl.BLEND)

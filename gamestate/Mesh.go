@@ -88,12 +88,21 @@ func Max(v1, v2 mgl.Vec4f) (min mgl.Vec4f) {
 	return
 }
 
+type MyLogStream int
+
+func (mls MyLogStream) Log(msg string) {
+	fmt.Println(msg)
+}
+
 func LoadMesh(filename string) (mesh *Mesh) {
 	scene := ai.ImportFile(filename, 0)
+	if scene == nil {
+		panic(ai.GetErrorString())
+	}
 	scene.ApplyPostProcessing(ai.Process_Triangulate)
 	meshes := scene.Meshes()
 	if len(meshes) != 1 {
-		panic(fmt.Sprintf("not a single mesh, found %d meshes", len(meshes)))
+		panic(fmt.Sprintf("not a single mesh in %s, found %d meshes", filename, len(meshes)))
 	}
 	aimesh := meshes[0]
 

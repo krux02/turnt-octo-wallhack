@@ -53,7 +53,6 @@ func main() {
 	}
 
 	sdl.GL_MakeCurrent(window, glcontext)
-	SdlError()
 
 	//err := gl.GlewInit()
 	//fmt.Println(gl.GlewGetErrorString(err))
