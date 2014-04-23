@@ -59,8 +59,10 @@ func main() {
 
 	SdlError()
 
-	err := gl.GlewInit()
-	fmt.Println(gl.GlewGetErrorString(err))
+	//err := gl.GlewInit()
+	//fmt.Println(gl.GlewGetErrorString(err))
+	//glew init
+	gl.Init()
 
 	defer sdl.GL_DeleteContext(glcontext)
 
