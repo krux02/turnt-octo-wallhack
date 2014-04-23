@@ -24,7 +24,6 @@ func SdlError() {
 }
 
 func main() {
-
 	runtime.LockOSThread()
 
 	if sdl.Init(sdl.INIT_EVERYTHING) < 0 {
@@ -44,8 +43,6 @@ func main() {
 	if window == nil {
 		panic("cant create window")
 	}
-
-	//window, renderer := sdl.CreateWindowAndRenderer(1024, 768, sdl.RENDERER_PRESENTVSYNC|sdl.RENDERER_ACCELERATED)
 	defer window.Destroy()
 
 	//defer renderer.Destroy()
@@ -56,7 +53,6 @@ func main() {
 	}
 
 	sdl.GL_MakeCurrent(window, glcontext)
-
 	SdlError()
 
 	//err := gl.GlewInit()
@@ -68,32 +64,12 @@ func main() {
 
 	sdl.GL_SetSwapInterval(1)
 
-	/*
-		glfw.WindowHint(glfw.Samples, 4)
-		glfw.WindowHint(glfw.ContextVersionMajor, 3)
-		glfw.WindowHint(glfw.ContextVersionMinor, 3)
-		glfw.WindowHint(glfw.OpenglProfile, glfw.OpenglCoreProfile)
-		glfw.WindowHint(glfw.OpenglForwardCompatible, gl.TRUE)
-		glfw.WindowHint(glfw.OpenglDebugContext, gl.TRUE)
-		glfw.SwapInterval(60)
-		window, err := glfw.CreateWindow(1024, 768, "Turnt Octo Wallhack", nil, nil)
-		if window == nil {
-			fmt.Println("error")
-			fmt.Fprintf(os.Stderr, "%s\n", err.Error())
-			return
-		}
-		window.MakeContextCurrent()
-	*/
-
 	fmt.Println("glVersion", gl.GetString(gl.VERSION))
 
 	tw.Init(tw.OPENGL_CORE, nil)
 	defer tw.Terminate()
 
 	gl.GetError() // Ignore error
-
-	//window.SetInputMode(glfw.StickyKeys, gl.TRUE)
-
 	debugContext.InitDebugContext()
 
 	world := generation.GenerateWorld(64, 64, 2)

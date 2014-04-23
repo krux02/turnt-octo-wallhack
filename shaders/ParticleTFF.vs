@@ -46,7 +46,7 @@ void main() {
 
 		float h = heightAt(v_Pos1.xy);
 
-		if( h > v_Pos1.z ) {
+		if( v_Pos1.z < h ) {
 			vec3 dir = v_Pos1 - v_Pos2;
 			vec3 n = normalAt(v_Pos1.xy);
 			dir = reflect(dir, n);

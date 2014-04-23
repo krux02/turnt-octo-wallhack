@@ -139,18 +139,19 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 		this.WaterRenderer.Render(this.Proj, View, mgl.Ident4f(), currentTime, clippingPlane, options.WaterNormals)
 	}
 
-	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE)
+	gl.Disable(gl.BLEND)
+	if options.TreeRender {
+		this.PalmTrees.Render(this.Proj, View, Rot2D, clippingPlane)
+	}
 
+	gl.Enable(gl.BLEND)
+	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE)
 	if options.ParticleRender {
 		this.ParticleSystem.Render(this.Proj, View, clippingPlane)
 	}
 
 	gl.Disable(gl.CULL_FACE)
 	gl.Disable(gl.BLEND)
-
-	if options.TreeRender {
-		this.PalmTrees.Render(this.Proj, View, Rot2D, clippingPlane)
-	}
 
 	boxVertices := ww.Portals[0].Mesh.MakeBoxVertices()
 	pv := this.Proj.Mul4(View)

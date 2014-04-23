@@ -22,6 +22,32 @@ func GrabCursor() {
 	}
 }
 
+func GetMouseDirection(window *sdl.Window, mx, my int32) (dir_cs mgl.Vec4f) {
+	if !sdl.GetRelativeMouseMode() {
+		W, H := window.GetSize()
+		x := (2*float32(mx) - float32(W)) / float32(H)
+		y := (float32(H) - 2*float32(my)) / float32(H)
+		dir_cs = mgl.Vec4f{x, y, -1, 0}
+	} else {
+		dir_cs = mgl.Vec4f{0, 0, -1, 0}
+	}
+	return
+}
+
+func RayCastInCameraSpace(gs *gamestate.GameState, dir_cs mgl.Vec4f) (hit_ws mgl.Vec4f, hit bool) {
+	pos_ws := gs.Camera.Position
+	dir_ws := gs.Camera.Model().Mul4x1(dir_cs)
+
+	pos_ws_v3 := helpers.XYZ(pos_ws)
+	dir_ws_v3 := helpers.XYZ(dir_ws)
+
+	factor, hit := gs.World.HeightMap.RayCast(pos_ws_v3, dir_ws_v3)
+	if hit {
+		hit_ws = pos_ws.Add(dir_ws.Mul(factor))
+	}
+	return
+}
+
 // returns false if the player wants to quit
 func Input(gs *gamestate.GameState, worldRenderer *rendering.WorldRenderer) bool {
 	running := true
@@ -59,28 +85,9 @@ func Input(gs *gamestate.GameState, worldRenderer *rendering.WorldRenderer) bool
 
 			// ray cast testing
 			if e.State == sdl.PRESSED && button == sdl.BUTTON_LEFT {
-				var dir_cs mgl.Vec4f
-				if !sdl.GetRelativeMouseMode() {
-					mx, my := e.X, e.Y
-					W, H := window.GetSize()
-					x := (2*float32(mx) - float32(W)) / float32(H)
-					y := (float32(H) - 2*float32(my)) / float32(H)
-					dir_cs = mgl.Vec4f{x, y, -1, 0}
-				} else {
-					dir_cs = mgl.Vec4f{0, 0, -1, 0}
-				}
-
-				m := gs.Camera.Model()
-				pos_ws := gs.Camera.Position
-				dir_ws := m.Mul4x1(dir_cs)
-
-				pos_ws_v3 := helpers.XYZ(pos_ws)
-				dir_ws_v3 := helpers.XYZ(dir_ws)
-
-				factor, hit := gs.World.HeightMap.RayCast(pos_ws_v3, dir_ws_v3)
-
+				dir_cs := GetMouseDirection(window, e.X, e.Y)
+				out, hit := RayCastInCameraSpace(gs, dir_cs)
 				if hit {
-					out := pos_ws.Add(dir_ws.Mul(factor))
 					n := helpers.Vector(gs.World.HeightMap.Normal2f(out[0], out[1]))
 					debug.Color(mgl.Vec4f{0, 1, 0, 1})
 					debug.Line(out, out.Add(n))

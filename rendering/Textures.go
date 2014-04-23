@@ -91,7 +91,6 @@ func NewTextures(heightMap *gamestate.HeightMap) *Textures {
 	}
 
 	gl.ActiveTexture(gl.TEXTURE7)
-
 	skybox, err := helpers.LoadTextureCube("textures/Above_The_Sea.jpg")
 	if err != nil {
 		panic("Above_The_Sea.jpg")
