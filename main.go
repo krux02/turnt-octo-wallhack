@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/go-gl/gl"
 	"github.com/jackyb/go-sdl2/sdl"
@@ -9,7 +10,9 @@ import (
 	"github.com/krux02/turnt-octo-wallhack/generation"
 	"github.com/krux02/turnt-octo-wallhack/rendering"
 	"github.com/krux02/tw"
+	"os"
 	"runtime"
+	"runtime/pprof"
 )
 
 var counter = 1
@@ -23,7 +26,19 @@ func SdlError() {
 	}
 }
 
+var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
+
 func main() {
+	flag.Parse()
+	if *cpuprofile != "" {
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			panic(err)
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	}
+
 	runtime.LockOSThread()
 
 	if sdl.Init(sdl.INIT_EVERYTHING) < 0 {

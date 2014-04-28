@@ -3,6 +3,8 @@ package rendering
 import (
 	"fmt"
 	"github.com/go-gl/gl"
+	"github.com/jackyb/go-sdl2/sdl"
+	"github.com/jackyb/go-sdl2/sdl_ttf"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 )
@@ -77,12 +79,12 @@ func NewTextures(heightMap *gamestate.HeightMap) *Textures {
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
 	}
 
-	gl.ActiveTexture(gl.TEXTURE6)
-	firebullTexture, err := helpers.LoadTexture2D("textures/fireball.png")
+	gl.ActiveTexture(gl.TEXTURE8)
+	fireballTexture, err := helpers.LoadTexture2D("textures/fireball.png")
 	if err != nil {
 		panic("fireball.png")
 	} else {
-		textures = append(textures, firebullTexture)
+		textures = append(textures, fireballTexture)
 		gl.GenerateMipmap(gl.TEXTURE_2D)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
@@ -104,6 +106,23 @@ func NewTextures(heightMap *gamestate.HeightMap) *Textures {
 		gl.TexParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 		gl.Enable(gl.TEXTURE_CUBE_MAP_SEAMLESS)
 	}
+
+	gl.ActiveTexture(gl.TEXTURE6)
+
+	ttf.Init()
+	defer ttf.Quit()
+	font, _ := ttf.OpenFont("fonts/Symbola.ttf", 64)
+	color := sdl.Color{255, 255, 255, 255}
+	surface := font.RenderText_Blended("Bla", color)
+	defer surface.Free()
+	textTexture := gl.GenTexture()
+
+	textTexture.Bind(gl.TEXTURE_2D)
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, int(surface.W), int(surface.H), 0, gl.RGBA, gl.UNSIGNED_BYTE, uintptr(surface.Data()))
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+
+	surface.Data()
 
 	gl.ActiveTexture(gl.TEXTURE0)
 
