@@ -1,7 +1,9 @@
 package gamestate
 
 import (
+	"encoding/json"
 	mgl "github.com/Jragonmiris/mathgl"
+	"io"
 	"math"
 )
 
@@ -47,4 +49,23 @@ func (e Entity) View() mgl.Mat4f {
 
 func (e *Entity) SetView(m mgl.Mat4f) {
 	e.SetModel(m.Inv())
+}
+
+func (e *Entity) Save(writer io.Writer) {
+	encoder := json.NewEncoder(writer)
+	m := map[string][4]float32{
+		"Position":    [4]float32(e.Position),
+		"Orientation": [4]float32{e.Orientation.W, e.Orientation.V[0], e.Orientation.V[1], e.Orientation.V[2]},
+	}
+	encoder.Encode(m)
+}
+
+func (e *Entity) Load(reader io.Reader) {
+	decoder := json.NewDecoder(reader)
+	m := map[string][4]float32{}
+	decoder.Decode(m)
+	e.Position = mgl.Vec4f(m["Position"])
+	q := m["Orientation"]
+	e.Orientation.W = q[0]
+	e.Orientation.V = mgl.Vec3f{q[1], q[2], q[3]}
 }

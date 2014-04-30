@@ -99,7 +99,6 @@ func Input(gs *gamestate.GameState, worldRenderer *rendering.WorldRenderer) bool
 				case sdl.SCANCODE_RETURN:
 					GrabCursor()
 				case sdl.SCANCODE_SPACE:
-					gs.Player.Camera.Position = gs.Options.StartPosition
 				case sdl.SCANCODE_ESCAPE:
 					running = false
 				}

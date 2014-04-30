@@ -10,7 +10,6 @@ import (
 	"github.com/krux02/turnt-octo-wallhack/particles"
 	"github.com/krux02/turnt-octo-wallhack/settings"
 	"math"
-	//"math/rand"
 )
 
 type WorldRenderer struct {
@@ -177,7 +176,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 
 	if options.DebugLines {
 
-		if options.AlwaysInFront {
+		if options.DepthTestDebugLines {
 			gl.Disable(gl.DEPTH_TEST)
 		}
 		this.DebugRenderer.Render(this.Proj, View)

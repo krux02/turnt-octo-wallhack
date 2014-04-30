@@ -36,7 +36,7 @@ func NewGameState(window *sdl.Window, world *World) (gamestate *GameState) {
 		World:   world,
 		Player:  &Player{*NewCameraFromPos4f(startPos), PlayerInput{}, mgl.Vec4f{}},
 		Fps:     0,
-		Options: settings.BoolOptions{StartPosition: startPos},
+		Options: settings.BoolOptions{},
 	}
 
 	opt := &gamestate.Options

@@ -2,7 +2,6 @@ package settings
 
 import (
 	"fmt"
-	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/krux02/tw"
 	"os"
 	"reflect"
@@ -20,9 +19,9 @@ type BoolOptions struct {
 	Wireframe,
 	WaterNormals,
 	DebugLines,
-	AlwaysInFront bool
-	WaterHeight   float32
-	StartPosition mgl.Vec4f
+	DepthTestDebugLines,
+	PersistentPlayerPos bool
+	WaterHeight float32
 }
 
 func (this *BoolOptions) Load() {

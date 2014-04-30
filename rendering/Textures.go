@@ -14,60 +14,37 @@ type Textures struct {
 }
 
 func NewTextures(heightMap *gamestate.HeightMap) *Textures {
-	textures := make([]gl.Texture, 0, 7)
+	textures := make([]gl.Texture, 10)
+	gl.GenTextures(textures)
 
 	// TEXTURE0 is only used for temporarly bound textures
 
 	gl.ActiveTexture(gl.TEXTURE1)
-	detailTexture := gl.GenTexture()
-	detailTexture.Bind(gl.TEXTURE_2D)
-	err := helpers.LoadTexture2D("textures/GravelCobbleS.jpg")
-	if err != nil {
-		detailTexture.Delete()
-		fmt.Println(err)
-	} else {
-		textures = append(textures, detailTexture)
-		gl.GenerateMipmap(gl.TEXTURE_2D)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_R, gl.REPEAT)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
-	}
+	textures[1].Bind(gl.TEXTURE_2D)
+	helpers.LoadTexture2DWatched("textures/GravelCobbleS.jpg")
+	gl.GenerateMipmap(gl.TEXTURE_2D)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_R, gl.REPEAT)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
 
 	gl.ActiveTexture(gl.TEXTURE2)
-	slopeTexture := gl.GenTexture()
-	slopeTexture.Bind(gl.TEXTURE_2D)
-	err = helpers.LoadTexture2D("textures/Cliffs0149_18_S.png")
-	if err != nil {
-		slopeTexture.Delete()
-		fmt.Println("cant load GravelCobble0003_2_S.jpg")
-		fmt.Println(err)
-	} else {
-		textures = append(textures, slopeTexture)
-		gl.GenerateMipmap(gl.TEXTURE_2D)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_R, gl.REPEAT)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
-	}
+	textures[2].Bind(gl.TEXTURE_2D)
+	helpers.LoadTexture2DWatched("textures/Cliffs0149_18_S.png")
+	gl.GenerateMipmap(gl.TEXTURE_2D)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_R, gl.REPEAT)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
 
 	gl.ActiveTexture(gl.TEXTURE3)
-	colorTexture := gl.GenTexture()
-	colorTexture.Bind(gl.TEXTURE_1D)
-	err = helpers.LoadTexture1D("textures/gradient.png")
-	if err != nil {
-		colorTexture.Delete()
-		fmt.Println(err)
-	} else {
-		textures = append(textures, colorTexture)
-		gl.TexParameteri(gl.TEXTURE_1D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-		gl.TexParameteri(gl.TEXTURE_1D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-	}
+	textures[3].Bind(gl.TEXTURE_1D)
+	helpers.LoadTexture1DWatched("textures/gradient.png")
+	gl.TexParameteri(gl.TEXTURE_1D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+	gl.TexParameteri(gl.TEXTURE_1D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 
 	gl.ActiveTexture(gl.TEXTURE4)
-	heightMapTexture := gl.GenTexture()
-	heightMapTexture.Bind(gl.TEXTURE_2D)
-	textures = append(textures, heightMapTexture)
+	textures[4].Bind(gl.TEXTURE_2D)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.R16, heightMap.W, heightMap.H, 0, gl.RED, gl.FLOAT, heightMap.TexturePixels())
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
@@ -75,57 +52,33 @@ func NewTextures(heightMap *gamestate.HeightMap) *Textures {
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
 
 	gl.ActiveTexture(gl.TEXTURE5)
-	palmTexture := gl.GenTexture()
-	palmTexture.Delete()
-	err = helpers.LoadTexture2DWatched("textures/palme.png")
-	if err != nil {
-		palmTexture.Delete()
-		fmt.Println("can't load palme.png")
-		fmt.Println(err)
-	} else {
-		textures = append(textures, palmTexture)
-		gl.GenerateMipmap(gl.TEXTURE_2D)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-	}
-
-	gl.ActiveTexture(gl.TEXTURE8)
-	fireballTexture := gl.GenTexture()
-	fireballTexture.Bind(gl.TEXTURE_2D)
-	err = helpers.LoadTexture2D("textures/fireball.png")
-	if err != nil {
-		fireballTexture.Delete()
-		panic("fireball.png")
-	} else {
-		textures = append(textures, fireballTexture)
-		gl.GenerateMipmap(gl.TEXTURE_2D)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-	}
-
-	gl.ActiveTexture(gl.TEXTURE7)
-	skybox := gl.GenTexture()
-	skybox.Bind(gl.TEXTURE_CUBE_MAP)
-	err = helpers.LoadTextureCube("textures/Above_The_Sea.jpg")
-	if err != nil {
-		skybox.Delete()
-		panic("Above_The_Sea.jpg")
-	} else {
-		textures = append(textures, skybox)
-		gl.GenerateMipmap(gl.TEXTURE_CUBE_MAP)
-		gl.TexParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
-		gl.TexParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-		//gl.TexParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE)
-		gl.TexParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-		gl.TexParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-		gl.Enable(gl.TEXTURE_CUBE_MAP_SEAMLESS)
-	}
+	textures[5].Bind(gl.TEXTURE_2D)
+	helpers.LoadTexture2DWatched("textures/palme.png")
+	gl.GenerateMipmap(gl.TEXTURE_2D)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 
 	gl.ActiveTexture(gl.TEXTURE6)
+	textures[6].Bind(gl.TEXTURE_2D)
+	helpers.LoadTexture2DWatched("textures/fireball.png")
+	gl.GenerateMipmap(gl.TEXTURE_2D)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+
+	gl.ActiveTexture(gl.TEXTURE7)
+	textures[7].Bind(gl.TEXTURE_CUBE_MAP)
+	helpers.LoadTextureCubeWatched("textures/Above_The_Sea.jpg")
+	gl.GenerateMipmap(gl.TEXTURE_CUBE_MAP)
+	gl.TexParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+	gl.TexParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+	//gl.TexParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+	gl.Enable(gl.TEXTURE_CUBE_MAP_SEAMLESS)
 
 	ttf.Init()
 	defer ttf.Quit()
@@ -133,17 +86,13 @@ func NewTextures(heightMap *gamestate.HeightMap) *Textures {
 	color := sdl.Color{255, 255, 255, 255}
 	surface := font.RenderText_Blended("Bla", color)
 	defer surface.Free()
-	textTexture := gl.GenTexture()
-
-	textTexture.Bind(gl.TEXTURE_2D)
+	gl.ActiveTexture(gl.TEXTURE8)
+	textures[8].Bind(gl.TEXTURE_2D)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, int(surface.W), int(surface.H), 0, gl.RGBA, gl.UNSIGNED_BYTE, uintptr(surface.Data()))
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 
-	surface.Data()
-
 	gl.ActiveTexture(gl.TEXTURE0)
-
 	return &Textures{textures}
 }
 
