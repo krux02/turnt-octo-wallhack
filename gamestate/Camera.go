@@ -1,8 +1,5 @@
 package gamestate
 
-//#include <string.h>
-import "C"
-
 import (
 	mgl "github.com/Jragonmiris/mathgl"
 	"math"

@@ -11,17 +11,17 @@ import (
 	"os"
 )
 
-func LoadTexture1D(name string) (gl.Texture, error) {
+func LoadTexture1D(name string) error {
 	file, err := os.Open(name)
 	if err != nil {
 		fmt.Println(name, err)
-		return 0, err
+		return err
 	}
 	defer file.Close()
 	m, _, err := image.Decode(file)
 	if err != nil {
 		fmt.Println(name, err)
-		return 0, err
+		return err
 	}
 
 	bounds := m.Bounds()
@@ -29,30 +29,77 @@ func LoadTexture1D(name string) (gl.Texture, error) {
 	imageData := image.NewRGBA(m.Bounds())
 	draw.Draw(imageData, bounds, m, image.ZP, draw.Src)
 
-	texture := gl.GenTexture()
-
 	if bounds.Dx() != 1 && bounds.Dy() != 1 {
 		panic(fmt.Sprintf("image %s must be one dimensionnal it is %s", name, bounds.String()))
 	}
 	width := bounds.Dx() * bounds.Dy()
 
-	texture.Bind(gl.TEXTURE_1D)
 	gl.TexImage1D(gl.TEXTURE_1D, 0, gl.RGBA8, width, 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData.Pix)
 
-	return texture, nil
+	return nil
 }
 
-func LoadTexture2D(name string) (gl.Texture, error) {
+type myTexture struct {
+	texture gl.Texture
+	binding gl.GLenum
+}
+
+var textureUnitMapping = make(map[string]myTexture)
+var filechanges = make(chan string)
+
+func LoadTexture2DWatched(name string) error {
+	i, _, _, _ := gl.GetInteger4(gl.TEXTURE_BINDING_2D)
+	textureUnitMapping[name] = myTexture{gl.Texture(i), gl.TEXTURE_2D}
+	go Listen(name, filechanges)
+	return LoadTexture2D(name)
+}
+
+func getEnum(enum gl.GLenum) gl.GLenum {
+	i, _, _, _ := gl.GetInteger4(gl.TEXTURE_BINDING_2D)
+	return gl.GLenum(i)
+}
+
+var BindingMap = map[gl.GLenum]gl.GLenum{
+	gl.TEXTURE_1D:                   gl.TEXTURE_BINDING_1D,
+	gl.TEXTURE_1D_ARRAY:             gl.TEXTURE_BINDING_1D_ARRAY,
+	gl.TEXTURE_2D:                   gl.TEXTURE_BINDING_2D,
+	gl.TEXTURE_2D_ARRAY:             gl.TEXTURE_BINDING_2D_ARRAY,
+	gl.TEXTURE_2D_MULTISAMPLE:       gl.TEXTURE_BINDING_2D_MULTISAMPLE,
+	gl.TEXTURE_2D_MULTISAMPLE_ARRAY: gl.TEXTURE_BINDING_2D_MULTISAMPLE_ARRAY,
+	gl.TEXTURE_3D:                   gl.TEXTURE_BINDING_3D,
+	gl.TEXTURE_CUBE_MAP:             gl.TEXTURE_BINDING_CUBE_MAP,
+	gl.TEXTURE_CUBE_MAP_ARRAY:       gl.TEXTURE_BINDING_CUBE_MAP_ARRAY,
+	gl.TEXTURE_RECTANGLE:            gl.TEXTURE_BINDING_RECTANGLE,
+}
+
+func UpdateTextures() {
+	b := true
+	for b {
+		select {
+		case name := <-filechanges:
+			texUnit := textureUnitMapping[name]
+			outer := gl.Texture(getEnum(BindingMap[texUnit.binding]))
+			texUnit.texture.Bind(texUnit.binding)
+			LoadTexture2D(name)
+			gl.GenerateMipmap(gl.TEXTURE_2D)
+			outer.Bind(texUnit.binding)
+		default:
+			b = false
+		}
+	}
+}
+
+func LoadTexture2D(name string) error {
 	file, err := os.Open(name)
 	if err != nil {
 		fmt.Println(name, err)
-		return 0, err
+		return err
 	}
 	defer file.Close()
 	m, _, err := image.Decode(file)
 	if err != nil {
 		fmt.Println(name, err)
-		return 0, err
+		return err
 	}
 
 	bounds := m.Bounds()
@@ -60,24 +107,22 @@ func LoadTexture2D(name string) (gl.Texture, error) {
 	imageData := image.NewRGBA(bounds)
 	draw.Draw(imageData, bounds, m, image.ZP, draw.Src)
 
-	texture := gl.GenTexture()
-	texture.Bind(gl.TEXTURE_2D)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, bounds.Dx(), bounds.Dy(), 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData.Pix)
 
-	return texture, nil
+	return nil
 }
 
-func LoadTextureCube(name string) (gl.Texture, error) {
+func LoadTextureCube(name string) error {
 	file, err := os.Open(name)
 	if err != nil {
 		fmt.Println(name, err)
-		return 0, err
+		return err
 	}
 	defer file.Close()
 	m, _, err := image.Decode(file)
 	if err != nil {
 		fmt.Println(name, err)
-		return 0, err
+		return err
 	}
 
 	size := m.Bounds().Max
@@ -90,9 +135,6 @@ func LoadTextureCube(name string) (gl.Texture, error) {
 	right_rect := image.Point{2 * W, H}
 	back_rect := image.Point{3 * W, H}
 	bounds := image.Rect(0, 0, W, H)
-
-	texture := gl.GenTexture()
-	texture.Bind(gl.TEXTURE_CUBE_MAP)
 
 	imageData := image.NewRGBA(bounds)
 	draw.Draw(imageData, bounds, m, top_rect, draw.Src)
@@ -108,7 +150,7 @@ func LoadTextureCube(name string) (gl.Texture, error) {
 	draw.Draw(imageData, bounds, m, front_rect, draw.Src)
 	gl.TexImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl.RGBA8, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData.Pix)
 
-	return texture, nil
+	return nil
 }
 
 func ReadToGray16(filename string) (*image.Gray16, error) {

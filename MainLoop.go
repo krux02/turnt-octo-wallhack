@@ -5,6 +5,7 @@ import (
 	"github.com/go-gl/gl"
 	"github.com/jackyb/go-sdl2/sdl"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
+	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/rendering"
 	"github.com/krux02/turnt-octo-wallhack/simulation"
 	"github.com/krux02/tw"
@@ -36,5 +37,7 @@ func MainLoop(gs *gamestate.GameState, renderer *rendering.WorldRenderer) {
 
 		tw.Draw()
 		sdl.GL_SwapWindow(window)
+
+		helpers.UpdateTextures()
 	}
 }

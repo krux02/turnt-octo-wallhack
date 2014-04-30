@@ -27,6 +27,7 @@ func SdlError() {
 }
 
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
+var memprofile = flag.String("memprofile", "", "write memory profile to this file")
 
 func main() {
 	flag.Parse()
@@ -95,4 +96,14 @@ func main() {
 	gs.Bar.AddButton("screen shot", worldRenderer.ScreenShot, "")
 
 	MainLoop(gs, worldRenderer)
+
+	if *memprofile != "" {
+		f, err := os.Create(*memprofile)
+		if err != nil {
+			panic(err)
+		}
+		pprof.WriteHeapProfile(f)
+		f.Close()
+		return
+	}
 }

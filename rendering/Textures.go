@@ -19,8 +19,11 @@ func NewTextures(heightMap *gamestate.HeightMap) *Textures {
 	// TEXTURE0 is only used for temporarly bound textures
 
 	gl.ActiveTexture(gl.TEXTURE1)
-	detailTexture, err := helpers.LoadTexture2D("textures/GravelCobbleS.jpg")
+	detailTexture := gl.GenTexture()
+	detailTexture.Bind(gl.TEXTURE_2D)
+	err := helpers.LoadTexture2D("textures/GravelCobbleS.jpg")
 	if err != nil {
+		detailTexture.Delete()
 		fmt.Println(err)
 	} else {
 		textures = append(textures, detailTexture)
@@ -32,8 +35,11 @@ func NewTextures(heightMap *gamestate.HeightMap) *Textures {
 	}
 
 	gl.ActiveTexture(gl.TEXTURE2)
-	slopeTexture, err := helpers.LoadTexture2D("textures/Cliffs0149_18_S.png")
+	slopeTexture := gl.GenTexture()
+	slopeTexture.Bind(gl.TEXTURE_2D)
+	err = helpers.LoadTexture2D("textures/Cliffs0149_18_S.png")
 	if err != nil {
+		slopeTexture.Delete()
 		fmt.Println("cant load GravelCobble0003_2_S.jpg")
 		fmt.Println(err)
 	} else {
@@ -46,8 +52,11 @@ func NewTextures(heightMap *gamestate.HeightMap) *Textures {
 	}
 
 	gl.ActiveTexture(gl.TEXTURE3)
-	colorTexture, err := helpers.LoadTexture1D("textures/gradient.png")
+	colorTexture := gl.GenTexture()
+	colorTexture.Bind(gl.TEXTURE_1D)
+	err = helpers.LoadTexture1D("textures/gradient.png")
 	if err != nil {
+		colorTexture.Delete()
 		fmt.Println(err)
 	} else {
 		textures = append(textures, colorTexture)
@@ -57,8 +66,8 @@ func NewTextures(heightMap *gamestate.HeightMap) *Textures {
 
 	gl.ActiveTexture(gl.TEXTURE4)
 	heightMapTexture := gl.GenTexture()
-	textures = append(textures, heightMapTexture)
 	heightMapTexture.Bind(gl.TEXTURE_2D)
+	textures = append(textures, heightMapTexture)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.R16, heightMap.W, heightMap.H, 0, gl.RED, gl.FLOAT, heightMap.TexturePixels())
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
@@ -66,8 +75,11 @@ func NewTextures(heightMap *gamestate.HeightMap) *Textures {
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
 
 	gl.ActiveTexture(gl.TEXTURE5)
-	palmTexture, err := helpers.LoadTexture2D("textures/palme.png")
+	palmTexture := gl.GenTexture()
+	palmTexture.Delete()
+	err = helpers.LoadTexture2DWatched("textures/palme.png")
 	if err != nil {
+		palmTexture.Delete()
 		fmt.Println("can't load palme.png")
 		fmt.Println(err)
 	} else {
@@ -75,26 +87,32 @@ func NewTextures(heightMap *gamestate.HeightMap) *Textures {
 		gl.GenerateMipmap(gl.TEXTURE_2D)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 	}
 
 	gl.ActiveTexture(gl.TEXTURE8)
-	fireballTexture, err := helpers.LoadTexture2D("textures/fireball.png")
+	fireballTexture := gl.GenTexture()
+	fireballTexture.Bind(gl.TEXTURE_2D)
+	err = helpers.LoadTexture2D("textures/fireball.png")
 	if err != nil {
+		fireballTexture.Delete()
 		panic("fireball.png")
 	} else {
 		textures = append(textures, fireballTexture)
 		gl.GenerateMipmap(gl.TEXTURE_2D)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 	}
 
 	gl.ActiveTexture(gl.TEXTURE7)
-	skybox, err := helpers.LoadTextureCube("textures/Above_The_Sea.jpg")
+	skybox := gl.GenTexture()
+	skybox.Bind(gl.TEXTURE_CUBE_MAP)
+	err = helpers.LoadTextureCube("textures/Above_The_Sea.jpg")
 	if err != nil {
+		skybox.Delete()
 		panic("Above_The_Sea.jpg")
 	} else {
 		textures = append(textures, skybox)
