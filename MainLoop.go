@@ -18,7 +18,6 @@ func MainLoop(gs *gamestate.GameState, renderer *rendering.WorldRenderer) {
 	running := true
 
 	for running {
-
 		currentTime := float32(sdl.GetTicks()) / 1000
 		if currentTime > time+1 {
 			gs.Fps = float32(frames)
@@ -26,7 +25,6 @@ func MainLoop(gs *gamestate.GameState, renderer *rendering.WorldRenderer) {
 			time = currentTime
 		}
 		frames += 1
-
 		running = Input(gs, renderer)
 
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
@@ -38,6 +36,6 @@ func MainLoop(gs *gamestate.GameState, renderer *rendering.WorldRenderer) {
 		tw.Draw()
 		sdl.GL_SwapWindow(window)
 
-		helpers.UpdateTextures()
+		helpers.UpdateManagers()
 	}
 }

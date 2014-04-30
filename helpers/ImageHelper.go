@@ -41,18 +41,22 @@ func LoadTexture1D(name string) error {
 	return nil
 }
 
-type myTexture struct {
+type textureManager struct {
 	texture gl.Texture
-	binding gl.GLenum
+	target  gl.GLenum
 }
 
-var textureUnitMapping = make(map[string]myTexture)
-var filechanges = make(chan string)
+func (this *textureManager) Update(filename string) {
+	outer := gl.Texture(getEnum(BindingMap[this.target]))
+	this.texture.Bind(this.target)
+	LoadTexture2D(filename)
+	gl.GenerateMipmap(this.target)
+	outer.Bind(this.target)
+}
 
 func LoadTexture2DWatched(name string) error {
 	i, _, _, _ := gl.GetInteger4(gl.TEXTURE_BINDING_2D)
-	textureUnitMapping[name] = myTexture{gl.Texture(i), gl.TEXTURE_2D}
-	go Listen(name, filechanges)
+	Manage(&textureManager{gl.Texture(i), gl.TEXTURE_2D}, name)
 	return LoadTexture2D(name)
 }
 
@@ -74,47 +78,39 @@ var BindingMap = map[gl.GLenum]gl.GLenum{
 	gl.TEXTURE_RECTANGLE:            gl.TEXTURE_BINDING_RECTANGLE,
 }
 
-func UpdateTextures() {
+func UpdateManagers() {
 	b := true
 	for b {
 		select {
-		case name := <-filechanges:
-			texUnit := textureUnitMapping[name]
-			outer := gl.Texture(getEnum(BindingMap[texUnit.binding]))
-			texUnit.texture.Bind(texUnit.binding)
-			LoadTexture2D(name)
-			gl.GenerateMipmap(gl.TEXTURE_2D)
-			outer.Bind(texUnit.binding)
+		case filename := <-filechanges:
+			ms := managerSourceMapping[filename]
+			ms.Update(filename)
 		default:
 			b = false
 		}
 	}
 }
 
+func loadSdlSurface(filename string) *sdl.Surface {
+	surface := img.Load(filename)
+	if surface == nil {
+		panic(sdl.GetError())
+	}
+	defer surface.Free()
+	return surface.ConvertFormat(pixelFormat, 0)
+}
+
 func LoadTexture2D(name string) error {
-	file, err := os.Open(name)
-	if err != nil {
-		fmt.Println(name, err)
-		return err
-	}
-	defer file.Close()
-	m, _, err := image.Decode(file)
-	if err != nil {
-		fmt.Println(name, err)
-		return err
-	}
+	surface := loadSdlSurface(name)
+	defer surface.Free()
 
-	bounds := m.Bounds()
-
-	imageData := image.NewRGBA(bounds)
-	draw.Draw(imageData, bounds, m, image.ZP, draw.Src)
-
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, bounds.Dx(), bounds.Dy(), 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData.Pix)
+	W, H := int(surface.W), int(surface.H)
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, surface.Pixels())
 
 	return nil
 }
 
-const pixelFormat = sdl.PIXELFORMAT_RGBA8888
+const pixelFormat = sdl.PIXELFORMAT_ABGR8888
 
 func LoadTextureCube(name string) error {
 	surface0 := img.Load(name)
