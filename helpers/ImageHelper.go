@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/go-gl/gl"
+	"github.com/jackyb/go-sdl2/sdl"
+	"github.com/jackyb/go-sdl2/sdl_image"
 	"image"
 	"image/draw"
 	_ "image/jpeg"
@@ -112,43 +114,38 @@ func LoadTexture2D(name string) error {
 	return nil
 }
 
+const pixelFormat = sdl.PIXELFORMAT_RGBA8888
+
 func LoadTextureCube(name string) error {
-	file, err := os.Open(name)
-	if err != nil {
-		fmt.Println(name, err)
-		return err
-	}
-	defer file.Close()
-	m, _, err := image.Decode(file)
-	if err != nil {
-		fmt.Println(name, err)
-		return err
-	}
+	surface0 := img.Load(name)
+	defer surface0.Free()
+	surface1 := surface0.ConvertFormat(pixelFormat, 0)
+	defer surface1.Free()
 
-	size := m.Bounds().Max
-	W := size.X / 4
-	H := size.Y / 3
-	top_rect := image.Point{W, 0 * H}
-	bottom_rect := image.Point{W, 2 * H}
-	left_rect := image.Point{0 * W, H}
-	front_rect := image.Point{1 * W, H}
-	right_rect := image.Point{2 * W, H}
-	back_rect := image.Point{3 * W, H}
-	bounds := image.Rect(0, 0, W, H)
+	W := surface1.W / 4
+	H := surface1.H / 3
 
-	imageData := image.NewRGBA(bounds)
-	draw.Draw(imageData, bounds, m, top_rect, draw.Src)
-	gl.TexImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, gl.RGBA8, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData.Pix)
-	draw.Draw(imageData, bounds, m, bottom_rect, draw.Src)
-	gl.TexImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, gl.RGBA8, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData.Pix)
-	draw.Draw(imageData, bounds, m, left_rect, draw.Src)
-	gl.TexImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, gl.RGBA8, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData.Pix)
-	draw.Draw(imageData, bounds, m, right_rect, draw.Src)
-	gl.TexImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, gl.RGBA8, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData.Pix)
-	draw.Draw(imageData, bounds, m, back_rect, draw.Src)
-	gl.TexImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, gl.RGBA8, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData.Pix)
-	draw.Draw(imageData, bounds, m, front_rect, draw.Src)
-	gl.TexImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl.RGBA8, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData.Pix)
+	top_rect := sdl.Rect{W, 0 * H, W, H}
+	bottom_rect := sdl.Rect{W, 2 * H, W, H}
+	left_rect := sdl.Rect{0 * W, H, W, H}
+	front_rect := sdl.Rect{1 * W, H, W, H}
+	right_rect := sdl.Rect{2 * W, H, W, H}
+	back_rect := sdl.Rect{3 * W, H, W, H}
+	bounds := sdl.Rect{0, 0, W, H}
+	imageData := sdl.CreateRGBSurface(0, W, H, 32, surface1.Format.Rmask, surface1.Format.Gmask, surface1.Format.Bmask, surface1.Format.Amask)
+
+	surface1.Blit(&top_rect, imageData, &bounds)
+	gl.TexImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, gl.RGBA, int(W), int(H), 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData.Pixels())
+	surface1.Blit(&bottom_rect, imageData, &bounds)
+	gl.TexImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, gl.RGBA, int(W), int(H), 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData.Pixels())
+	surface1.Blit(&left_rect, imageData, &bounds)
+	gl.TexImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, gl.RGBA, int(W), int(H), 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData.Pixels())
+	surface1.Blit(&right_rect, imageData, &bounds)
+	gl.TexImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, gl.RGBA, int(W), int(H), 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData.Pixels())
+	surface1.Blit(&back_rect, imageData, &bounds)
+	gl.TexImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, gl.RGBA, int(W), int(H), 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData.Pixels())
+	surface1.Blit(&front_rect, imageData, &bounds)
+	gl.TexImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl.RGBA, int(W), int(H), 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData.Pixels())
 
 	return nil
 }
