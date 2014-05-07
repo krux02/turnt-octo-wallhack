@@ -3,12 +3,12 @@ package main
 import (
 	//"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
-	"github.com/jackyb/go-sdl2/sdl"
 	"github.com/krux02/turnt-octo-wallhack/debug"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/rendering"
 	"github.com/krux02/tw"
+	"github.com/veandco/go-sdl2/sdl"
 	//"math"
 )
 

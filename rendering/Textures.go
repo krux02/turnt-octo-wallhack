@@ -3,10 +3,10 @@ package rendering
 import (
 	"fmt"
 	"github.com/go-gl/gl"
-	"github.com/jackyb/go-sdl2/sdl"
-	"github.com/jackyb/go-sdl2/sdl_ttf"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
+	"github.com/veandco/go-sdl2/sdl"
+	"github.com/veandco/go-sdl2/sdl_ttf"
 )
 
 type Textures struct {

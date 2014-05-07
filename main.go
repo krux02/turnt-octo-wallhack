@@ -4,12 +4,13 @@ import (
 	"flag"
 	"fmt"
 	"github.com/go-gl/gl"
-	"github.com/jackyb/go-sdl2/sdl"
+	"github.com/krux02/freenect-go"
 	"github.com/krux02/turnt-octo-wallhack/debugContext"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/generation"
 	"github.com/krux02/turnt-octo-wallhack/rendering"
 	"github.com/krux02/tw"
+	"github.com/veandco/go-sdl2/sdl"
 	"os"
 	"runtime"
 	"runtime/pprof"
@@ -30,6 +31,8 @@ var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
 var memprofile = flag.String("memprofile", "", "write memory profile to this file")
 
 func main() {
+	runtime.LockOSThread()
+
 	flag.Parse()
 	if *cpuprofile != "" {
 		f, err := os.Create(*cpuprofile)
@@ -40,7 +43,29 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-	runtime.LockOSThread()
+	context, status := freenect.Init(nil)
+	if status != 0 {
+		fmt.Errorf("cant connect to kinect")
+	} else {
+		numDevices := context.NumDevices()
+		if numDevices < 1 {
+			fmt.Errorf("no kinect devices found")
+		} else {
+			fmt.Printf("found %d kinect devices\n", numDevices)
+			fmt.Println(context.SupportedSubdevices())
+			context.SelectSubdevices(freenect.DeviceCamera)
+			fmt.Println(context.EnabledSubdevices())
+			context.ProcessEvents()
+			device, status := context.OpenDevices(0)
+			if status < 0 {
+				panic("nananananana")
+			}
+
+			fmt.Println(device.GetCurrentDepthMode())
+			fmt.Println(device.GetCurrentVideoMode())
+		}
+
+	}
 
 	if sdl.Init(sdl.INIT_EVERYTHING) < 0 {
 		panic("Unable to initialize SDL")

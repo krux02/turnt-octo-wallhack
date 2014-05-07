@@ -4,9 +4,9 @@ import (
 	"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
-	"github.com/jackyb/go-sdl2/sdl"
 	"github.com/krux02/turnt-octo-wallhack/settings"
 	"github.com/krux02/tw"
+	"github.com/veandco/go-sdl2/sdl"
 	"unsafe"
 )
 

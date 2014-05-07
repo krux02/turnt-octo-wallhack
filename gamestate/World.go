@@ -33,3 +33,7 @@ func (this *World) NearestPortal(pos mgl.Vec4f) *Portal {
 func (this *World) NearestPortal2D(pos mgl.Vec2f) *Portal {
 	panic("not implemented")
 }
+
+func (this *World) Save(filename string) {
+
+}
