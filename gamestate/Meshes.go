@@ -6,8 +6,7 @@ import (
 	"reflect"
 )
 
-var meshNames = []string{"Portal", "Monkey"}
-
+var meshNames = []string{"Portal", "Monkey", "Torso"}
 
 func (this *Meshes) Load() *Meshes {
 	v := reflect.ValueOf(this).Elem()
@@ -25,8 +24,9 @@ func (this *Meshes) Load() *Meshes {
 
 func LoadMeshes() (meshes map[string]*Mesh) {
 	for name := range meshNames {
-		meshes[name] = LoadMesh(fmt.Sprintf("meshes/%s.obj", field.Name))
+		meshes[name] = LoadMesh(fmt.Sprintf("meshes/%s.obj", name))
 	}
 	return meshes
 }
+
 */

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
 	ai "github.com/krux02/assimp"
+	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"math"
 )
 
@@ -99,9 +100,11 @@ func LoadMesh(filename string) (mesh *Mesh) {
 	if scene == nil {
 		panic(ai.GetErrorString())
 	}
-	scene.ApplyPostProcessing(ai.Process_Triangulate)
+	scene = scene.ApplyPostProcessing(ai.Process_Triangulate)
 	meshes := scene.Meshes()
 	if len(meshes) != 1 {
+		fmt.Println("Cameras", len(scene.Cameras()))
+		fmt.Println("Animations", len(scene.Animations()))
 		panic(fmt.Sprintf("not a single mesh in %s, found %d meshes", filename, len(meshes)))
 	}
 	aimesh := meshes[0]
@@ -127,6 +130,16 @@ func LoadMesh(filename string) (mesh *Mesh) {
 	fmt.Println("loaded mesh with", aimesh.NumVertices(), "Vertices")
 
 	return &Mesh{meshVertices, meshIndices}
+}
+
+func LoadMeshManaged(filename string) (mesh *Mesh) {
+	mesh = LoadMesh(filename)
+	helpers.Manage(mesh, filename)
+	return mesh
+}
+
+func (this *Mesh) Update(filename string) {
+	*this = *LoadMesh(filename)
 }
 
 func (m *Mesh) BoundingBox() (min mgl.Vec4f, max mgl.Vec4f) {

@@ -5,10 +5,11 @@ import (
 )
 
 type World struct {
-	HeightMap *HeightMap
-	KdTree    KdTree
-	Portals   []*Portal
-	Palms     PalmTreesInstanceData
+	HeightMap      *HeightMap
+	KdTree         KdTree
+	Portals        []*Portal
+	Palms          PalmTreesInstanceData
+	ExampleObjects []interface{}
 }
 
 type WrapVec4f mgl.Vec4f
@@ -32,8 +33,4 @@ func (this *World) NearestPortal(pos mgl.Vec4f) *Portal {
 
 func (this *World) NearestPortal2D(pos mgl.Vec2f) *Portal {
 	panic("not implemented")
-}
-
-func (this *World) Save(filename string) {
-
 }

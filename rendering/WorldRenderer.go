@@ -124,6 +124,11 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 	}
 
 	gl.Enable(gl.CULL_FACE)
+
+	for _, entity := range ww.ExampleObjects {
+		this.RenderEntity(View, entity)
+	}
+
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	if recursion != 0 {

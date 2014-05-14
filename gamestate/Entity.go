@@ -12,7 +12,7 @@ type Entity struct {
 	Orientation mgl.Quatf
 }
 
-func (e Entity) Model() mgl.Mat4f {
+func (e *Entity) Model() mgl.Mat4f {
 	pos := e.Position
 	return mgl.Translate3D(pos[0], pos[1], pos[2]).Mul4(e.Orientation.Mat4())
 }
@@ -43,7 +43,7 @@ func (e *Entity) SetModel(m mgl.Mat4f) {
 	e.Position = mgl.Vec4f{m03, m13, m23, 1}
 }
 
-func (e Entity) View() mgl.Mat4f {
+func (e *Entity) View() mgl.Mat4f {
 	return e.Model().Inv()
 }
 

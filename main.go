@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"github.com/go-gl/gl"
-	"github.com/krux02/freenect-go"
 	"github.com/krux02/turnt-octo-wallhack/debugContext"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/generation"
@@ -41,30 +40,6 @@ func main() {
 		}
 		pprof.StartCPUProfile(f)
 		defer pprof.StopCPUProfile()
-	}
-
-	context, status := freenect.Init(nil)
-	if status != 0 {
-		fmt.Errorf("cant connect to kinect")
-	} else {
-		numDevices := context.NumDevices()
-		if numDevices < 1 {
-			fmt.Errorf("no kinect devices found")
-		} else {
-			fmt.Printf("found %d kinect devices\n", numDevices)
-			fmt.Println(context.SupportedSubdevices())
-			context.SelectSubdevices(freenect.DeviceCamera)
-			fmt.Println(context.EnabledSubdevices())
-			context.ProcessEvents()
-			device, status := context.OpenDevices(0)
-			if status < 0 {
-				panic("nananananana")
-			}
-
-			fmt.Println(device.GetCurrentDepthMode())
-			fmt.Println(device.GetCurrentVideoMode())
-		}
-
 	}
 
 	if sdl.Init(sdl.INIT_EVERYTHING) < 0 {

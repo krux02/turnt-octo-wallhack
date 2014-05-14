@@ -37,6 +37,7 @@ func NewMeshRenderer() (mr *MeshRenderer) {
 	mr = new(MeshRenderer)
 	mr.Program = helpers.MakeProgram("Mesh.vs", "Mesh.fs")
 	mr.Program.Use()
+	mr.MeshData = make(map[*gamestate.Mesh]*MeshRenderData)
 	helpers.BindLocations("mesh", mr.Program, &mr.RenLoc)
 	return
 }
@@ -74,9 +75,9 @@ func (this *MeshRenderer) Render(mesh *gamestate.Mesh, Proj mgl.Mat4f, View mgl.
 
 	meshData := this.MeshData[mesh]
 	if meshData == nil {
-		tmp := this.createRenderData(mesh)
-		meshData = &tmp
-		this.MeshData[mesh] = meshData
+		md := this.createRenderData(mesh)
+		meshData = &md
+		this.MeshData[mesh] = &md
 	}
 
 	meshData.VAO.Bind()
