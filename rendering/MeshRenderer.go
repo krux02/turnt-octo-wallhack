@@ -11,7 +11,7 @@ import (
 type MeshRenderer struct {
 	Program gl.Program
 	RenLoc  MeshRenderLocations
-	RenData map[*gamestate.Mesh]*MeshRenderData
+	RenData map[*gamestate.Mesh]*RenderData
 }
 
 type MeshRenderLocations struct {
@@ -19,25 +19,11 @@ type MeshRenderLocations struct {
 	Proj, View, Model    gl.UniformLocation
 }
 
-type MeshRenderData struct {
-	VAO      gl.VertexArray
-	Indices  gl.Buffer
-	Vertices gl.Buffer
-	Numverts int
-}
-
-func (this *MeshRenderData) Delete() {
-	this.VAO.Delete()
-	this.Indices.Delete()
-	this.Vertices.Delete()
-	*this = MeshRenderData{}
-}
-
 func NewMeshRenderer() (mr *MeshRenderer) {
 	mr = new(MeshRenderer)
 	mr.Program = helpers.MakeProgram("Mesh.vs", "Mesh.fs")
 	mr.Program.Use()
-	mr.RenData = make(map[*gamestate.Mesh]*MeshRenderData)
+	mr.RenData = make(map[*gamestate.Mesh]*RenderData)
 	helpers.BindLocations("mesh", mr.Program, &mr.RenLoc)
 	return
 }
@@ -50,7 +36,7 @@ func (this *MeshRenderer) Delete() {
 	*this = MeshRenderer{}
 }
 
-func (this *MeshRenderer) CreateRenderData(mesh *gamestate.Mesh) (rd MeshRenderData) {
+func (this *MeshRenderer) CreateRenderData(mesh *gamestate.Mesh) (rd RenderData) {
 
 	rd.VAO = gl.GenVertexArray()
 	rd.VAO.Bind()

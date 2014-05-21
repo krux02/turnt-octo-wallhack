@@ -11,11 +11,11 @@ import (
 type PalmRenderer struct {
 	Prog    gl.Program
 	Loc     TreeRenderLocatins
-	RenData PalmTreeRenderData
+	RenData RenderData
 }
 
 type TreeRenderLocatins struct {
-	Vertex_os, TexCoord, Position_ws              gl.AttribLocation
+	Vertex_os, TexCoord, InstancePosition_ws      gl.AttribLocation
 	Proj, View, PalmTree, Rot2D, ClippingPlane_ws gl.UniformLocation
 }
 
@@ -31,21 +31,21 @@ type PalmTreeFullVertex struct {
 }
 
 func (renderer *PalmRenderer) CreateRenderData(pt *gamestate.PalmTreesInstanceData) {
-	renderer.RenData.Vao = gl.GenVertexArray()
-	renderer.RenData.Vao.Bind()
+	renderer.RenData.VAO = gl.GenVertexArray()
+	renderer.RenData.VAO.Bind()
 
 	vertices, indices, numverts := CreateVertexDataBuffer()
 	helpers.SetAttribPointers(&renderer.Loc, &PalmShape{})
 
 	instanceDataBuffer := CreateInstanceDataBuffer(pt)
 	helpers.SetAttribPointers(&renderer.Loc, &gamestate.PalmTree{})
-	renderer.Loc.Position_ws.AttribDivisor(1)
+	renderer.Loc.InstancePosition_ws.AttribDivisor(1)
 
 	renderer.RenData.InstanceDataBuffer = instanceDataBuffer
 	renderer.RenData.NumInstances = len(pt.Positions)
 	renderer.RenData.Vertices = vertices
 	renderer.RenData.Indices = indices
-	renderer.RenData.NumVerts = numverts
+	renderer.RenData.Numverts = numverts
 }
 
 func CreateVertexDataBuffer() (vertices, indices gl.Buffer, numverts int) {
@@ -81,20 +81,9 @@ func CreateInstanceDataBuffer(pt *gamestate.PalmTreesInstanceData) gl.Buffer {
 	return vertices
 }
 
-type PalmTreeRenderData struct {
-	Vao                gl.VertexArray
-	InstanceDataBuffer gl.Buffer
-	NumInstances       int
-	Vertices           gl.Buffer
-	Indices            gl.Buffer
-	NumVerts           int
-}
-
 func (this *PalmRenderer) Delete() {
 	this.Prog.Delete()
-	this.RenData.InstanceDataBuffer.Delete()
-	this.RenData.Vertices.Delete()
-	this.RenData.Vao.Delete()
+	this.RenData.Delete()
 	*this = PalmRenderer{}
 }
 
@@ -112,10 +101,10 @@ func NewPalmRenderer(pt *gamestate.PalmTreesInstanceData) *PalmRenderer {
 
 func (pt *PalmRenderer) Render(Proj, View mgl.Mat4f, Rot2D mgl.Mat3f, clippingPlane mgl.Vec4f) {
 	pt.Prog.Use()
-	pt.RenData.Vao.Bind()
+	pt.RenData.VAO.Bind()
 	pt.Loc.Proj.UniformMatrix4f(false, glMat4(&Proj))
 	pt.Loc.View.UniformMatrix4f(false, glMat4(&View))
 	pt.Loc.Rot2D.UniformMatrix3f(false, glMat3(&Rot2D))
 	pt.Loc.ClippingPlane_ws.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
-	gl.DrawArraysInstanced(gl.TRIANGLE_FAN, 0, pt.RenData.NumVerts, pt.RenData.NumInstances)
+	gl.DrawArraysInstanced(gl.TRIANGLE_FAN, 0, pt.RenData.Numverts, pt.RenData.NumInstances)
 }

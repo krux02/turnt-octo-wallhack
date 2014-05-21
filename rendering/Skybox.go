@@ -10,19 +10,12 @@ import (
 type SkyboxRenderer struct {
 	Program gl.Program
 	RenLoc  SkyboxRenderLocations
-	RenData SkyboxRenderData
+	RenData RenderData
 }
 
 type SkyboxRenderLocations struct {
 	Proj, View, Skybox gl.UniformLocation
 	InTexCoord         gl.AttribLocation
-}
-
-type SkyboxRenderData struct {
-	VAO      gl.VertexArray
-	Indices  gl.Buffer
-	Vertices gl.Buffer
-	Numverts int
 }
 
 func NewSkyboxRenderer() *SkyboxRenderer {

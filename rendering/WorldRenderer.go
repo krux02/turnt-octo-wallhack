@@ -20,7 +20,6 @@ type WorldRenderer struct {
 	DebugWaterRenderer *DebugWaterRenderer
 	MeshRenderer       *MeshRenderer
 	PortalRenderer     *PortalRenderer
-	Portal             PortalRenderData
 	PalmRenderer       *PalmRenderer
 	ParticleSystem     *particles.ParticleSystem
 	SkyboxRenderer     *SkyboxRenderer

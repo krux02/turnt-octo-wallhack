@@ -14,10 +14,12 @@ func glMat3(mat *mgl.Mat3f) *[9]float32 {
 }
 
 type RenderData struct {
-	VAO      gl.VertexArray
-	Indices  gl.Buffer
-	Vertices gl.Buffer
-	Numverts int
+	VAO                gl.VertexArray
+	InstanceDataBuffer gl.Buffer
+	NumInstances       int
+	Indices            gl.Buffer
+	Vertices           gl.Buffer
+	Numverts           int
 }
 
 func (this *RenderData) Delete() {

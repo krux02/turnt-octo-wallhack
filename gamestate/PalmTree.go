@@ -6,7 +6,7 @@ import (
 
 // instance data for each tree
 type PalmTree struct {
-	Position_ws mgl.Vec4f
+	InstancePosition_ws mgl.Vec4f
 }
 
 // forest

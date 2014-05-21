@@ -11,26 +11,12 @@ import (
 type PortalRenderer struct {
 	Program gl.Program
 	RenLoc  PortalRenderLocations
-	RenData PortalRenderData
+	RenData RenderData
 }
 
 type PortalRenderLocations struct {
 	Vertex_ms, Normal_ms                       gl.AttribLocation
 	Proj, View, Model, Image, ClippingPlane_cs gl.UniformLocation
-}
-
-type PortalRenderData struct {
-	VAO      gl.VertexArray
-	Indices  gl.Buffer
-	Vertices gl.Buffer
-	Numverts int
-}
-
-func (this *PortalRenderData) Delete() {
-	this.VAO.Delete()
-	this.Indices.Delete()
-	this.Vertices.Delete()
-	*this = PortalRenderData{}
 }
 
 func NewPortalRenderer() (mr *PortalRenderer) {
@@ -48,7 +34,7 @@ func (this *PortalRenderer) Delete() {
 	*this = PortalRenderer{}
 }
 
-func (this *PortalRenderer) CreateRenderData() (md PortalRenderData) {
+func (this *PortalRenderer) CreateRenderData() (md RenderData) {
 	mesh := gamestate.QuadMesh()
 	md.VAO = gl.GenVertexArray()
 	md.VAO.Bind()
