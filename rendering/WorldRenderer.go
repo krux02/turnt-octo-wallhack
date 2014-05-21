@@ -13,21 +13,22 @@ import (
 )
 
 type WorldRenderer struct {
-	Proj              mgl.Mat4f
-	Textures          *Textures
-	HeightMapRenderer *HeightMapRenderer
-	WaterRenderer     *WaterRenderer
-	MeshRenderer      *MeshRenderer
-	PortalRenderer    *PortalRenderer
-	Portal            PortalRenderData
-	PalmRenderer      *PalmRenderer
-	ParticleSystem    *particles.ParticleSystem
-	SkyboxRenderer    *SkyboxRenderer
-	Framebuffer       [2]*FrameBuffer
-	ScreenQuad        *ScreenQuadRenderer
-	DebugRenderer     *LineRenderer
-	MaxRecursion      int
-	screenShot        bool
+	Proj               mgl.Mat4f
+	Textures           *Textures
+	HeightMapRenderer  *HeightMapRenderer
+	WaterRenderer      *WaterRenderer
+	DebugWaterRenderer *DebugWaterRenderer
+	MeshRenderer       *MeshRenderer
+	PortalRenderer     *PortalRenderer
+	Portal             PortalRenderData
+	PalmRenderer       *PalmRenderer
+	ParticleSystem     *particles.ParticleSystem
+	SkyboxRenderer     *SkyboxRenderer
+	Framebuffer        [2]*FrameBuffer
+	ScreenQuad         *ScreenQuadRenderer
+	DebugRenderer      *LineRenderer
+	MaxRecursion       int
+	screenShot         bool
 }
 
 func (this *WorldRenderer) Resize(width, height int) {
@@ -45,20 +46,23 @@ func (this *WorldRenderer) ScreenShot() {
 func NewWorldRenderer(window *sdl.Window, w *gamestate.World) *WorldRenderer {
 	width, height := window.GetSize()
 
+	waterRenderer, debugWaterRenderer := NewWaterRenderer(w.HeightMap)
+
 	return &WorldRenderer{
-		Proj:              mgl.Perspective(90, float32(width)/float32(height), 0.3, 1000),
-		Textures:          NewTextures(w.HeightMap),
-		HeightMapRenderer: NewHeightMapRenderer(w.HeightMap),
-		WaterRenderer:     NewWaterRenderer(w.HeightMap),
-		MeshRenderer:      NewMeshRenderer(),
-		PortalRenderer:    NewPortalRenderer(),
-		PalmRenderer:      NewPalmRenderer(&w.Palms),
-		ParticleSystem:    particles.NewParticleSystem(w, 10000, mgl.Vec3f{32, 32, 32}, 1, 250),
-		SkyboxRenderer:    NewSkyboxRenderer(),
-		Framebuffer:       [2]*FrameBuffer{NewFrameBuffer(window.GetSize()), NewFrameBuffer(window.GetSize())},
-		ScreenQuad:        NewScreenQuadRenderer(),
-		DebugRenderer:     NewLineRenderer(),
-		MaxRecursion:      1,
+		Proj:               mgl.Perspective(90, float32(width)/float32(height), 0.3, 1000),
+		Textures:           NewTextures(w.HeightMap),
+		HeightMapRenderer:  NewHeightMapRenderer(w.HeightMap),
+		WaterRenderer:      waterRenderer,
+		DebugWaterRenderer: debugWaterRenderer,
+		MeshRenderer:       NewMeshRenderer(),
+		PortalRenderer:     NewPortalRenderer(),
+		PalmRenderer:       NewPalmRenderer(&w.Palms),
+		ParticleSystem:     particles.NewParticleSystem(w, 10000, mgl.Vec3f{32, 32, 32}, 1, 250),
+		SkyboxRenderer:     NewSkyboxRenderer(),
+		Framebuffer:        [2]*FrameBuffer{NewFrameBuffer(window.GetSize()), NewFrameBuffer(window.GetSize())},
+		ScreenQuad:         NewScreenQuadRenderer(),
+		DebugRenderer:      NewLineRenderer(),
+		MaxRecursion:       1,
 	}
 }
 
@@ -137,7 +141,10 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 		this.HeightMapRenderer.Render(this.Proj, View, mgl.Ident4f(), ww.HeightMap, clippingPlane)
 	}
 	if options.WaterRender {
-		this.WaterRenderer.Render(ww.HeightMap, this.Proj, View, currentTime, clippingPlane, options.WaterNormals)
+		this.WaterRenderer.Render(ww.HeightMap, this.Proj, View, currentTime, clippingPlane)
+	}
+	if options.WaterNormals {
+		this.DebugWaterRenderer.Render(ww.HeightMap, this.Proj, View, currentTime, clippingPlane)
 	}
 
 	gl.Disable(gl.CULL_FACE)
