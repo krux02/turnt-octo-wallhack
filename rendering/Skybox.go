@@ -15,20 +15,21 @@ type SkyboxRenderer struct {
 
 type SkyboxRenderLocations struct {
 	Proj, View, Skybox gl.UniformLocation
-	InTexCoord gl.AttribLocation
+	InTexCoord         gl.AttribLocation
 }
 
 type SkyboxRenderData struct {
-	VAO     gl.VertexArray
-	Indices gl.Buffer
-	VertexDataBuffer gl.Buffer
+	VAO      gl.VertexArray
+	Indices  gl.Buffer
+	Vertices gl.Buffer
+	Numverts int
 }
 
 func NewSkyboxRenderer() *SkyboxRenderer {
 	renderer := new(SkyboxRenderer)
 	renderer.Program = helpers.MakeProgram("Skybox.vs", "Skybox.fs")
 	renderer.Program.Use()
-	renderer.createRenderData()
+	renderer.CreateRenderData()
 	helpers.BindLocations("skybox", renderer.Program, &renderer.RenLoc)
 	return renderer
 }
@@ -44,10 +45,9 @@ type SkyboxVertex struct {
 	InTexCoord mgl.Vec3f
 }
 
-func (this *SkyboxRenderer) createRenderData() {
+func (this *SkyboxRenderer) CreateRenderData() {
 	this.RenData.VAO = gl.GenVertexArray()
 	this.RenData.VAO.Bind()
-
 	this.RenData.Indices = gl.GenBuffer()
 	this.RenData.Indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
 	indices := []uint16{
@@ -61,19 +61,21 @@ func (this *SkyboxRenderer) createRenderData() {
 	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, helpers.ByteSizeOfSlice(indices), indices, gl.STATIC_DRAW)
 
 	vertices := []mgl.Vec3f{
-		mgl.Vec3f{ -1,-1,-1 },
-		mgl.Vec3f{  1,-1,-1 },
-		mgl.Vec3f{ -1, 1,-1 },
-		mgl.Vec3f{  1, 1,-1 },
-		mgl.Vec3f{ -1,-1, 1 },
-		mgl.Vec3f{  1,-1, 1 },
-		mgl.Vec3f{ -1, 1, 1 },
-		mgl.Vec3f{  1, 1, 1 },
+		mgl.Vec3f{-1, -1, -1},
+		mgl.Vec3f{1, -1, -1},
+		mgl.Vec3f{-1, 1, -1},
+		mgl.Vec3f{1, 1, -1},
+		mgl.Vec3f{-1, -1, 1},
+		mgl.Vec3f{1, -1, 1},
+		mgl.Vec3f{-1, 1, 1},
+		mgl.Vec3f{1, 1, 1},
 	}
 
-	this.RenData.VertexDataBuffer = gl.GenBuffer()
-	this.RenData.VertexDataBuffer.Bind(gl.ARRAY_BUFFER)
+	this.RenData.Vertices = gl.GenBuffer()
+	this.RenData.Vertices.Bind(gl.ARRAY_BUFFER)
 	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(vertices), vertices, gl.STATIC_DRAW)
+	this.RenData.Numverts = 36
+
 	helpers.SetAttribPointers(&this.RenLoc, &SkyboxVertex{})
 	return
 }
@@ -87,5 +89,5 @@ func (this *SkyboxRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, textureUnit i
 	Loc.Proj.UniformMatrix4f(false, glMat(&Proj))
 	Loc.Skybox.Uniform1i(textureUnit)
 
-	gl.DrawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, uintptr(0))
+	gl.DrawElements(gl.TRIANGLES, this.RenData.Numverts, gl.UNSIGNED_SHORT, uintptr(0))
 }

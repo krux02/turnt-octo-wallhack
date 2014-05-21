@@ -20,7 +20,7 @@ type WorldRenderer struct {
 	MeshRenderer      *MeshRenderer
 	PortalRenderer    *PortalRenderer
 	Portal            PortalRenderData
-	PalmTrees         *PalmTrees
+	PalmRenderer      *PalmRenderer
 	ParticleSystem    *particles.ParticleSystem
 	SkyboxRenderer    *SkyboxRenderer
 	Framebuffer       [2]*FrameBuffer
@@ -56,7 +56,7 @@ func NewWorldRenderer(window *sdl.Window, w *gamestate.World) *WorldRenderer {
 		MeshRenderer:      mr,
 		PortalRenderer:    pr,
 		Portal:            pr.CreateRenderData(portalData),
-		PalmTrees:         NewPalmRenderer(&w.Palms),
+		PalmRenderer:      NewPalmRenderer(&w.Palms),
 		ParticleSystem:    particles.NewParticleSystem(w, 10000, mgl.Vec3f{32, 32, 32}, 1, 250),
 		SkyboxRenderer:    NewSkyboxRenderer(),
 		Framebuffer:       [2]*FrameBuffer{NewFrameBuffer(window.GetSize()), NewFrameBuffer(window.GetSize())},
@@ -72,7 +72,7 @@ func (this *WorldRenderer) Delete() {
 	this.MeshRenderer.Delete()
 	this.PortalRenderer.Delete()
 	// TODO delete portal data
-	this.PalmTrees.Delete()
+	this.PalmRenderer.Delete()
 	this.ParticleSystem.Delete()
 	this.SkyboxRenderer.Delete()
 	this.WaterRenderer.Delete()
@@ -147,7 +147,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 
 	gl.Disable(gl.BLEND)
 	if options.TreeRender {
-		this.PalmTrees.Render(this.Proj, View, Rot2D, clippingPlane)
+		this.PalmRenderer.Render(this.Proj, View, Rot2D, clippingPlane)
 	}
 
 	gl.Enable(gl.BLEND)

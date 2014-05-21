@@ -50,7 +50,7 @@ func (this *MeshRenderer) Delete() {
 	*this = MeshRenderer{}
 }
 
-func (this *MeshRenderer) createRenderData(mesh *gamestate.Mesh) (md MeshRenderData) {
+func (this *MeshRenderer) CreateRenderData(mesh *gamestate.Mesh) (md MeshRenderData) {
 
 	md.VAO = gl.GenVertexArray()
 	md.VAO.Bind()
@@ -75,7 +75,7 @@ func (this *MeshRenderer) Render(mesh *gamestate.Mesh, Proj mgl.Mat4f, View mgl.
 
 	meshData := this.MeshData[mesh]
 	if meshData == nil {
-		md := this.createRenderData(mesh)
+		md := this.CreateRenderData(mesh)
 		meshData = &md
 		this.MeshData[mesh] = &md
 	}

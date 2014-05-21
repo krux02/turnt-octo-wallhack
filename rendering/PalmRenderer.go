@@ -25,7 +25,25 @@ type PalmTreeFullVertex struct {
 	TexCoord  mgl.Vec2f
 }
 
-func CreateVertexDataBuffer() gl.Buffer {
+func (renderer *PalmRenderer) CreateRenderData(pt *gamestate.PalmTreesInstanceData) {
+	renderer.RenData.Vao = gl.GenVertexArray()
+	renderer.RenData.Vao.Bind()
+
+	vertices, indices, numverts := CreateVertexDataBuffer()
+	helpers.SetAttribPointers(&renderer.Loc, &PalmShape{})
+
+	instanceDataBuffer := CreateInstanceDataBuffer(pt)
+	helpers.SetAttribPointers(&renderer.Loc, &gamestate.PalmTree{})
+	renderer.Loc.Position_ws.AttribDivisor(1)
+
+	renderer.RenData.InstanceDataBuffer = instanceDataBuffer
+	renderer.RenData.NumInstances = len(pt.Positions)
+	renderer.RenData.Vertices = vertices
+	renderer.RenData.Indices = indices
+	renderer.RenData.NumVerts = numverts
+}
+
+func CreateVertexDataBuffer() (vertices, indices gl.Buffer, numverts int) {
 	fmt.Println("CreateVertexDataBuffer:")
 
 	palmShape := []PalmShape{
@@ -35,11 +53,17 @@ func CreateVertexDataBuffer() gl.Buffer {
 		PalmShape{mgl.Vec4f{0, -1, 2, 1}, mgl.Vec2f{0, 0}},
 	}
 
-	palmShapeBuffer := gl.GenBuffer()
-	palmShapeBuffer.Bind(gl.ARRAY_BUFFER)
+	vertices = gl.GenBuffer()
+	vertices.Bind(gl.ARRAY_BUFFER)
 	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(palmShape), palmShape, gl.STATIC_DRAW)
 
-	return palmShapeBuffer
+	indices = gl.GenBuffer()
+	indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
+	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, 8, &[4]uint16{0, 1, 2, 3}, gl.STATIC_DRAW)
+
+	numverts = 4
+
+	return
 }
 
 func CreateInstanceDataBuffer(pt *gamestate.PalmTreesInstanceData) gl.Buffer {
@@ -52,67 +76,47 @@ func CreateInstanceDataBuffer(pt *gamestate.PalmTreesInstanceData) gl.Buffer {
 	return vertices
 }
 
-type TreeSorter struct {
-	indices []int
-	by      func(a, b int) bool
-}
-
-type PalmTreesBuffers struct {
+type PalmTreeRenderData struct {
 	Vao                gl.VertexArray
 	InstanceDataBuffer gl.Buffer
-	VertexDataBuffer   gl.Buffer
+	NumInstances       int
+	Vertices           gl.Buffer
+	Indices            gl.Buffer
+	NumVerts           int
 }
 
-type PalmTrees struct {
+type PalmRenderer struct {
 	Prog    gl.Program
 	Loc     TreeRenderLocatins
-	Buffers PalmTreesBuffers
-	Count   int
+	RenData PalmTreeRenderData
 }
 
-func (this *PalmTrees) Delete() {
+func (this *PalmRenderer) Delete() {
 	this.Prog.Delete()
-	this.Buffers.InstanceDataBuffer.Delete()
-	this.Buffers.VertexDataBuffer.Delete()
-	this.Buffers.Vao.Delete()
-	*this = PalmTrees{}
+	this.RenData.InstanceDataBuffer.Delete()
+	this.RenData.Vertices.Delete()
+	this.RenData.Vao.Delete()
+	*this = PalmRenderer{}
 }
 
-func NewPalmRenderer(pt *gamestate.PalmTreesInstanceData) *PalmTrees {
+func NewPalmRenderer(pt *gamestate.PalmTreesInstanceData) *PalmRenderer {
+	renderer := new(PalmRenderer)
+	renderer.Prog = helpers.MakeProgram("Sprite.vs", "Sprite.fs")
+	renderer.Prog.Use()
+	helpers.BindLocations("palm sprite", renderer.Prog, &renderer.Loc)
+	renderer.Loc.PalmTree.Uniform1i(5)
 
-	Prog := helpers.MakeProgram("Sprite.vs", "Sprite.fs")
-	Prog.Use()
+	renderer.CreateRenderData(pt)
 
-	vao := gl.GenVertexArray()
-	vao.Bind()
-
-	Loc := TreeRenderLocatins{}
-	helpers.BindLocations("palm sprite", Prog, &Loc)
-
-	fmt.Println(Loc)
-	Loc.PalmTree.Uniform1i(5)
-
-	vertexDataBuffer := CreateVertexDataBuffer()
-	helpers.SetAttribPointers(&Loc, &PalmShape{})
-
-	instanceDataBuffer := CreateInstanceDataBuffer(pt)
-	helpers.SetAttribPointers(&Loc, &gamestate.PalmTree{})
-	Loc.Position_ws.AttribDivisor(1)
-
-	buffers := PalmTreesBuffers{vao, instanceDataBuffer, vertexDataBuffer}
-
-	return &PalmTrees{Prog, Loc, buffers, len(pt.Positions)}
+	return renderer
 }
 
-func (pt *PalmTrees) Render(Proj, View mgl.Mat4f, Rot2D mgl.Mat3f, clippingPlane mgl.Vec4f) {
-
+func (pt *PalmRenderer) Render(Proj, View mgl.Mat4f, Rot2D mgl.Mat3f, clippingPlane mgl.Vec4f) {
 	pt.Prog.Use()
-	pt.Buffers.Vao.Bind()
-
+	pt.RenData.Vao.Bind()
 	pt.Loc.Proj.UniformMatrix4f(false, glMat(&Proj))
 	pt.Loc.View.UniformMatrix4f(false, glMat(&View))
 	pt.Loc.Rot2D.UniformMatrix3f(false, (*[9]float32)(&Rot2D))
 	pt.Loc.ClippingPlane_ws.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
-
-	gl.DrawArraysInstanced(gl.TRIANGLE_FAN, 0, 4, pt.Count)
+	gl.DrawArraysInstanced(gl.TRIANGLE_FAN, 0, pt.RenData.NumVerts, pt.RenData.NumInstances)
 }
