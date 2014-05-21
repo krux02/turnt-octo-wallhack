@@ -85,8 +85,8 @@ func (this *SkyboxRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, textureUnit i
 	this.RenData.VAO.Bind()
 
 	Loc := this.RenLoc
-	Loc.View.UniformMatrix4f(false, glMat(&View))
-	Loc.Proj.UniformMatrix4f(false, glMat(&Proj))
+	Loc.View.UniformMatrix4f(false, glMat4(&View))
+	Loc.Proj.UniformMatrix4f(false, glMat4(&Proj))
 	Loc.Skybox.Uniform1i(textureUnit)
 
 	gl.DrawElements(gl.TRIANGLES, this.RenData.Numverts, gl.UNSIGNED_SHORT, uintptr(0))

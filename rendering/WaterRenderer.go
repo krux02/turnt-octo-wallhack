@@ -119,9 +119,9 @@ func (wr *WaterRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f,
 	Loc := wr.RenLoc
 	Loc.Time.Uniform1f(float32(time))
 	Loc.ClippingPlane_ws.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
-	Loc.Proj.UniformMatrix4f(false, glMat(&Proj))
-	Loc.Model.UniformMatrix4f(false, glMat(&Model))
-	Loc.View.UniformMatrix4f(false, glMat(&View))
+	Loc.Proj.UniformMatrix4f(false, glMat4(&Proj))
+	Loc.Model.UniformMatrix4f(false, glMat4(&Model))
+	Loc.View.UniformMatrix4f(false, glMat4(&View))
 	v := View.Inv().Mul4x1(mgl.Vec4f{0, 0, 0, 1})
 	Loc.CameraPos_ws.Uniform4f(v[0], v[1], v[2], v[3])
 
@@ -137,9 +137,9 @@ func (wr *WaterRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f,
 		Loc = wr.DebugRenLoc
 		Loc.Time.Uniform1f(float32(time))
 		Loc.ClippingPlane_ws.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
-		Loc.Proj.UniformMatrix4f(false, glMat(&Proj))
-		Loc.Model.UniformMatrix4f(false, glMat(&Model))
-		Loc.View.UniformMatrix4f(false, glMat(&View))
+		Loc.Proj.UniformMatrix4f(false, glMat4(&Proj))
+		Loc.Model.UniformMatrix4f(false, glMat4(&Model))
+		Loc.View.UniformMatrix4f(false, glMat4(&View))
 		Loc.CameraPos_ws.Uniform4f(v[0], v[1], v[2], v[3])
 
 		gl.Disable(gl.CULL_FACE)

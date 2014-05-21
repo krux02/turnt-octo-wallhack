@@ -9,9 +9,9 @@ import (
 )
 
 type MeshRenderer struct {
-	Program  gl.Program
-	RenLoc   MeshRenderLocations
-	MeshData map[*gamestate.Mesh]*MeshRenderData
+	Program gl.Program
+	RenLoc  MeshRenderLocations
+	RenData map[*gamestate.Mesh]*MeshRenderData
 }
 
 type MeshRenderLocations struct {
@@ -37,14 +37,14 @@ func NewMeshRenderer() (mr *MeshRenderer) {
 	mr = new(MeshRenderer)
 	mr.Program = helpers.MakeProgram("Mesh.vs", "Mesh.fs")
 	mr.Program.Use()
-	mr.MeshData = make(map[*gamestate.Mesh]*MeshRenderData)
+	mr.RenData = make(map[*gamestate.Mesh]*MeshRenderData)
 	helpers.BindLocations("mesh", mr.Program, &mr.RenLoc)
 	return
 }
 
 func (this *MeshRenderer) Delete() {
 	this.Program.Delete()
-	for _, rd := range this.MeshData {
+	for _, rd := range this.RenData {
 		rd.Delete()
 	}
 	*this = MeshRenderer{}
@@ -73,11 +73,11 @@ func (this *MeshRenderer) CreateRenderData(mesh *gamestate.Mesh) (md MeshRenderD
 func (this *MeshRenderer) Render(mesh *gamestate.Mesh, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f) {
 	this.Program.Use()
 
-	meshData := this.MeshData[mesh]
+	meshData := this.RenData[mesh]
 	if meshData == nil {
 		md := this.CreateRenderData(mesh)
 		meshData = &md
-		this.MeshData[mesh] = &md
+		this.RenData[mesh] = &md
 	}
 
 	meshData.VAO.Bind()
@@ -86,9 +86,9 @@ func (this *MeshRenderer) Render(mesh *gamestate.Mesh, Proj mgl.Mat4f, View mgl.
 	gl.Disable(gl.CULL_FACE)
 
 	Loc := this.RenLoc
-	Loc.View.UniformMatrix4f(false, glMat(&View))
-	Loc.Model.UniformMatrix4f(false, glMat(&Model))
-	Loc.Proj.UniformMatrix4f(false, glMat(&Proj))
+	Loc.View.UniformMatrix4f(false, glMat4(&View))
+	Loc.Model.UniformMatrix4f(false, glMat4(&Model))
+	Loc.Proj.UniformMatrix4f(false, glMat4(&Proj))
 
 	numverts := meshData.Numverts
 

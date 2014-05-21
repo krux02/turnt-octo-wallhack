@@ -116,8 +116,8 @@ func (this *HeightMapRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.
 		heightMap.HasChanges = false
 	}
 
-	this.RenLoc.Matrix.UniformMatrix4f(false, glMat(&ProjViewModel))
-	this.RenLoc.Model.UniformMatrix4f(false, glMat(&Model))
+	this.RenLoc.Matrix.UniformMatrix4f(false, glMat4(&ProjViewModel))
+	this.RenLoc.Model.UniformMatrix4f(false, glMat4(&Model))
 
 	gl.DrawElements(gl.TRIANGLES, numverts, gl.UNSIGNED_INT, uintptr(0))
 }

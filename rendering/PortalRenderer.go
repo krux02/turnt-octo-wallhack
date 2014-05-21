@@ -11,6 +11,7 @@ import (
 type PortalRenderer struct {
 	Program gl.Program
 	RenLoc  PortalRenderLocations
+	RenData PortalRenderData
 }
 
 type PortalRenderLocations struct {
@@ -31,6 +32,7 @@ func NewPortalRenderer() (mr *PortalRenderer) {
 	mr.Program = helpers.MakeProgram("Portal.vs", "Portal.fs")
 	mr.Program.Use()
 	helpers.BindLocations("portal", mr.Program, &mr.RenLoc)
+	mr.RenData = mr.CreateRenderData()
 	return
 }
 
@@ -39,8 +41,8 @@ func (this *PortalRenderer) Delete() {
 	this.Program = 0
 }
 
-func (this *PortalRenderer) CreateRenderData(mesh *gamestate.Mesh) (md PortalRenderData) {
-
+func (this *PortalRenderer) CreateRenderData() (md PortalRenderData) {
+	mesh := gamestate.QuadMesh()
 	md.VAO = gl.GenVertexArray()
 	md.VAO.Bind()
 
@@ -59,19 +61,19 @@ func (this *PortalRenderer) CreateRenderData(mesh *gamestate.Mesh) (md PortalRen
 	return
 }
 
-func (this *PortalRenderer) Render(meshData *PortalRenderData, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, ClippingPlane_ws mgl.Vec4f, textureUnit int) {
+func (this *PortalRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, ClippingPlane_ws mgl.Vec4f, textureUnit int) {
 	this.Program.Use()
-	meshData.VAO.Bind()
+	this.RenData.VAO.Bind()
 
 	Loc := this.RenLoc
-	Loc.View.UniformMatrix4f(false, glMat(&View))
-	Loc.Model.UniformMatrix4f(false, glMat(&Model))
-	Loc.Proj.UniformMatrix4f(false, glMat(&Proj))
+	Loc.View.UniformMatrix4f(false, glMat4(&View))
+	Loc.Model.UniformMatrix4f(false, glMat4(&Model))
+	Loc.Proj.UniformMatrix4f(false, glMat4(&Proj))
 	Loc.Image.Uniform1i(textureUnit)
 	ClippingPlane_cs := View.Mul4x1(ClippingPlane_ws)
 	Loc.ClippingPlane_cs.Uniform4f(ClippingPlane_cs[0], ClippingPlane_cs[1], ClippingPlane_cs[2], ClippingPlane_cs[3])
 
-	numverts := meshData.Numverts
+	numverts := this.RenData.Numverts
 
 	gl.Enable(gl.DEPTH_CLAMP)
 	gl.DrawElements(gl.TRIANGLES, numverts, gl.UNSIGNED_SHORT, uintptr(0))

@@ -45,17 +45,14 @@ func (this *WorldRenderer) ScreenShot() {
 func NewWorldRenderer(window *sdl.Window, w *gamestate.World) *WorldRenderer {
 	width, height := window.GetSize()
 
-	portalData := w.Portals[0].Mesh
 	mr := NewMeshRenderer()
-	pr := NewPortalRenderer()
 	return &WorldRenderer{
 		Proj:              mgl.Perspective(90, float32(width)/float32(height), 0.3, 1000),
 		Textures:          NewTextures(w.HeightMap),
 		HeightMapRenderer: NewHeightMapRenderer(w.HeightMap),
 		WaterRenderer:     NewWaterRenderer(w.HeightMap),
 		MeshRenderer:      mr,
-		PortalRenderer:    pr,
-		Portal:            pr.CreateRenderData(portalData),
+		PortalRenderer:    NewPortalRenderer(),
 		PalmRenderer:      NewPalmRenderer(&w.Palms),
 		ParticleSystem:    particles.NewParticleSystem(w, 10000, mgl.Vec3f{32, 32, 32}, 1, 250),
 		SkyboxRenderer:    NewSkyboxRenderer(),
@@ -158,7 +155,8 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 
 	gl.Disable(gl.BLEND)
 
-	boxVertices := ww.Portals[0].Mesh.MakeBoxVertices()
+	boxVertices := gamestate.QuadMesh().MakeBoxVertices()
+
 	pv := this.Proj.Mul4(View)
 
 	// calculating nearest portal
@@ -172,7 +170,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 			pos := portal.Position
 			rotation := portal.Orientation.Mat4()
 			Model := mgl.Translate3D(pos[0], pos[1], pos[2]).Mul4(rotation)
-			this.PortalRenderer.Render(&this.Portal, this.Proj, View, Model, clippingPlane, 7)
+			this.PortalRenderer.Render(this.Proj, View, Model, clippingPlane, 7)
 		}
 	}
 
@@ -253,7 +251,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 			pos := nearestPortal.Position
 			rotation := nearestPortal.Orientation.Mat4()
 			Model := mgl.Translate3D(pos[0], pos[1], pos[2]).Mul4(rotation)
-			this.PortalRenderer.Render(&this.Portal, this.Proj, View, Model, clippingPlane, 0)
+			this.PortalRenderer.Render(this.Proj, View, Model, clippingPlane, 0)
 
 		}
 	}

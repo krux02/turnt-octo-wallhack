@@ -2,6 +2,10 @@ package rendering
 
 import mgl "github.com/Jragonmiris/mathgl"
 
-func glMat(mat *mgl.Mat4f) *[16]float32 {
+func glMat4(mat *mgl.Mat4f) *[16]float32 {
 	return (*[16]float32)(mat)
+}
+
+func glMat3(mat *mgl.Mat3f) *[9]float32 {
+	return (*[9]float32)(mat)
 }

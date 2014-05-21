@@ -43,7 +43,6 @@ func RandomPortals(hm *gs.HeightMap, N int) []*gs.Portal {
 		panic("not an even number of portals")
 	}
 
-	PortalMesh := gs.QuadMesh()
 	normal := mgl.Vec4f{0, 0, 1, 0}
 
 	Portals := make([]*gs.Portal, N)
@@ -54,7 +53,6 @@ func RandomPortals(hm *gs.HeightMap, N int) []*gs.Portal {
 		q := mgl.Quatf{rand.Float32(), mgl.Vec3f{rand.Float32(), rand.Float32(), rand.Float32()}}.Normalize()
 		Portals[i] = &gs.Portal{
 			gs.Entity{mgl.Vec4f{x, y, z, 1}, q},
-			PortalMesh,
 			normal,
 			nil,
 		}

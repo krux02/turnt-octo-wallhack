@@ -6,7 +6,6 @@ import (
 
 type Portal struct {
 	Entity
-	Mesh   *Mesh
 	Normal mgl.Vec4f
 	Target *Portal
 }
