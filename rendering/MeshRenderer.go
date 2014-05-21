@@ -50,22 +50,22 @@ func (this *MeshRenderer) Delete() {
 	*this = MeshRenderer{}
 }
 
-func (this *MeshRenderer) CreateRenderData(mesh *gamestate.Mesh) (md MeshRenderData) {
+func (this *MeshRenderer) CreateRenderData(mesh *gamestate.Mesh) (rd MeshRenderData) {
 
-	md.VAO = gl.GenVertexArray()
-	md.VAO.Bind()
+	rd.VAO = gl.GenVertexArray()
+	rd.VAO.Bind()
 
-	md.Indices = gl.GenBuffer()
-	md.Indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
+	rd.Indices = gl.GenBuffer()
+	rd.Indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
 	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, helpers.ByteSizeOfSlice(mesh.Indices), mesh.Indices, gl.STATIC_DRAW)
 
-	md.Vertices = gl.GenBuffer()
-	md.Vertices.Bind(gl.ARRAY_BUFFER)
+	rd.Vertices = gl.GenBuffer()
+	rd.Vertices.Bind(gl.ARRAY_BUFFER)
 	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(mesh.Vertices), mesh.Vertices, gl.STATIC_DRAW)
 
 	helpers.SetAttribPointers(&this.RenLoc, &gamestate.MeshVertex{})
 
-	md.Numverts = len(mesh.Indices)
+	rd.Numverts = len(mesh.Indices)
 
 	return
 }

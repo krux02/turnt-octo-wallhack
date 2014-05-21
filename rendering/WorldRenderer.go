@@ -45,13 +45,12 @@ func (this *WorldRenderer) ScreenShot() {
 func NewWorldRenderer(window *sdl.Window, w *gamestate.World) *WorldRenderer {
 	width, height := window.GetSize()
 
-	mr := NewMeshRenderer()
 	return &WorldRenderer{
 		Proj:              mgl.Perspective(90, float32(width)/float32(height), 0.3, 1000),
 		Textures:          NewTextures(w.HeightMap),
 		HeightMapRenderer: NewHeightMapRenderer(w.HeightMap),
 		WaterRenderer:     NewWaterRenderer(w.HeightMap),
-		MeshRenderer:      mr,
+		MeshRenderer:      NewMeshRenderer(),
 		PortalRenderer:    NewPortalRenderer(),
 		PalmRenderer:      NewPalmRenderer(&w.Palms),
 		ParticleSystem:    particles.NewParticleSystem(w, 10000, mgl.Vec3f{32, 32, 32}, 1, 250),
@@ -68,7 +67,6 @@ func (this *WorldRenderer) Delete() {
 	this.HeightMapRenderer.Delete()
 	this.MeshRenderer.Delete()
 	this.PortalRenderer.Delete()
-	// TODO delete portal data
 	this.PalmRenderer.Delete()
 	this.ParticleSystem.Delete()
 	this.SkyboxRenderer.Delete()
@@ -133,11 +131,13 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 		defer gl.Disable(gl.CLIP_DISTANCE0)
 	}
 
+	gl.Disable(gl.CULL_FACE)
+
 	if options.WorldRender {
 		this.HeightMapRenderer.Render(this.Proj, View, mgl.Ident4f(), ww.HeightMap, clippingPlane)
 	}
 	if options.WaterRender {
-		this.WaterRenderer.Render(this.Proj, View, mgl.Ident4f(), currentTime, clippingPlane, options.WaterNormals)
+		this.WaterRenderer.Render(ww.HeightMap, this.Proj, View, currentTime, clippingPlane, options.WaterNormals)
 	}
 
 	gl.Disable(gl.CULL_FACE)
@@ -167,10 +167,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 	for _, portal := range ww.Portals {
 		// do not draw the nearest portal or the portal behind the source portal if available
 		if (nearestPortal != portal) && (srcPortal == nil || srcPortal.Target != portal) {
-			pos := portal.Position
-			rotation := portal.Orientation.Mat4()
-			Model := mgl.Translate3D(pos[0], pos[1], pos[2]).Mul4(rotation)
-			this.PortalRenderer.Render(this.Proj, View, Model, clippingPlane, 7)
+			this.PortalRenderer.Render(portal, this.Proj, View, clippingPlane, 7)
 		}
 	}
 
@@ -248,11 +245,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 			}
 
 			this.Framebuffer[recursion].Bind()
-			pos := nearestPortal.Position
-			rotation := nearestPortal.Orientation.Mat4()
-			Model := mgl.Translate3D(pos[0], pos[1], pos[2]).Mul4(rotation)
-			this.PortalRenderer.Render(this.Proj, View, Model, clippingPlane, 0)
-
+			this.PortalRenderer.Render(nearestPortal, this.Proj, View, clippingPlane, 0)
 		}
 	}
 }

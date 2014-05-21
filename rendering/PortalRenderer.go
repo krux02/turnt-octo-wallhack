@@ -15,9 +15,8 @@ type PortalRenderer struct {
 }
 
 type PortalRenderLocations struct {
-	Vertex_ms, Normal_ms     gl.AttribLocation
-	Proj, View, Model, Image gl.UniformLocation
-	ClippingPlane_cs         gl.UniformLocation
+	Vertex_ms, Normal_ms                       gl.AttribLocation
+	Proj, View, Model, Image, ClippingPlane_cs gl.UniformLocation
 }
 
 type PortalRenderData struct {
@@ -25,6 +24,13 @@ type PortalRenderData struct {
 	Indices  gl.Buffer
 	Vertices gl.Buffer
 	Numverts int
+}
+
+func (this *PortalRenderData) Delete() {
+	this.VAO.Delete()
+	this.Indices.Delete()
+	this.Vertices.Delete()
+	*this = PortalRenderData{}
 }
 
 func NewPortalRenderer() (mr *PortalRenderer) {
@@ -38,7 +44,8 @@ func NewPortalRenderer() (mr *PortalRenderer) {
 
 func (this *PortalRenderer) Delete() {
 	this.Program.Delete()
-	this.Program = 0
+	this.RenData.Delete()
+	*this = PortalRenderer{}
 }
 
 func (this *PortalRenderer) CreateRenderData() (md PortalRenderData) {
@@ -61,7 +68,8 @@ func (this *PortalRenderer) CreateRenderData() (md PortalRenderData) {
 	return
 }
 
-func (this *PortalRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, ClippingPlane_ws mgl.Vec4f, textureUnit int) {
+func (this *PortalRenderer) Render(Portal *gamestate.Portal, Proj mgl.Mat4f, View mgl.Mat4f, ClippingPlane_ws mgl.Vec4f, TextureUnit int) {
+	Model := Portal.Model()
 	this.Program.Use()
 	this.RenData.VAO.Bind()
 
@@ -69,7 +77,7 @@ func (this *PortalRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat
 	Loc.View.UniformMatrix4f(false, glMat4(&View))
 	Loc.Model.UniformMatrix4f(false, glMat4(&Model))
 	Loc.Proj.UniformMatrix4f(false, glMat4(&Proj))
-	Loc.Image.Uniform1i(textureUnit)
+	Loc.Image.Uniform1i(TextureUnit)
 	ClippingPlane_cs := View.Mul4x1(ClippingPlane_ws)
 	Loc.ClippingPlane_cs.Uniform4f(ClippingPlane_cs[0], ClippingPlane_cs[1], ClippingPlane_cs[2], ClippingPlane_cs[3])
 

@@ -16,13 +16,13 @@ type WaterRenderer struct {
 	RenLoc       WaterRenderLocations
 	DebugProgram gl.Program
 	DebugRenLoc  WaterRenderLocations
-	Data         WaterRenderData
+	RenData      WaterRenderData
 }
 
 type WaterRenderData struct {
 	VAO, DebugVao gl.VertexArray
-	Indices       gl.Buffer
 	Vertices      gl.Buffer
+	Indices       gl.Buffer
 	Numverts      int
 }
 
@@ -50,31 +50,37 @@ func WaterVertices(W, H int) []WaterVertex {
 	return vertices
 }
 
-func NewWaterRenderer(heightMap *gamestate.HeightMap) (this *WaterRenderer) {
-	vertices := WaterVertices(heightMap.W, heightMap.H)
+func (this *WaterRenderer) CreateRenderData(heightMap *gamestate.HeightMap) (rd WaterRenderData) {
+	rd.VAO = gl.GenVertexArray()
+	rd.VAO.Bind()
+
+	rd.Indices = gl.GenBuffer()
+	rd.Indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
 	indices := TriangulationIndices(heightMap.W, heightMap.H)
+	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, helpers.ByteSizeOfSlice(indices), indices, gl.STATIC_DRAW)
+
+	rd.Vertices = gl.GenBuffer()
+	rd.Vertices.Bind(gl.ARRAY_BUFFER)
+	vertices := WaterVertices(heightMap.W, heightMap.H)
+	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(vertices), vertices, gl.STATIC_DRAW)
+
+	helpers.SetAttribPointers(&this.RenLoc, &WaterVertex{})
+	rd.Numverts = len(indices)
+
+	return
+}
+
+func NewWaterRenderer(heightMap *gamestate.HeightMap) (this *WaterRenderer) {
+	this = new(WaterRenderer)
+
 	min_h, max_h := heightMap.Bounds()
 	W, H := float32(heightMap.W), float32(heightMap.H)
-
-	this = new(WaterRenderer)
 
 	this.Program = helpers.MakeProgram("Water.vs", "Water.fs")
 	this.Program.Use()
 	helpers.BindLocations("water", this.Program, &this.RenLoc)
 
-	this.Data.VAO = gl.GenVertexArray()
-	this.Data.VAO.Bind()
-
-	this.Data.Indices = gl.GenBuffer()
-	this.Data.Indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
-	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, helpers.ByteSizeOfSlice(indices), indices, gl.STATIC_DRAW)
-
-	this.Data.Vertices = gl.GenBuffer()
-	this.Data.Vertices.Bind(gl.ARRAY_BUFFER)
-	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(vertices), vertices, gl.STATIC_DRAW)
-
-	helpers.SetAttribPointers(&this.RenLoc, &WaterVertex{})
-	this.Data.Numverts = len(indices)
+	this.RenData = this.CreateRenderData(heightMap)
 
 	this.RenLoc.HeightMap.Uniform1i(4)
 	this.RenLoc.LowerBound.Uniform3f(0, 0, min_h)
@@ -85,10 +91,10 @@ func NewWaterRenderer(heightMap *gamestate.HeightMap) (this *WaterRenderer) {
 	this.DebugProgram = helpers.MakeProgram3("Water.vs", "Normal.gs", "Line.fs")
 	this.DebugProgram.Use()
 
-	this.Data.DebugVao = gl.GenVertexArray()
-	this.Data.DebugVao.Bind()
-	this.Data.Indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
-	this.Data.Vertices.Bind(gl.ARRAY_BUFFER)
+	this.RenData.DebugVao = gl.GenVertexArray()
+	this.RenData.DebugVao.Bind()
+	this.RenData.Indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
+	this.RenData.Vertices.Bind(gl.ARRAY_BUFFER)
 
 	helpers.BindLocations("water debug", this.DebugProgram, &this.DebugRenLoc)
 
@@ -105,16 +111,18 @@ func NewWaterRenderer(heightMap *gamestate.HeightMap) (this *WaterRenderer) {
 func (wr *WaterRenderer) Delete() {
 	wr.Program.Delete()
 	wr.DebugProgram.Delete()
-	wr.Data.VAO.Delete()
-	wr.Data.Indices.Delete()
-	wr.Data.Vertices.Delete()
+	wr.RenData.VAO.Delete()
+	wr.RenData.Indices.Delete()
+	wr.RenData.Vertices.Delete()
 }
 
-func (wr *WaterRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, time float64, clippingPlane mgl.Vec4f, normals bool) {
+func (wr *WaterRenderer) Render(heightmap *gamestate.HeightMap, Proj mgl.Mat4f, View mgl.Mat4f, time float64, clippingPlane mgl.Vec4f, normals bool) {
 	wr.Program.Use()
-	wr.Data.VAO.Bind()
+	wr.RenData.VAO.Bind()
 
-	numverts := wr.Data.Numverts
+	Model := mgl.Ident4f()
+
+	numverts := wr.RenData.Numverts
 
 	Loc := wr.RenLoc
 	Loc.Time.Uniform1f(float32(time))
@@ -125,14 +133,12 @@ func (wr *WaterRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f,
 	v := View.Inv().Mul4x1(mgl.Vec4f{0, 0, 0, 1})
 	Loc.CameraPos_ws.Uniform4f(v[0], v[1], v[2], v[3])
 
-	gl.Disable(gl.CULL_FACE)
-
 	gl.DrawElements(gl.TRIANGLES, numverts, gl.UNSIGNED_INT, uintptr(0))
 
 	// debug rendering
 	if normals {
 		wr.DebugProgram.Use()
-		wr.Data.DebugVao.Bind()
+		wr.RenData.DebugVao.Bind()
 
 		Loc = wr.DebugRenLoc
 		Loc.Time.Uniform1f(float32(time))
@@ -141,8 +147,6 @@ func (wr *WaterRenderer) Render(Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f,
 		Loc.Model.UniformMatrix4f(false, glMat4(&Model))
 		Loc.View.UniformMatrix4f(false, glMat4(&View))
 		Loc.CameraPos_ws.Uniform4f(v[0], v[1], v[2], v[3])
-
-		gl.Disable(gl.CULL_FACE)
 
 		gl.DrawElements(gl.POINTS, numverts, gl.UNSIGNED_INT, uintptr(0))
 	}
