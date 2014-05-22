@@ -7,14 +7,6 @@ import (
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 )
 
-type WaterRenderLocations struct {
-	Vertex_ms, Normal_ms              gl.AttribLocation
-	HeightMap, LowerBound, UpperBound gl.UniformLocation
-	ClippingPlane_ws, CameraPos_ws    gl.UniformLocation
-	GroundTexture, Skybox             gl.UniformLocation
-	Time, Model, View, Proj           gl.UniformLocation
-}
-
 type WaterVertex struct {
 	Vertex_ms, Normal_ms mgl.Vec3f
 }
@@ -37,7 +29,7 @@ func WaterVertices(W, H int) []WaterVertex {
 
 type WaterRenderer struct {
 	Program gl.Program
-	RenLoc  WaterRenderLocations
+	RenLoc  RenderLocations
 	RenData RenderData
 }
 
@@ -50,7 +42,7 @@ func (this *WaterRenderer) Delete() {
 
 type DebugWaterRenderer struct {
 	Program gl.Program
-	RenLoc  WaterRenderLocations
+	RenLoc  RenderLocations
 	RenData RenderData
 }
 

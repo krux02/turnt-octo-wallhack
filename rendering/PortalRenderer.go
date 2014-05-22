@@ -10,13 +10,8 @@ import (
 
 type PortalRenderer struct {
 	Program gl.Program
-	RenLoc  PortalRenderLocations
+	RenLoc  RenderLocations
 	RenData RenderData
-}
-
-type PortalRenderLocations struct {
-	Vertex_ms, Normal_ms                       gl.AttribLocation
-	Proj, View, Model, Image, ClippingPlane_cs gl.UniformLocation
 }
 
 func NewPortalRenderer() (mr *PortalRenderer) {

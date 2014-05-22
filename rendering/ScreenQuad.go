@@ -7,32 +7,25 @@ import (
 	"unsafe"
 )
 
-type ScreenQuadLocations struct {
-	Image        gl.UniformLocation
-	Position_ndc gl.AttribLocation
-}
-
 type ScreenQuadRenderer struct {
 	Prog      gl.Program
 	Vao       gl.VertexArray
 	Buffer    gl.Buffer
-	Locations ScreenQuadLocations
+	Locations RenderLocations
 }
 
-func NewScreenQuadRenderer() *ScreenQuadRenderer {
+func NewScreenQuadRenderer() (this *ScreenQuadRenderer) {
+	this = new(ScreenQuadRenderer)
+	this.Prog = helpers.MakeProgram("ScreenQuad.vs", "ScreenQuad.fs")
+	this.Prog.Use()
 
-	prog := helpers.MakeProgram("ScreenQuad.vs", "ScreenQuad.fs")
-	prog.Use()
+	this.Vao = gl.GenVertexArray()
+	this.Vao.Bind()
+	helpers.BindLocations("screen quad", this.Prog, &this.Locations)
 
-	vao := gl.GenVertexArray()
-	vao.Bind()
-
-	locations := ScreenQuadLocations{}
-	helpers.BindLocations("screen quad", prog, &locations)
-
-	locations.Position_ndc.EnableArray()
-	a_positionBuffer := gl.GenBuffer()
-	a_positionBuffer.Bind(gl.ARRAY_BUFFER)
+	this.Locations.Position_ndc.EnableArray()
+	this.Buffer = gl.GenBuffer()
+	this.Buffer.Bind(gl.ARRAY_BUFFER)
 
 	arr := []mgl.Vec4f{
 		mgl.Vec4f{-1, -1, 0, 1},
@@ -41,9 +34,9 @@ func NewScreenQuadRenderer() *ScreenQuadRenderer {
 	}
 
 	gl.BufferData(gl.ARRAY_BUFFER, len(arr)*int(unsafe.Sizeof(mgl.Vec4f{})), arr, gl.STATIC_DRAW)
-	locations.Position_ndc.AttribPointer(4, gl.FLOAT, false, 0, uintptr(0))
+	this.Locations.Position_ndc.AttribPointer(4, gl.FLOAT, false, 0, uintptr(0))
 
-	return &ScreenQuadRenderer{prog, vao, a_positionBuffer, locations}
+	return
 }
 
 func (this *ScreenQuadRenderer) Delete() {

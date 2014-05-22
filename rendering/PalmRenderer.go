@@ -10,13 +10,8 @@ import (
 
 type PalmRenderer struct {
 	Prog    gl.Program
-	Loc     TreeRenderLocatins
+	Loc     RenderLocations
 	RenData RenderData
-}
-
-type TreeRenderLocatins struct {
-	Vertex_os, TexCoord, InstancePosition_ws      gl.AttribLocation
-	Proj, View, PalmTree, Rot2D, ClippingPlane_ws gl.UniformLocation
 }
 
 // global information for all trees

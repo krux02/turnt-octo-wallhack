@@ -10,13 +10,8 @@ import (
 
 type MeshRenderer struct {
 	Program gl.Program
-	RenLoc  MeshRenderLocations
+	RenLoc  RenderLocations
 	RenData map[*gamestate.Mesh]*RenderData
-}
-
-type MeshRenderLocations struct {
-	Vertex_ms, Normal_ms gl.AttribLocation
-	Proj, View, Model    gl.UniformLocation
 }
 
 func NewMeshRenderer() (mr *MeshRenderer) {
