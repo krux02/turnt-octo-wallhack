@@ -8,14 +8,9 @@ import (
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 )
 
-type LineRenderLocatins struct {
-	View, Proj       gl.UniformLocation
-	Vertex_ws, Color gl.AttribLocation
-}
-
 type LineRenderer struct {
 	Prog   gl.Program
-	Loc    LineRenderLocatins
+	RenLoc RenderLocations
 	vao    gl.VertexArray
 	buffer gl.Buffer
 }
@@ -26,12 +21,12 @@ func NewLineRenderer() *LineRenderer {
 	renderer.Prog.Use()
 	renderer.vao = gl.GenVertexArray()
 	renderer.vao.Bind()
-	helpers.BindLocations("line", renderer.Prog, &renderer.Loc)
+	helpers.BindLocations("line", renderer.Prog, &renderer.RenLoc)
 	renderer.buffer = gl.GenBuffer()
 	renderer.buffer.Bind(gl.ARRAY_BUFFER)
-	helpers.SetAttribPointers(&renderer.Loc, &debug.LineVertex{})
+	helpers.SetAttribPointers(&renderer.RenLoc, &debug.LineVertex{})
 
-	fmt.Println("Line render location ", renderer.Loc)
+	fmt.Println("Line render location ", renderer.RenLoc)
 	return &renderer
 }
 
@@ -43,9 +38,9 @@ func (this *LineRenderer) Render(Proj, View mgl.Mat4f) {
 		this.vao.Bind()
 		this.buffer.Bind(gl.ARRAY_BUFFER)
 		gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(data), data, gl.STREAM_DRAW)
-		//helpers.SetAttribPointers(&this.Loc, &debug.LineVertex{})
-		this.Loc.Proj.UniformMatrix4f(false, glMat4(&Proj))
-		this.Loc.View.UniformMatrix4f(false, glMat4(&View))
+		//helpers.SetAttribPointers(&this.RenLoc, &debug.LineVertex{})
+		this.RenLoc.Proj.UniformMatrix4f(false, glMat4(&Proj))
+		this.RenLoc.View.UniformMatrix4f(false, glMat4(&View))
 		gl.DrawArrays(gl.LINES, 0, len(data))
 	}
 }

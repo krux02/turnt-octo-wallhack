@@ -51,7 +51,7 @@ func (this *MeshRenderer) CreateRenderData(mesh *gamestate.Mesh) (rd RenderData)
 	return
 }
 
-func (this *MeshRenderer) Render(mesh *gamestate.Mesh, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f) {
+func (this *MeshRenderer) Render(mesh *gamestate.Mesh, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, ClippingPlane_ws mgl.Vec4f) {
 	this.Program.Use()
 
 	meshData := this.RenData[mesh]
@@ -70,6 +70,7 @@ func (this *MeshRenderer) Render(mesh *gamestate.Mesh, Proj mgl.Mat4f, View mgl.
 	Loc.View.UniformMatrix4f(false, glMat4(&View))
 	Loc.Model.UniformMatrix4f(false, glMat4(&Model))
 	Loc.Proj.UniformMatrix4f(false, glMat4(&Proj))
+	Loc.ClippingPlane_ws.Uniform4f(ClippingPlane_ws[0], ClippingPlane_ws[1], ClippingPlane_ws[2], ClippingPlane_ws[3])
 
 	numverts := meshData.Numverts
 

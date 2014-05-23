@@ -15,13 +15,8 @@ type PalmRenderer struct {
 }
 
 // global information for all trees
-type PalmShape struct {
-	Vertex_os mgl.Vec4f
-	TexCoord  mgl.Vec2f
-}
-
-type PalmTreeFullVertex struct {
-	Vertex_ws mgl.Vec4f
+type TreeVertex struct {
+	Vertex_ms mgl.Vec4f
 	TexCoord  mgl.Vec2f
 }
 
@@ -30,7 +25,7 @@ func (renderer *PalmRenderer) CreateRenderData(pt *gamestate.PalmTreesInstanceDa
 	renderer.RenData.VAO.Bind()
 
 	vertices, indices, numverts := CreateVertexDataBuffer()
-	helpers.SetAttribPointers(&renderer.Loc, &PalmShape{})
+	helpers.SetAttribPointers(&renderer.Loc, &TreeVertex{})
 
 	instanceDataBuffer := CreateInstanceDataBuffer(pt)
 	helpers.SetAttribPointers(&renderer.Loc, &gamestate.PalmTree{})
@@ -46,16 +41,16 @@ func (renderer *PalmRenderer) CreateRenderData(pt *gamestate.PalmTreesInstanceDa
 func CreateVertexDataBuffer() (vertices, indices gl.Buffer, numverts int) {
 	fmt.Println("CreateVertexDataBuffer:")
 
-	palmShape := []PalmShape{
-		PalmShape{mgl.Vec4f{0, 1, 2, 1}, mgl.Vec2f{1, 0}},
-		PalmShape{mgl.Vec4f{0, 1, 0, 1}, mgl.Vec2f{1, 1}},
-		PalmShape{mgl.Vec4f{0, -1, 0, 1}, mgl.Vec2f{0, 1}},
-		PalmShape{mgl.Vec4f{0, -1, 2, 1}, mgl.Vec2f{0, 0}},
+	treeVertex := []TreeVertex{
+		TreeVertex{mgl.Vec4f{0, 1, 2, 1}, mgl.Vec2f{1, 0}},
+		TreeVertex{mgl.Vec4f{0, 1, 0, 1}, mgl.Vec2f{1, 1}},
+		TreeVertex{mgl.Vec4f{0, -1, 0, 1}, mgl.Vec2f{0, 1}},
+		TreeVertex{mgl.Vec4f{0, -1, 2, 1}, mgl.Vec2f{0, 0}},
 	}
 
 	vertices = gl.GenBuffer()
 	vertices.Bind(gl.ARRAY_BUFFER)
-	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(palmShape), palmShape, gl.STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(treeVertex), treeVertex, gl.STATIC_DRAW)
 
 	indices = gl.GenBuffer()
 	indices.Bind(gl.ELEMENT_ARRAY_BUFFER)

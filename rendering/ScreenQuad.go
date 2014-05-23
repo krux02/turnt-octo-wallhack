@@ -23,7 +23,7 @@ func NewScreenQuadRenderer() (this *ScreenQuadRenderer) {
 	this.Vao.Bind()
 	helpers.BindLocations("screen quad", this.Prog, &this.Locations)
 
-	this.Locations.Position_ndc.EnableArray()
+	this.Locations.Vertex_ndc.EnableArray()
 	this.Buffer = gl.GenBuffer()
 	this.Buffer.Bind(gl.ARRAY_BUFFER)
 
@@ -34,7 +34,7 @@ func NewScreenQuadRenderer() (this *ScreenQuadRenderer) {
 	}
 
 	gl.BufferData(gl.ARRAY_BUFFER, len(arr)*int(unsafe.Sizeof(mgl.Vec4f{})), arr, gl.STATIC_DRAW)
-	this.Locations.Position_ndc.AttribPointer(4, gl.FLOAT, false, 0, uintptr(0))
+	this.Locations.Vertex_ndc.AttribPointer(4, gl.FLOAT, false, 0, uintptr(0))
 
 	return
 }

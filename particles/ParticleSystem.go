@@ -22,7 +22,7 @@ type ParticleVertex struct {
 }
 
 type ParticleShapeVertex struct {
-	Vertex_os mgl.Vec4f
+	Vertex_ms mgl.Vec4f
 	TexCoord  mgl.Vec2f
 }
 
@@ -34,7 +34,7 @@ type ProgramLocations struct {
 }
 
 type RenderProgramLocations struct {
-	Pos1, Pos2, Lifetime, TexCoord, Vertex_os        gl.AttribLocation
+	Pos1, Pos2, Lifetime, TexCoord, Vertex_ms        gl.AttribLocation
 	Proj, View, MaxLifetime, Image, ClippingPlane_ws gl.UniformLocation
 }
 

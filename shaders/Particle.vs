@@ -5,7 +5,7 @@ in vec3 Pos1;
 in vec3 Pos2;
 in float Lifetime;
 // vertex data (divisor = 0)
-in vec4 Vertex_os;
+in vec4 Vertex_ms;
 in vec2 TexCoord;
 
 out vec4 vertexColor;
@@ -20,7 +20,7 @@ void main() {
 	vec4 pos_ws = vec4(Pos1,1);
 	v_texCoord = TexCoord;
 	vec4 pos_cs = View * pos_ws;
- 	gl_Position = Proj * vec4(Vertex_os.xyz + pos_cs.xyz, 1);
+ 	gl_Position = Proj * vec4(Vertex_ms.xyz + pos_cs.xyz, 1);
  	gl_ClipDistance[0] = dot(pos_ws, ClippingPlane_ws);
 
 	vertexColor.r = clamp(2*Lifetime/MaxLifetime,0,1);

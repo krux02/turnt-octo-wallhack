@@ -59,8 +59,7 @@ func (this *PortalRenderer) Render(Portal *gamestate.Portal, Proj mgl.Mat4f, Vie
 	Loc.Model.UniformMatrix4f(false, glMat4(&Model))
 	Loc.Proj.UniformMatrix4f(false, glMat4(&Proj))
 	Loc.Image.Uniform1i(TextureUnit)
-	ClippingPlane_cs := View.Mul4x1(ClippingPlane_ws)
-	Loc.ClippingPlane_cs.Uniform4f(ClippingPlane_cs[0], ClippingPlane_cs[1], ClippingPlane_cs[2], ClippingPlane_cs[3])
+	Loc.ClippingPlane_ws.Uniform4f(ClippingPlane_ws[0], ClippingPlane_ws[1], ClippingPlane_ws[2], ClippingPlane_ws[3])
 
 	numverts := this.RenData.Numverts
 

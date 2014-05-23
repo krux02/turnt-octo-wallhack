@@ -10,11 +10,13 @@ uniform mat4 Proj;
 uniform mat4 View;
 uniform mat4 Model;
 
-uniform vec4 ClippingPlane_cs;
+uniform vec4 ClippingPlane_ws;
 
 void main() {
-	gl_Position = Proj * View * Model * Vertex_ms;
+	
 	Normal_cs = View * Model * Normal_ms;
-	Position_cs = View * Model * Vertex_ms;
-	gl_ClipDistance[0] = dot(Position_cs, ClippingPlane_cs);
+	vec4 Position_ws = Model * Vertex_ms;
+	Position_cs = View * Position_ws;
+	gl_ClipDistance[0] = dot(Position_ws, ClippingPlane_ws);
+	gl_Position = Proj * Position_cs;
 }
