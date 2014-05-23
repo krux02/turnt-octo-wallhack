@@ -20,7 +20,7 @@ type WorldRenderer struct {
 	DebugWaterRenderer *DebugWaterRenderer
 	MeshRenderer       *MeshRenderer
 	PortalRenderer     *PortalRenderer
-	PalmRenderer       *PalmRenderer
+	TreeRenderer       *TreeRenderer
 	ParticleSystem     *particles.ParticleSystem
 	SkyboxRenderer     *SkyboxRenderer
 	Framebuffer        [2]*FrameBuffer
@@ -55,7 +55,7 @@ func NewWorldRenderer(window *sdl.Window, w *gamestate.World) *WorldRenderer {
 		DebugWaterRenderer: debugWaterRenderer,
 		MeshRenderer:       NewMeshRenderer(),
 		PortalRenderer:     NewPortalRenderer(),
-		PalmRenderer:       NewPalmRenderer(&w.Palms),
+		TreeRenderer:       NewTreeRenderer(&w.Palms),
 		ParticleSystem:     particles.NewParticleSystem(w, 10000, mgl.Vec3f{32, 32, 32}, 1, 250),
 		SkyboxRenderer:     NewSkyboxRenderer(),
 		Framebuffer:        [2]*FrameBuffer{NewFrameBuffer(window.GetSize()), NewFrameBuffer(window.GetSize())},
@@ -70,7 +70,7 @@ func (this *WorldRenderer) Delete() {
 	this.HeightMapRenderer.Delete()
 	this.MeshRenderer.Delete()
 	this.PortalRenderer.Delete()
-	this.PalmRenderer.Delete()
+	this.TreeRenderer.Delete()
 	this.ParticleSystem.Delete()
 	this.SkyboxRenderer.Delete()
 	this.WaterRenderer.Delete()
@@ -151,7 +151,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 
 	gl.Disable(gl.BLEND)
 	if options.TreeRender {
-		this.PalmRenderer.Render(this.Proj, View, Rot2D, clippingPlane)
+		this.TreeRenderer.Render(this.Proj, View, Rot2D, clippingPlane)
 	}
 
 	gl.Enable(gl.BLEND)

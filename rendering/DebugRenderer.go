@@ -38,7 +38,6 @@ func (this *LineRenderer) Render(Proj, View mgl.Mat4f) {
 		this.vao.Bind()
 		this.buffer.Bind(gl.ARRAY_BUFFER)
 		gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(data), data, gl.STREAM_DRAW)
-		//helpers.SetAttribPointers(&this.RenLoc, &debug.LineVertex{})
 		this.RenLoc.Proj.UniformMatrix4f(false, glMat4(&Proj))
 		this.RenLoc.View.UniformMatrix4f(false, glMat4(&View))
 		gl.DrawArrays(gl.LINES, 0, len(data))

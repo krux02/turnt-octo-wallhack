@@ -9,10 +9,6 @@ import (
 
 // import "fmt"
 
-type HeightMapVertex struct {
-	Vertex_ms, Normal_ms mgl.Vec3f
-}
-
 type HeightMapRenderer struct {
 	Program gl.Program
 	RenLoc  HeightMapRenderLocations

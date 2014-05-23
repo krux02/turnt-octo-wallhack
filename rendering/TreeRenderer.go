@@ -8,7 +8,7 @@ import (
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 )
 
-type PalmRenderer struct {
+type TreeRenderer struct {
 	Prog    gl.Program
 	Loc     RenderLocations
 	RenData RenderData
@@ -20,7 +20,7 @@ type TreeVertex struct {
 	TexCoord  mgl.Vec2f
 }
 
-func (renderer *PalmRenderer) CreateRenderData(pt *gamestate.PalmTreesInstanceData) {
+func (renderer *TreeRenderer) CreateRenderData(pt *gamestate.PalmTreesInstanceData) {
 	renderer.RenData.VAO = gl.GenVertexArray()
 	renderer.RenData.VAO.Bind()
 
@@ -71,14 +71,14 @@ func CreateInstanceDataBuffer(pt *gamestate.PalmTreesInstanceData) gl.Buffer {
 	return vertices
 }
 
-func (this *PalmRenderer) Delete() {
+func (this *TreeRenderer) Delete() {
 	this.Prog.Delete()
 	this.RenData.Delete()
-	*this = PalmRenderer{}
+	*this = TreeRenderer{}
 }
 
-func NewPalmRenderer(pt *gamestate.PalmTreesInstanceData) *PalmRenderer {
-	renderer := new(PalmRenderer)
+func NewTreeRenderer(pt *gamestate.PalmTreesInstanceData) *TreeRenderer {
+	renderer := new(TreeRenderer)
 	renderer.Prog = helpers.MakeProgram("Sprite.vs", "Sprite.fs")
 	renderer.Prog.Use()
 	helpers.BindLocations("palm sprite", renderer.Prog, &renderer.Loc)
@@ -89,7 +89,7 @@ func NewPalmRenderer(pt *gamestate.PalmTreesInstanceData) *PalmRenderer {
 	return renderer
 }
 
-func (pt *PalmRenderer) Render(Proj, View mgl.Mat4f, Rot2D mgl.Mat3f, clippingPlane mgl.Vec4f) {
+func (pt *TreeRenderer) Render(Proj, View mgl.Mat4f, Rot2D mgl.Mat3f, clippingPlane mgl.Vec4f) {
 	pt.Prog.Use()
 	pt.RenData.VAO.Bind()
 	pt.Loc.Proj.UniformMatrix4f(false, glMat4(&Proj))
