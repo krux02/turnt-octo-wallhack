@@ -20,6 +20,16 @@ type Mesh struct {
 	Indices  []MeshIndex
 }
 
+type IMesh interface {
+	CreateVertexArray() (vertices interface{}, indices interface{})
+}
+
+func (this *Mesh) CreateVertexArray() (vertices interface{}, indices interface{}) {
+	vertices = this.Vertices
+	indices = this.Indices
+	return
+}
+
 func QuadMesh() (mesh *Mesh) {
 	mesh = &Mesh{
 		[]MeshVertex{

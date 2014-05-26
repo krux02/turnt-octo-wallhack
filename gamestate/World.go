@@ -9,7 +9,7 @@ type World struct {
 	KdTree         KdTree
 	Portals        []*Portal
 	Palms          PalmTreesInstanceData
-	ExampleObjects []interface{}
+	ExampleObjects []IRenderEntity
 }
 
 type WrapVec4f mgl.Vec4f

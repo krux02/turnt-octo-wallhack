@@ -26,6 +26,7 @@ type WorldRenderer struct {
 	Framebuffer        [2]*FrameBuffer
 	ScreenQuad         *ScreenQuadRenderer
 	DebugRenderer      *LineRenderer
+	RenData            map[gamestate.IMesh]*RenderData
 	MaxRecursion       int
 	screenShot         bool
 }
@@ -61,6 +62,7 @@ func NewWorldRenderer(window *sdl.Window, w *gamestate.World) *WorldRenderer {
 		Framebuffer:        [2]*FrameBuffer{NewFrameBuffer(window.GetSize()), NewFrameBuffer(window.GetSize())},
 		ScreenQuad:         NewScreenQuadRenderer(),
 		DebugRenderer:      NewLineRenderer(),
+		RenData:            make(map[gamestate.IMesh]*RenderData),
 		MaxRecursion:       1,
 	}
 }
@@ -129,7 +131,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 	}
 
 	for _, entity := range ww.ExampleObjects {
-		this.RenderEntity(View, clippingPlane, entity)
+		this.RenderEntity(entity, View, clippingPlane)
 	}
 
 	gl.Enable(gl.BLEND)

@@ -15,8 +15,6 @@ type HeightMapRenderer struct {
 }
 
 func NewHeightMapRenderer(heightMap *gamestate.HeightMap) (this *HeightMapRenderer) {
-	vertices := Vertices(heightMap)
-	indices := TriangulationIndices(heightMap.W, heightMap.H)
 
 	this = new(HeightMapRenderer)
 
@@ -25,20 +23,9 @@ func NewHeightMapRenderer(heightMap *gamestate.HeightMap) (this *HeightMapRender
 
 	helpers.BindLocations("height map", this.Program, &this.RenLoc)
 
-	this.Data.VAO = gl.GenVertexArray()
-	this.Data.VAO.Bind()
-
-	this.Data.Indices = gl.GenBuffer()
-	this.Data.Indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
-	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, helpers.ByteSizeOfSlice(indices), indices, gl.STATIC_DRAW)
-
-	this.Data.Vertices = gl.GenBuffer()
-	this.Data.Vertices.Bind(gl.ARRAY_BUFFER)
-	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(vertices), vertices, gl.STATIC_DRAW)
+	this.Data = CreateHeightMapRenderData(heightMap)
 
 	helpers.SetAttribPointers(&this.RenLoc, &HeightMapVertex{})
-
-	this.Data.Numverts = len(indices)
 
 	this.RenLoc.HeightMap.Uniform1i(4)
 	this.RenLoc.ColorBand.Uniform1i(3)
@@ -71,6 +58,26 @@ func Vertices(m *gamestate.HeightMap) []HeightMapVertex {
 	}
 
 	return vertices
+}
+
+func CreateHeightMapRenderData(heightMap *gamestate.HeightMap) (data RenderData) {
+	vertices := Vertices(heightMap)
+	indices := TriangulationIndices(heightMap.W, heightMap.H)
+
+	data.VAO = gl.GenVertexArray()
+	data.VAO.Bind()
+
+	data.Indices = gl.GenBuffer()
+	data.Indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
+	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, helpers.ByteSizeOfSlice(indices), indices, gl.STATIC_DRAW)
+
+	data.Vertices = gl.GenBuffer()
+	data.Vertices.Bind(gl.ARRAY_BUFFER)
+	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(vertices), vertices, gl.STATIC_DRAW)
+
+	data.Numverts = len(indices)
+
+	return
 }
 
 func (this *HeightMapRenderer) Render(heightMap *gamestate.HeightMap, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, clippingPlane mgl.Vec4f) {

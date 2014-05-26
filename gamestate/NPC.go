@@ -1,16 +1,17 @@
 package gamestate
 
-var NpcMesh = LoadMeshManaged("meshes/Torso.obj")
+import mgl "github.com/Jragonmiris/mathgl"
 
-type MeshEntity interface {
-	Mesh() *Mesh
-	Entity() *Entity
-}
+var NpcMesh = LoadMeshManaged("meshes/Torso.obj")
 
 type Npc Entity
 
-func (this *Npc) Mesh() *Mesh {
+func (this *Npc) GetMesh() IMesh {
 	return NpcMesh
+}
+
+func (this *Npc) GetModel() mgl.Mat4f {
+	return (*Entity)(this).Model()
 }
 
 func (this *Npc) Entity() *Entity {

@@ -27,7 +27,7 @@ func GenerateWorld(W, H, N int) (world *gs.World) {
 	kdTree = gs.NewTree(kdTree)
 
 	palms := GeneratePalmTrees(heights, 5000)
-	npcs := make([]interface{}, 255)
+	npcs := make([]gs.IRenderEntity, 255)
 	for i := 0; i < 255; i++ {
 		x := rand.Float32() * float32(W)
 		y := rand.Float32() * float32(H)
