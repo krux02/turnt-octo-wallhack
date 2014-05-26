@@ -27,26 +27,6 @@ func (this *MeshRenderer) Delete() {
 	*this = MeshRenderer{}
 }
 
-func (this *MeshRenderer) CreateRenderData(mesh *gamestate.Mesh, renLoc *RenderLocations) (rd RenderData) {
-
-	rd.VAO = gl.GenVertexArray()
-	rd.VAO.Bind()
-
-	rd.Indices = gl.GenBuffer()
-	rd.Indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
-	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, helpers.ByteSizeOfSlice(mesh.Indices), mesh.Indices, gl.STATIC_DRAW)
-
-	rd.Vertices = gl.GenBuffer()
-	rd.Vertices.Bind(gl.ARRAY_BUFFER)
-	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(mesh.Vertices), mesh.Vertices, gl.STATIC_DRAW)
-
-	helpers.SetAttribPointers(renLoc, &gamestate.MeshVertex{})
-
-	rd.Numverts = len(mesh.Indices)
-
-	return
-}
-
 func CreateMeshRenderData(mesh gamestate.IMesh, renLoc *RenderLocations) (rd RenderData) {
 	vertices, indices := mesh.CreateVertexArray()
 	verticesType := reflect.TypeOf(vertices)
@@ -70,7 +50,8 @@ func CreateMeshRenderData(mesh gamestate.IMesh, renLoc *RenderLocations) (rd Ren
 	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(vertices), vertices, gl.STATIC_DRAW)
 
 	verticesValue := reflect.ValueOf(vertices)
-	rd.Numverts = verticesValue.Len()
+	indicesValue := reflect.ValueOf(indices)
+	rd.Numverts = indicesValue.Len()
 	vertex := verticesValue.Index(0).Addr().Interface()
 	helpers.SetAttribPointers(renLoc, vertex)
 
@@ -103,3 +84,5 @@ func (this *MeshRenderer) UseProgram() {
 func (this *MeshRenderer) RenderLocations() *RenderLocations {
 	return &this.RenLoc
 }
+
+func (this *MeshRenderer) Update(entiy gamestate.IRenderEntity) {}

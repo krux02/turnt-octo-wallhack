@@ -6,21 +6,28 @@ import (
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 )
 
-type Renderer interface {
+type IRenderer interface {
 	Render(renderData *RenderData, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, ClippingPlane_ws mgl.Vec4f)
 	UseProgram()
 	RenderLocations() *RenderLocations
+	Update(entiy gamestate.IRenderEntity)
 }
 
 func (this *WorldRenderer) RenderEntity(entity gamestate.IRenderEntity, View mgl.Mat4f, ClippingPlane_ws mgl.Vec4f) {
-	var renderer Renderer
+	var renderer IRenderer
 	switch entity.(type) {
 	case *gamestate.Npc:
 		renderer = this.MeshRenderer
+	case *gamestate.HeightMap:
+		renderer = this.HeightMapRenderer
 	default:
 		panic(fmt.Sprintf("unknown entity type %v", entity))
 	}
+
 	renderer.UseProgram()
+
+	renderer.Update(entity)
+
 	mesh := entity.GetMesh()
 	meshData := this.RenData[mesh]
 	if meshData == nil {

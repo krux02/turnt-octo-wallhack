@@ -280,3 +280,74 @@ func raytrace(x0, y0, x1, y1 float32, visit func(x, y int) bool) {
 		}
 	}
 }
+
+type HeightMapVertex struct {
+	Vertex_ms, Normal_ms mgl.Vec3f
+}
+
+func (this *HeightMap) CreateVertexArray() (vertices interface{}, indices interface{}) {
+	vertices = Vertices(this)
+	indices = TriangulationIndices(this.W, this.H)
+	return vertices, indices
+}
+
+func (this *HeightMap) GetMesh() IMesh {
+	return this
+}
+
+func (this *HeightMap) GetModel() mgl.Mat4f {
+	return mgl.Ident4f()
+}
+
+func TriangulationIndices(w, h int) []int32 {
+	indexCount := 6 * w * h
+	indices := make([]int32, indexCount, indexCount)
+
+	i := 0
+	put := func(v int) {
+		indices[i] = int32(v)
+		i += 1
+	}
+
+	flat := func(x, y int) int {
+		return (w+1)*y + x
+	}
+
+	quad := func(x, y int) {
+		v1 := flat(x, y)
+		v2 := flat(x+1, y)
+		v3 := flat(x, y+1)
+		v4 := flat(x+1, y+1)
+
+		put(v1)
+		put(v2)
+		put(v3)
+
+		put(v3)
+		put(v2)
+		put(v4)
+	}
+
+	for i := 0; i < w; i++ {
+		for j := 0; j < h; j++ {
+			quad(i, j)
+		}
+	}
+
+	return indices
+}
+
+func Vertices(m *HeightMap) []HeightMapVertex {
+	vertices := make([]HeightMapVertex, (m.W+1)*(m.H+1))
+	i := 0
+	for y := 0; y <= m.H; y++ {
+		for x := 0; x <= m.W; x++ {
+			h := m.Get(x, y)
+			pos := mgl.Vec3f{float32(x), float32(y), h}
+			nor := m.Normal(x, y)
+			vertices[i] = HeightMapVertex{pos, nor}
+			i += 1
+		}
+	}
+	return vertices
+}

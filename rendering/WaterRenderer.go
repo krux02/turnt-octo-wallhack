@@ -55,7 +55,7 @@ func (this *WaterRenderer) CreateRenderData(heightMap *gamestate.HeightMap) (rd 
 
 	rd.Indices = gl.GenBuffer()
 	rd.Indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
-	indices := TriangulationIndices(heightMap.W, heightMap.H)
+	indices := gamestate.TriangulationIndices(heightMap.W, heightMap.H)
 	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, helpers.ByteSizeOfSlice(indices), indices, gl.STATIC_DRAW)
 
 	rd.Vertices = gl.GenBuffer()
@@ -75,7 +75,7 @@ func (this *DebugWaterRenderer) CreateRenderData(heightMap *gamestate.HeightMap)
 
 	rd.Indices = gl.GenBuffer()
 	rd.Indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
-	indices := TriangulationIndices(heightMap.W, heightMap.H)
+	indices := gamestate.TriangulationIndices(heightMap.W, heightMap.H)
 	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, helpers.ByteSizeOfSlice(indices), indices, gl.STATIC_DRAW)
 
 	rd.Vertices = gl.GenBuffer()

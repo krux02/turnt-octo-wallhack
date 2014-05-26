@@ -140,7 +140,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 	gl.Disable(gl.CULL_FACE)
 
 	if options.WorldRender {
-		this.HeightMapRenderer.Render(ww.HeightMap, this.Proj, View, mgl.Ident4f(), clippingPlane)
+		this.RenderEntity(ww.HeightMap, View, clippingPlane)
 	}
 	if options.WaterRender {
 		this.WaterRenderer.Render(ww.HeightMap, this.Proj, View, currentTime, clippingPlane)
