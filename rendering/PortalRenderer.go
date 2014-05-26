@@ -19,7 +19,8 @@ func NewPortalRenderer() (mr *PortalRenderer) {
 	mr.Program = helpers.MakeProgram("Portal.vs", "Portal.fs")
 	mr.Program.Use()
 	helpers.BindLocations("portal", mr.Program, &mr.RenLoc)
-	mr.RenData = mr.CreateRenderData()
+	mr.RenData = CreatePortalRenderData()
+	helpers.SetAttribPointers(&mr.RenLoc, &gamestate.MeshVertex{})
 	return
 }
 
@@ -29,7 +30,7 @@ func (this *PortalRenderer) Delete() {
 	*this = PortalRenderer{}
 }
 
-func (this *PortalRenderer) CreateRenderData() (md RenderData) {
+func CreatePortalRenderData() (md RenderData) {
 	mesh := gamestate.QuadMesh()
 	md.VAO = gl.GenVertexArray()
 	md.VAO.Bind()
@@ -42,15 +43,12 @@ func (this *PortalRenderer) CreateRenderData() (md RenderData) {
 	md.Vertices.Bind(gl.ARRAY_BUFFER)
 	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(mesh.Vertices), mesh.Vertices, gl.STATIC_DRAW)
 
-	helpers.SetAttribPointers(&this.RenLoc, &gamestate.MeshVertex{})
-
 	md.Numverts = len(mesh.Indices)
 
 	return
 }
 
-func (this *PortalRenderer) Render(Portal *gamestate.Portal, Proj mgl.Mat4f, View mgl.Mat4f, ClippingPlane_ws mgl.Vec4f, TextureUnit int) {
-	Model := Portal.Model()
+func (this *PortalRenderer) Render(Portal *gamestate.Portal, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, ClippingPlane_ws mgl.Vec4f, TextureUnit int) {
 	this.Program.Use()
 	this.RenData.VAO.Bind()
 

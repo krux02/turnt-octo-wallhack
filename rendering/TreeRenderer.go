@@ -14,12 +14,6 @@ type TreeRenderer struct {
 	RenData RenderData
 }
 
-// global information for all trees
-type TreeVertex struct {
-	Vertex_ms mgl.Vec4f
-	TexCoord  mgl.Vec2f
-}
-
 func (renderer *TreeRenderer) CreateRenderData(pt *gamestate.PalmTreesInstanceData) {
 	renderer.RenData.VAO = gl.GenVertexArray()
 	renderer.RenData.VAO.Bind()

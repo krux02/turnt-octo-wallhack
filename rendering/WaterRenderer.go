@@ -7,10 +7,6 @@ import (
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 )
 
-type WaterVertex struct {
-	Vertex_ms, Normal_ms mgl.Vec3f
-}
-
 func WaterVertices(W, H int) []WaterVertex {
 	vertices := make([]WaterVertex, (W+1)*(H+1))
 

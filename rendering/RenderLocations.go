@@ -11,7 +11,25 @@ type RenderLocations struct {
 	CameraPos_ws             gl.UniformLocation
 	// Textures
 	PalmTree, Image, GroundTexture, Skybox gl.UniformLocation
+	ColorBand, Texture, Slope              gl.UniformLocation
 	ClippingPlane_ws                       gl.UniformLocation
 	HeightMap, LowerBound, UpperBound      gl.UniformLocation
 	Time                                   gl.UniformLocation
+}
+
+type RenderData struct {
+	VAO                gl.VertexArray
+	InstanceDataBuffer gl.Buffer
+	NumInstances       int
+	Indices            gl.Buffer
+	Vertices           gl.Buffer
+	Numverts           int
+}
+
+func (this *RenderData) Delete() {
+	this.VAO.Delete()
+	this.InstanceDataBuffer.Delete()
+	this.Indices.Delete()
+	this.Vertices.Delete()
+	*this = RenderData{}
 }

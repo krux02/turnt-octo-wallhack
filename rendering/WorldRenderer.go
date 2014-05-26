@@ -138,7 +138,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 	gl.Disable(gl.CULL_FACE)
 
 	if options.WorldRender {
-		this.HeightMapRenderer.Render(this.Proj, View, mgl.Ident4f(), ww.HeightMap, clippingPlane)
+		this.HeightMapRenderer.Render(ww.HeightMap, this.Proj, View, mgl.Ident4f(), clippingPlane)
 	}
 	if options.WaterRender {
 		this.WaterRenderer.Render(ww.HeightMap, this.Proj, View, currentTime, clippingPlane)
@@ -174,7 +174,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 	for _, portal := range ww.Portals {
 		// do not draw the nearest portal or the portal behind the source portal if available
 		if (nearestPortal != portal) && (srcPortal == nil || srcPortal.Target != portal) {
-			this.PortalRenderer.Render(portal, this.Proj, View, clippingPlane, 7)
+			this.PortalRenderer.Render(portal, this.Proj, View, portal.Model(), clippingPlane, 7)
 		}
 	}
 
@@ -252,7 +252,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 			}
 
 			this.Framebuffer[recursion].Bind()
-			this.PortalRenderer.Render(nearestPortal, this.Proj, View, clippingPlane, 0)
+			this.PortalRenderer.Render(nearestPortal, this.Proj, View, nearestPortal.Model(), clippingPlane, 0)
 		}
 	}
 }

@@ -4,7 +4,8 @@ uniform vec3 LowerBound;
 uniform vec3 UpperBound;
 
 uniform mat4 Model;
-uniform mat4 Matrix;
+uniform mat4 View;
+uniform mat4 Proj;
 uniform sampler2D HeightMap;
 uniform vec4 ClippingPlane_ws;
 
@@ -59,6 +60,7 @@ void main() {
 	pos_ws = Model*vec4( Vertex_ms.xy, heightAt(Vertex_ms.xy), 1);
 	normal_ws = Model*vec4( normalAt(Vertex_ms.xy), 0);
 
-	gl_Position = Matrix * vec4( Vertex_ms.xy, heightAt(Vertex_ms.xy), 1);
+	mat4 matrix = Proj * View * Model;
+	gl_Position = matrix * vec4( Vertex_ms.xy, heightAt(Vertex_ms.xy), 1);
 	gl_ClipDistance[0] = dot(pos_ws, ClippingPlane_ws);
 }

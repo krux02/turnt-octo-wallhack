@@ -67,8 +67,8 @@ func (this *MeshRenderer) Render(mesh *gamestate.Mesh, Proj mgl.Mat4f, View mgl.
 	gl.Disable(gl.CULL_FACE)
 
 	Loc := this.RenLoc
-	Loc.View.UniformMatrix4f(false, glMat4(&View))
 	Loc.Model.UniformMatrix4f(false, glMat4(&Model))
+	Loc.View.UniformMatrix4f(false, glMat4(&View))
 	Loc.Proj.UniformMatrix4f(false, glMat4(&Proj))
 	Loc.ClippingPlane_ws.Uniform4f(ClippingPlane_ws[0], ClippingPlane_ws[1], ClippingPlane_ws[2], ClippingPlane_ws[3])
 
