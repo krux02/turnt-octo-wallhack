@@ -13,7 +13,7 @@ type HeightMapRenderer struct {
 	RenLoc  RenderLocations
 }
 
-func NewHeightMapRenderer(heightMap *gamestate.HeightMap) (this *HeightMapRenderer) {
+func NewHeightMapRenderer() (this *HeightMapRenderer) {
 
 	this = new(HeightMapRenderer)
 

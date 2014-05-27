@@ -1,7 +1,7 @@
 package rendering
 
 import (
-	"fmt"
+	//"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
@@ -9,86 +9,41 @@ import (
 )
 
 type TreeRenderer struct {
-	Prog    gl.Program
-	Loc     RenderLocations
-	RenData RenderData
+	Prog gl.Program
+	Loc  RenderLocations
 }
 
-func (renderer *TreeRenderer) CreateRenderData(pt *gamestate.PalmTreesInstanceData) {
-	renderer.RenData.VAO = gl.GenVertexArray()
-	renderer.RenData.VAO.Bind()
-
-	vertices, indices, numverts := CreateVertexDataBuffer()
-	helpers.SetAttribPointers(&renderer.Loc, &TreeVertex{})
-
-	instanceDataBuffer := CreateInstanceDataBuffer(pt)
-	helpers.SetAttribPointers(&renderer.Loc, &gamestate.PalmTree{})
-	renderer.Loc.InstancePosition_ws.AttribDivisor(1)
-
-	renderer.RenData.InstanceDataBuffer = instanceDataBuffer
-	renderer.RenData.NumInstances = len(pt.Positions)
-	renderer.RenData.Vertices = vertices
-	renderer.RenData.Indices = indices
-	renderer.RenData.Numverts = numverts
+func (this *TreeRenderer) RenderLocations() *RenderLocations {
+	return &this.Loc
 }
 
-func CreateVertexDataBuffer() (vertices, indices gl.Buffer, numverts int) {
-	fmt.Println("CreateVertexDataBuffer:")
+func (this *TreeRenderer) Update(entiy gamestate.IRenderEntity) {}
 
-	treeVertex := []TreeVertex{
-		TreeVertex{mgl.Vec4f{0, 1, 2, 1}, mgl.Vec2f{1, 0}},
-		TreeVertex{mgl.Vec4f{0, 1, 0, 1}, mgl.Vec2f{1, 1}},
-		TreeVertex{mgl.Vec4f{0, -1, 0, 1}, mgl.Vec2f{0, 1}},
-		TreeVertex{mgl.Vec4f{0, -1, 2, 1}, mgl.Vec2f{0, 0}},
-	}
-
-	vertices = gl.GenBuffer()
-	vertices.Bind(gl.ARRAY_BUFFER)
-	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(treeVertex), treeVertex, gl.STATIC_DRAW)
-
-	indices = gl.GenBuffer()
-	indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
-	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, 8, &[4]uint16{0, 1, 2, 3}, gl.STATIC_DRAW)
-
-	numverts = 4
-
-	return
-}
-
-func CreateInstanceDataBuffer(pt *gamestate.PalmTreesInstanceData) gl.Buffer {
-	fmt.Println("CreateInstanceDataBuffer:")
-	vertices := gl.GenBuffer()
-	vertices.Bind(gl.ARRAY_BUFFER)
-	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(pt.Positions), pt.Positions, gl.STATIC_DRAW)
-
-	// fmt.Println(pt.positions)
-	return vertices
+func (this *TreeRenderer) UseProgram() {
+	this.Prog.Use()
 }
 
 func (this *TreeRenderer) Delete() {
 	this.Prog.Delete()
-	this.RenData.Delete()
 	*this = TreeRenderer{}
 }
 
-func NewTreeRenderer(pt *gamestate.PalmTreesInstanceData) *TreeRenderer {
+func NewTreeRenderer() *TreeRenderer {
 	renderer := new(TreeRenderer)
 	renderer.Prog = helpers.MakeProgram("Sprite.vs", "Sprite.fs")
 	renderer.Prog.Use()
 	helpers.BindLocations("palm sprite", renderer.Prog, &renderer.Loc)
 	renderer.Loc.PalmTree.Uniform1i(5)
-
-	renderer.CreateRenderData(pt)
-
 	return renderer
 }
 
-func (pt *TreeRenderer) Render(Proj, View mgl.Mat4f, Rot2D mgl.Mat3f, clippingPlane mgl.Vec4f) {
+func (pt *TreeRenderer) Render(meshData *RenderData, Proj, View, Model mgl.Mat4f, clippingPlane mgl.Vec4f) {
+	Rot2D := helpers.Mat4toMat3(Model)
 	pt.Prog.Use()
-	pt.RenData.VAO.Bind()
+	meshData.VAO.Bind()
 	pt.Loc.Proj.UniformMatrix4f(false, glMat4(&Proj))
 	pt.Loc.View.UniformMatrix4f(false, glMat4(&View))
 	pt.Loc.Rot2D.UniformMatrix3f(false, glMat3(&Rot2D))
 	pt.Loc.ClippingPlane_ws.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
-	gl.DrawArraysInstanced(gl.TRIANGLE_FAN, 0, pt.RenData.Numverts, pt.RenData.NumInstances)
+	gl.DrawArraysInstanced(gl.TRIANGLE_FAN, 0, meshData.Numverts, meshData.NumInstances)
 }

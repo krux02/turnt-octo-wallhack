@@ -51,12 +51,12 @@ func NewWorldRenderer(window *sdl.Window, w *gamestate.World) *WorldRenderer {
 	return &WorldRenderer{
 		Proj:               mgl.Perspective(90, float32(width)/float32(height), 0.3, 1000),
 		Textures:           NewTextures(w.HeightMap),
-		HeightMapRenderer:  NewHeightMapRenderer(w.HeightMap),
+		HeightMapRenderer:  NewHeightMapRenderer(),
 		WaterRenderer:      waterRenderer,
 		DebugWaterRenderer: debugWaterRenderer,
 		MeshRenderer:       NewMeshRenderer(),
 		PortalRenderer:     NewPortalRenderer(),
-		TreeRenderer:       NewTreeRenderer(&w.Palms),
+		TreeRenderer:       NewTreeRenderer(),
 		ParticleSystem:     particles.NewParticleSystem(w, 10000, mgl.Vec3f{32, 32, 32}, 1, 250),
 		SkyboxRenderer:     NewSkyboxRenderer(),
 		Framebuffer:        [2]*FrameBuffer{NewFrameBuffer(window.GetSize()), NewFrameBuffer(window.GetSize())},
@@ -153,7 +153,8 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 
 	gl.Disable(gl.BLEND)
 	if options.TreeRender {
-		this.TreeRenderer.Render(this.Proj, View, Rot2D, clippingPlane)
+		ww.Trees.(*gamestate.Forest).SetModel(Rot2D)
+		this.RenderEntity(ww.Trees, View, clippingPlane)
 	}
 
 	gl.Enable(gl.BLEND)

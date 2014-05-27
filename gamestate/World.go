@@ -8,7 +8,7 @@ type World struct {
 	HeightMap      *HeightMap
 	KdTree         KdTree
 	Portals        []*Portal
-	Palms          PalmTreesInstanceData
+	Trees          IRenderEntity
 	ExampleObjects []IRenderEntity
 }
 

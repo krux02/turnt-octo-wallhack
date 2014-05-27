@@ -16,18 +16,26 @@ type MeshVertex struct {
 }
 
 type Mesh struct {
-	Vertices []MeshVertex
-	Indices  []MeshIndex
+	vertices []MeshVertex
+	indices  []MeshIndex
 }
 
 type IMesh interface {
-	CreateVertexArray() (vertices interface{}, indices interface{})
+	Vertices() interface{}
+	Indices() interface{}
+	InstanceData() interface{}
 }
 
-func (this *Mesh) CreateVertexArray() (vertices interface{}, indices interface{}) {
-	vertices = this.Vertices
-	indices = this.Indices
-	return
+func (this *Mesh) Vertices() interface{} {
+	return this.vertices
+}
+
+func (this *Mesh) Indices() interface{} {
+	return this.indices
+}
+
+func (this *Mesh) InstanceData() interface{} {
+	return nil
 }
 
 func QuadMesh() (mesh *Mesh) {
@@ -156,7 +164,7 @@ func (m *Mesh) BoundingBox() (min mgl.Vec4f, max mgl.Vec4f) {
 	min = mgl.Vec4f{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32}
 	max = mgl.Vec4f{-math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32}
 
-	for _, v := range m.Vertices {
+	for _, v := range m.vertices {
 		min = Min(min, v.Vertex_ms)
 		max = Max(max, v.Vertex_ms)
 	}

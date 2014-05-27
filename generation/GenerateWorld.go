@@ -26,7 +26,7 @@ func GenerateWorld(W, H, N int) (world *gs.World) {
 	}
 	kdTree = gs.NewTree(kdTree)
 
-	palms := GeneratePalmTrees(heights, 5000)
+	forest := GeneratePalmTrees(heights, 5000)
 	npcs := make([]gs.IRenderEntity, 255)
 	for i := 0; i < 255; i++ {
 		x := rand.Float32() * float32(W)
@@ -34,7 +34,7 @@ func GenerateWorld(W, H, N int) (world *gs.World) {
 		h := heights.Get2f(x, y) + 1
 		npcs[i] = &gs.Npc{mgl.Vec4f{x, y, h, 1}, mgl.QuatIdentf()}
 	}
-	world = &gs.World{heights, kdTree, Portals, palms, npcs}
+	world = &gs.World{heights, kdTree, Portals, forest, npcs}
 	return
 }
 
@@ -64,10 +64,8 @@ func RandomPortals(hm *gs.HeightMap, N int) []*gs.Portal {
 	return Portals
 }
 
-func GeneratePalmTrees(hm *gs.HeightMap, count int) gs.PalmTreesInstanceData {
-	pt := gs.PalmTreesInstanceData{
-		make([]gs.PalmTree, count),
-	}
+func GeneratePalmTrees(hm *gs.HeightMap, count int) *gs.Forest {
+	trees := make([]gs.PalmTree, count)
 
 	for i := 0; i < count; i++ {
 
@@ -81,10 +79,10 @@ func GeneratePalmTrees(hm *gs.HeightMap, count int) gs.PalmTreesInstanceData {
 		}
 
 		z := hm.Get2f(x, y)
-		pt.Positions[i] = gs.PalmTree{mgl.Vec4f{x, y, z, 1}}
+		trees[i] = gs.PalmTree{mgl.Vec4f{x, y, z, 1}}
 	}
 
-	return pt
+	return &gs.Forest{trees, mgl.Ident4f()}
 }
 
 func DiamondSquare(m *gs.HeightMap, factor float32) {

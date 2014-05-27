@@ -86,3 +86,17 @@ func TriangleIntersection(V1, V2, V3, O, D mgl.Vec3f) (out float32, hit bool) {
 	// No hit, no win
 	return 0, false
 }
+
+func Mat4toMat3(mat4 mgl.Mat4f) (mat3 mgl.Mat3f) {
+	mat3[0], mat3[1], mat3[2] = mat4[0], mat4[1], mat4[2]
+	mat3[3], mat3[4], mat3[5] = mat4[4], mat4[5], mat4[6]
+	mat3[6], mat3[7], mat3[8] = mat4[8], mat4[9], mat4[10]
+	return
+}
+
+func Mat3toMat4(mat3 mgl.Mat3f) (mat4 mgl.Mat4f) {
+	mat4[0], mat4[1], mat4[2] = mat3[0], mat3[1], mat3[2]
+	mat4[4], mat4[5], mat4[6] = mat3[3], mat3[4], mat3[5]
+	mat4[8], mat4[9], mat4[10] = mat3[6], mat3[7], mat3[8]
+	return
+}

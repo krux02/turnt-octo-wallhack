@@ -20,6 +20,8 @@ func (this *WorldRenderer) RenderEntity(entity gamestate.IRenderEntity, View mgl
 		renderer = this.MeshRenderer
 	case *gamestate.HeightMap:
 		renderer = this.HeightMapRenderer
+	case *gamestate.Forest:
+		renderer = this.TreeRenderer
 	default:
 		panic(fmt.Sprintf("unknown entity type %v", entity))
 	}

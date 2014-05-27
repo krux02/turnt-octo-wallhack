@@ -2,6 +2,7 @@ package gamestate
 
 import (
 	mgl "github.com/Jragonmiris/mathgl"
+	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"math"
 )
 
@@ -48,11 +49,11 @@ func (camera *Camera) Pos4f() mgl.Vec4f {
 	return mgl.Vec4f{p[0], p[1], p[2], 1}
 }
 
-func (camera *Camera) Rotation2D() (Rot2D mgl.Mat3f) {
+func (camera *Camera) Rotation2D() mgl.Mat4f {
 	Orientation := camera.Orientation.Rotate(mgl.Vec3f{0, 0, -1})
 	angle := math.Atan2(float64(Orientation[1]), float64(Orientation[0]))
-	Rot2D = mgl.Rotate3DZ(float32(angle / math.Pi * 180))
-	return
+	Rot2D := mgl.Rotate3DZ(float32(angle / math.Pi * 180))
+	return helpers.Mat3toMat4(Rot2D)
 }
 
 func (camera *Camera) Rotate(angle float32, axis mgl.Vec3f) {

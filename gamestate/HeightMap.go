@@ -285,10 +285,16 @@ type HeightMapVertex struct {
 	Vertex_ms, Normal_ms mgl.Vec3f
 }
 
-func (this *HeightMap) CreateVertexArray() (vertices interface{}, indices interface{}) {
-	vertices = Vertices(this)
-	indices = TriangulationIndices(this.W, this.H)
-	return vertices, indices
+func (this *HeightMap) Vertices() interface{} {
+	return Vertices(this)
+}
+
+func (this *HeightMap) Indices() interface{} {
+	return TriangulationIndices(this.W, this.H)
+}
+
+func (this *HeightMap) InstanceData() interface{} {
+	return nil
 }
 
 func (this *HeightMap) GetMesh() IMesh {

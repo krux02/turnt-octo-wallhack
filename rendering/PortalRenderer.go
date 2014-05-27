@@ -37,13 +37,13 @@ func CreatePortalRenderData() (md RenderData) {
 
 	md.Indices = gl.GenBuffer()
 	md.Indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
-	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, helpers.ByteSizeOfSlice(mesh.Indices), mesh.Indices, gl.STATIC_DRAW)
+	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, helpers.ByteSizeOfSlice(mesh.Indices()), mesh.Indices(), gl.STATIC_DRAW)
 
 	md.Vertices = gl.GenBuffer()
 	md.Vertices.Bind(gl.ARRAY_BUFFER)
-	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(mesh.Vertices), mesh.Vertices, gl.STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(mesh.Vertices()), mesh.Vertices(), gl.STATIC_DRAW)
 
-	md.Numverts = len(mesh.Indices)
+	md.Numverts = len((mesh.Indices()).([]gamestate.MeshIndex))
 
 	return
 }

@@ -28,32 +28,43 @@ func (this *MeshRenderer) Delete() {
 }
 
 func CreateMeshRenderData(mesh gamestate.IMesh, renLoc *RenderLocations) (rd RenderData) {
-	vertices, indices := mesh.CreateVertexArray()
-	verticesType := reflect.TypeOf(vertices)
-	if verticesType.Kind() != reflect.Slice {
-		panic("vertices is not a slice")
-	}
-	indicesType := reflect.TypeOf(indices)
-	if indicesType.Kind() != reflect.Slice {
-		panic("indices is not a slice")
-	}
-
 	rd.VAO = gl.GenVertexArray()
 	rd.VAO.Bind()
 
-	rd.Indices = gl.GenBuffer()
-	rd.Indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
-	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, helpers.ByteSizeOfSlice(indices), indices, gl.STATIC_DRAW)
+	{
+		vertices := mesh.Vertices()
+		verticesType := reflect.TypeOf(vertices)
+		if verticesType.Kind() != reflect.Slice {
+			panic("Vertices is not a slice")
+		}
+		rd.Vertices = gl.GenBuffer()
+		rd.Vertices.Bind(gl.ARRAY_BUFFER)
+		gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(vertices), vertices, gl.STATIC_DRAW)
+		rd.Numverts = reflect.ValueOf(vertices).Len()
+		helpers.SetAttribPointers(renLoc, reflect.ValueOf(vertices).Index(0).Addr().Interface())
+	}
 
-	rd.Vertices = gl.GenBuffer()
-	rd.Vertices.Bind(gl.ARRAY_BUFFER)
-	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(vertices), vertices, gl.STATIC_DRAW)
+	if indices := mesh.Indices(); indices != nil {
+		indicesType := reflect.TypeOf(indices)
+		if indicesType.Kind() != reflect.Slice {
+			panic("Indices is not a slice")
+		}
+		rd.Indices = gl.GenBuffer()
+		rd.Indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
+		gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, helpers.ByteSizeOfSlice(indices), indices, gl.STATIC_DRAW)
+		rd.Numverts = reflect.ValueOf(indices).Len()
+	}
 
-	verticesValue := reflect.ValueOf(vertices)
-	indicesValue := reflect.ValueOf(indices)
-	rd.Numverts = indicesValue.Len()
-	vertex := verticesValue.Index(0).Addr().Interface()
-	helpers.SetAttribPointers(renLoc, vertex)
+	if instanceData := mesh.InstanceData(); instanceData != nil {
+		Type := reflect.TypeOf(instanceData)
+		if Type.Kind() != reflect.Slice {
+			panic("InstanceData is not a slice")
+		}
+		rd.InstanceDataBuffer = gl.GenBuffer()
+		rd.InstanceDataBuffer.Bind(gl.ARRAY_BUFFER)
+		gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(instanceData), instanceData, gl.STATIC_DRAW)
+		rd.NumInstances = reflect.ValueOf(instanceData).Len()
+	}
 
 	return
 }
