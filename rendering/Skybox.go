@@ -69,7 +69,7 @@ func (this *SkyboxRenderer) CreateRenderData() {
 	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(vertices), vertices, gl.STATIC_DRAW)
 	this.RenData.Numverts = 36
 
-	helpers.SetAttribPointers(&this.RenLoc, &SkyboxVertex{})
+	helpers.SetAttribPointers(&this.RenLoc, &SkyboxVertex{}, false)
 	return
 }
 

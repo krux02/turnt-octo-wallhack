@@ -174,7 +174,7 @@ func LocationMap(locations interface{}) (map[string]gl.AttribLocation, map[strin
 	return attribs, uniforms
 }
 
-func SetAttribPointers(locations interface{}, vertexData interface{}) {
+func SetAttribPointers(locations interface{}, vertexData interface{}, instanced bool) {
 	attribs, _ := LocationMap(locations)
 	Type := reflect.TypeOf(vertexData).Elem()
 	stride := int(Type.Size())
@@ -211,6 +211,9 @@ func SetAttribPointers(locations interface{}, vertexData interface{}) {
 		if Loc >= 0 {
 			Loc.EnableArray()
 			Loc.AttribPointer(size, typ, false, stride, offset)
+			if instanced {
+				Loc.AttribDivisor(1)
+			}
 			if log.Flags()&VERTEX_INFO_FLAG != 0 {
 				log.Printf("%s: Loc: %d, size: %d, type: %d, stride: %d, offset: %d\n", structElement.Name, Loc, size, typ, stride, offset)
 			}

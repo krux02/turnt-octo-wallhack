@@ -63,7 +63,7 @@ func (this *WaterRenderer) CreateRenderData(heightMap *gamestate.HeightMap) (rd 
 	vertices := WaterVertices(heightMap.W, heightMap.H)
 	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(vertices), vertices, gl.STATIC_DRAW)
 
-	helpers.SetAttribPointers(&this.RenLoc, &WaterVertex{})
+	helpers.SetAttribPointers(&this.RenLoc, &WaterVertex{}, false)
 	rd.Numverts = len(indices)
 
 	return
@@ -83,7 +83,7 @@ func (this *DebugWaterRenderer) CreateRenderData(heightMap *gamestate.HeightMap)
 	vertices := WaterVertices(heightMap.W, heightMap.H)
 	gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(vertices), vertices, gl.STATIC_DRAW)
 
-	helpers.SetAttribPointers(&this.RenLoc, &WaterVertex{})
+	helpers.SetAttribPointers(&this.RenLoc, &WaterVertex{}, false)
 	rd.Numverts = len(indices)
 
 	return

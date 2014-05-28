@@ -24,7 +24,7 @@ func NewLineRenderer() *LineRenderer {
 	helpers.BindLocations("line", renderer.Prog, &renderer.RenLoc)
 	renderer.buffer = gl.GenBuffer()
 	renderer.buffer.Bind(gl.ARRAY_BUFFER)
-	helpers.SetAttribPointers(&renderer.RenLoc, &debug.LineVertex{})
+	helpers.SetAttribPointers(&renderer.RenLoc, &debug.LineVertex{}, false)
 
 	fmt.Println("Line render location ", renderer.RenLoc)
 	return &renderer

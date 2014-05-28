@@ -41,7 +41,7 @@ func CreateMeshRenderData(mesh gamestate.IMesh, renLoc *RenderLocations) (rd Ren
 		rd.Vertices.Bind(gl.ARRAY_BUFFER)
 		gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(vertices), vertices, gl.STATIC_DRAW)
 		rd.Numverts = reflect.ValueOf(vertices).Len()
-		helpers.SetAttribPointers(renLoc, reflect.ValueOf(vertices).Index(0).Addr().Interface())
+		helpers.SetAttribPointers(renLoc, reflect.ValueOf(vertices).Index(0).Addr().Interface(), false)
 	}
 
 	if indices := mesh.Indices(); indices != nil {
@@ -63,8 +63,7 @@ func CreateMeshRenderData(mesh gamestate.IMesh, renLoc *RenderLocations) (rd Ren
 		rd.InstanceDataBuffer = gl.GenBuffer()
 		rd.InstanceDataBuffer.Bind(gl.ARRAY_BUFFER)
 		gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(instanceData), instanceData, gl.STATIC_DRAW)
-		helpers.SetAttribPointers(renLoc, reflect.ValueOf(instanceData).Index(0).Addr().Interface())
-		renLoc.InstancePosition_ws.AttribDivisor(1)
+		helpers.SetAttribPointers(renLoc, reflect.ValueOf(instanceData).Index(0).Addr().Interface(), true)
 
 		rd.NumInstances = reflect.ValueOf(instanceData).Len()
 	}

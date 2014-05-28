@@ -20,7 +20,7 @@ func NewPortalRenderer() (mr *PortalRenderer) {
 	mr.Program.Use()
 	helpers.BindLocations("portal", mr.Program, &mr.RenLoc)
 	mr.RenData = CreatePortalRenderData()
-	helpers.SetAttribPointers(&mr.RenLoc, &gamestate.MeshVertex{})
+	helpers.SetAttribPointers(&mr.RenLoc, &gamestate.MeshVertex{}, false)
 	return
 }
 
