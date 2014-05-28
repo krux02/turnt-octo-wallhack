@@ -71,7 +71,7 @@ func CreateMeshRenderData(mesh gamestate.IMesh, renLoc *RenderLocations) (rd Ren
 	return
 }
 
-func (this *MeshRenderer) Render(meshData *RenderData, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, ClippingPlane_ws mgl.Vec4f) {
+func (this *MeshRenderer) Render(meshData *RenderData, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, ClippingPlane_ws mgl.Vec4f, additionalUniforms map[string]int) {
 	this.Program.Use()
 
 	meshData.VAO.Bind()

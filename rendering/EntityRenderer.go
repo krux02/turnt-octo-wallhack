@@ -3,17 +3,62 @@ package rendering
 import (
 	"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
+	"github.com/go-gl/gl"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 )
 
 type IRenderer interface {
-	Render(renderData *RenderData, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, ClippingPlane_ws mgl.Vec4f)
+	Render(renderData *RenderData, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, ClippingPlane_ws mgl.Vec4f, additionalUniforms map[string]int)
 	UseProgram()
 	RenderLocations() *RenderLocations
 	Update(entiy gamestate.IRenderEntity)
 }
 
-func (this *WorldRenderer) RenderEntity(entity gamestate.IRenderEntity, View mgl.Mat4f, ClippingPlane_ws mgl.Vec4f) {
+type Renderer struct {
+	Program gl.Program
+	RenLoc  RenderLocations
+}
+
+func (this *Renderer) Delete() {
+	this.Program.Delete()
+	*this = Renderer{}
+}
+
+func (this *Renderer) UseProgram() {
+	this.Program.Use()
+}
+
+func (this *Renderer) RenderLocations() *RenderLocations {
+	return &this.RenLoc
+}
+
+func (this *Renderer) Update(entiy gamestate.IRenderEntity) {}
+
+func (this *Renderer) Render(renData *RenderData, Proj, View, Model mgl.Mat4f, ClippingPlane_ws mgl.Vec4f, additionalUniforms map[string]int) {
+	this.Program.Use()
+	renData.VAO.Bind()
+
+	Loc := this.RenLoc
+	Loc.View.UniformMatrix4f(false, glMat4(&View))
+	Loc.Model.UniformMatrix4f(false, glMat4(&Model))
+	Loc.Proj.UniformMatrix4f(false, glMat4(&Proj))
+
+	for key, value := range additionalUniforms {
+		loc := this.Program.GetUniformLocation(key)
+		if loc != -1 {
+			loc.Uniform1i(value)
+		}
+	}
+
+	//Loc.Image.Uniform1i(additionalUniforms["Image"])
+	Loc.ClippingPlane_ws.Uniform4f(ClippingPlane_ws[0], ClippingPlane_ws[1], ClippingPlane_ws[2], ClippingPlane_ws[3])
+	numverts := renData.Numverts
+
+	gl.Enable(gl.DEPTH_CLAMP)
+	gl.DrawElements(gl.TRIANGLES, numverts, gl.UNSIGNED_SHORT, uintptr(0))
+}
+
+func (this *WorldRenderer) RenderEntity(entity gamestate.IRenderEntity, View mgl.Mat4f, ClippingPlane_ws mgl.Vec4f, additionalUniforms map[string]int) {
 	var renderer IRenderer
 	switch entity.(type) {
 	case *gamestate.Npc:
@@ -22,12 +67,13 @@ func (this *WorldRenderer) RenderEntity(entity gamestate.IRenderEntity, View mgl
 		renderer = this.HeightMapRenderer
 	case *gamestate.Forest:
 		renderer = this.TreeRenderer
+	case *gamestate.Portal:
+		renderer = this.PortalRenderer
 	default:
 		panic(fmt.Sprintf("unknown entity type %v", entity))
 	}
 
 	renderer.UseProgram()
-
 	renderer.Update(entity)
 
 	mesh := entity.GetMesh()
@@ -38,5 +84,5 @@ func (this *WorldRenderer) RenderEntity(entity gamestate.IRenderEntity, View mgl
 		this.RenData[mesh] = &md
 	}
 	Model := entity.GetModel()
-	renderer.Render(meshData, this.Proj, View, Model, ClippingPlane_ws)
+	renderer.Render(meshData, this.Proj, View, Model, ClippingPlane_ws, additionalUniforms)
 }

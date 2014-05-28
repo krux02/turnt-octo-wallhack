@@ -19,7 +19,7 @@ type WorldRenderer struct {
 	WaterRenderer      *WaterRenderer
 	DebugWaterRenderer *DebugWaterRenderer
 	MeshRenderer       *MeshRenderer
-	PortalRenderer     *PortalRenderer
+	PortalRenderer     *Renderer
 	TreeRenderer       *TreeRenderer
 	ParticleSystem     *particles.ParticleSystem
 	SkyboxRenderer     *SkyboxRenderer
@@ -131,7 +131,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 	}
 
 	for _, entity := range ww.ExampleObjects {
-		this.RenderEntity(entity, View, clippingPlane)
+		this.RenderEntity(entity, View, clippingPlane, nil)
 	}
 
 	gl.Enable(gl.BLEND)
@@ -140,7 +140,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 	gl.Disable(gl.CULL_FACE)
 
 	if options.WorldRender {
-		this.RenderEntity(ww.HeightMap, View, clippingPlane)
+		this.RenderEntity(ww.HeightMap, View, clippingPlane, nil)
 	}
 	if options.WaterRender {
 		this.WaterRenderer.Render(ww.HeightMap, this.Proj, View, currentTime, clippingPlane)
@@ -154,7 +154,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 	gl.Disable(gl.BLEND)
 	if options.TreeRender {
 		ww.Trees.(*gamestate.Forest).SetModel(Rot2D)
-		this.RenderEntity(ww.Trees, View, clippingPlane)
+		this.RenderEntity(ww.Trees, View, clippingPlane, nil)
 	}
 
 	gl.Enable(gl.BLEND)
@@ -177,7 +177,9 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 	for _, portal := range ww.Portals {
 		// do not draw the nearest portal or the portal behind the source portal if available
 		if (nearestPortal != portal) && (srcPortal == nil || srcPortal.Target != portal) {
-			this.PortalRenderer.Render(portal, this.Proj, View, portal.Model(), clippingPlane, 7)
+
+			additionalUniforms := map[string]int{"Image": 7}
+			this.RenderEntity(portal, View, clippingPlane, additionalUniforms)
 		}
 	}
 
@@ -253,9 +255,9 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 				gl.Scissor(0, 0, w, h)
 				gl.Disable(gl.SCISSOR_TEST)
 			}
-
 			this.Framebuffer[recursion].Bind()
-			this.PortalRenderer.Render(nearestPortal, this.Proj, View, nearestPortal.Model(), clippingPlane, 0)
+			additionalUniforms := map[string]int{"Image": 0}
+			this.RenderEntity(nearestPortal, View, clippingPlane, additionalUniforms)
 		}
 	}
 }

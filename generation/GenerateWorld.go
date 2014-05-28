@@ -44,6 +44,7 @@ func RandomPortals(hm *gs.HeightMap, N int) []*gs.Portal {
 	}
 
 	normal := mgl.Vec4f{0, 0, 1, 0}
+	mesh := gs.QuadMesh()
 
 	Portals := make([]*gs.Portal, N)
 	for i := 0; i < N; i++ {
@@ -55,6 +56,7 @@ func RandomPortals(hm *gs.HeightMap, N int) []*gs.Portal {
 			gs.Entity{mgl.Vec4f{x, y, z, 1}, q},
 			normal,
 			nil,
+			mesh,
 		}
 	}
 	for i := range Portals {

@@ -34,7 +34,7 @@ func (wr *HeightMapRenderer) Delete() {
 	wr.Program.Delete()
 }
 
-func (this *HeightMapRenderer) Render(renderData *RenderData, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, clippingPlane mgl.Vec4f) {
+func (this *HeightMapRenderer) Render(renderData *RenderData, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, clippingPlane mgl.Vec4f, _ map[string]int) {
 	this.Program.Use()
 	renderData.VAO.Bind()
 
