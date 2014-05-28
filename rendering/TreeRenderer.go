@@ -37,13 +37,13 @@ func NewTreeRenderer() *TreeRenderer {
 	return renderer
 }
 
-func (pt *TreeRenderer) Render(meshData *RenderData, Proj, View, Model mgl.Mat4f, clippingPlane mgl.Vec4f) {
+func (this *TreeRenderer) Render(meshData *RenderData, Proj, View, Model mgl.Mat4f, clippingPlane mgl.Vec4f) {
 	Rot2D := helpers.Mat4toMat3(Model)
-	pt.Prog.Use()
+	this.Prog.Use()
 	meshData.VAO.Bind()
-	pt.Loc.Proj.UniformMatrix4f(false, glMat4(&Proj))
-	pt.Loc.View.UniformMatrix4f(false, glMat4(&View))
-	pt.Loc.Rot2D.UniformMatrix3f(false, glMat3(&Rot2D))
-	pt.Loc.ClippingPlane_ws.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
+	this.Loc.Proj.UniformMatrix4f(false, glMat4(&Proj))
+	this.Loc.View.UniformMatrix4f(false, glMat4(&View))
+	this.Loc.Rot2D.UniformMatrix3f(false, glMat3(&Rot2D))
+	this.Loc.ClippingPlane_ws.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
 	gl.DrawArraysInstanced(gl.TRIANGLE_FAN, 0, meshData.Numverts, meshData.NumInstances)
 }

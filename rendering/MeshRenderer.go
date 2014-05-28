@@ -63,6 +63,9 @@ func CreateMeshRenderData(mesh gamestate.IMesh, renLoc *RenderLocations) (rd Ren
 		rd.InstanceDataBuffer = gl.GenBuffer()
 		rd.InstanceDataBuffer.Bind(gl.ARRAY_BUFFER)
 		gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(instanceData), instanceData, gl.STATIC_DRAW)
+		helpers.SetAttribPointers(renLoc, reflect.ValueOf(instanceData).Index(0).Addr().Interface())
+		renLoc.InstancePosition_ws.AttribDivisor(1)
+
 		rd.NumInstances = reflect.ValueOf(instanceData).Len()
 	}
 
