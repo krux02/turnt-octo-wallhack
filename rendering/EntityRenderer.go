@@ -8,7 +8,7 @@ import (
 )
 
 type IRenderer interface {
-	Render(renderData *RenderData, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, ClippingPlane_ws mgl.Vec4f, additionalUniforms map[string]int)
+	Render(renderData *RenderData, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, ClippingPlane_ws mgl.Vec4f)
 	UseProgram()
 	RenderLocations() *RenderLocations
 	Update(entiy gamestate.IRenderEntity, etc interface{})
@@ -34,7 +34,7 @@ func (this *Renderer) RenderLocations() *RenderLocations {
 
 func (this *Renderer) Update(entiy gamestate.IRenderEntity, etc interface{}) {}
 
-func (this *Renderer) Render(renData *RenderData, Proj, View, Model mgl.Mat4f, ClippingPlane_ws mgl.Vec4f, additionalUniforms map[string]int) {
+func (this *Renderer) Render(renData *RenderData, Proj, View, Model mgl.Mat4f, ClippingPlane_ws mgl.Vec4f) {
 	this.Program.Use()
 	renData.VAO.Bind()
 
@@ -43,18 +43,9 @@ func (this *Renderer) Render(renData *RenderData, Proj, View, Model mgl.Mat4f, C
 	Loc.Model.UniformMatrix4f(false, glMat4(&Model))
 	Loc.Proj.UniformMatrix4f(false, glMat4(&Proj))
 
-	for key, value := range additionalUniforms {
-		loc := this.Program.GetUniformLocation(key)
-		if loc != -1 {
-			loc.Uniform1i(value)
-		}
-	}
-
 	//Loc.Image.Uniform1i(additionalUniforms["Image"])
 	Loc.ClippingPlane_ws.Uniform4f(ClippingPlane_ws[0], ClippingPlane_ws[1], ClippingPlane_ws[2], ClippingPlane_ws[3])
 	numverts := renData.Numverts
-
-	gl.Enable(gl.DEPTH_CLAMP)
 
 	if renData.InstanceDataBuffer == 0 {
 		if renData.Indices == 0 {
@@ -71,7 +62,7 @@ func (this *Renderer) Render(renData *RenderData, Proj, View, Model mgl.Mat4f, C
 	}
 }
 
-func (this *WorldRenderer) RenderEntity(entity gamestate.IRenderEntity, View mgl.Mat4f, ClippingPlane_ws mgl.Vec4f, additionalUniforms map[string]int) {
+func (this *WorldRenderer) RenderEntity(entity gamestate.IRenderEntity, View mgl.Mat4f, ClippingPlane_ws mgl.Vec4f, additionalUniforms interface{}) {
 	var renderer IRenderer
 	switch entity.(type) {
 	case *gamestate.Npc:
@@ -97,5 +88,5 @@ func (this *WorldRenderer) RenderEntity(entity gamestate.IRenderEntity, View mgl
 		this.RenData[mesh] = &md
 	}
 	Model := entity.GetModel()
-	renderer.Render(meshData, this.Proj, View, Model, ClippingPlane_ws, additionalUniforms)
+	renderer.Render(meshData, this.Proj, View, Model, ClippingPlane_ws)
 }

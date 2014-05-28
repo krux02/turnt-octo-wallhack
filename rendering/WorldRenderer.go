@@ -153,8 +153,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 
 	gl.Disable(gl.BLEND)
 	if options.TreeRender {
-		ww.Trees.(*gamestate.Forest).SetModel(Rot2D)
-		this.RenderEntity(ww.Trees, View, clippingPlane, nil)
+		this.RenderEntity(ww.Trees, View, clippingPlane, Rot2D)
 	}
 
 	gl.Enable(gl.BLEND)
@@ -177,7 +176,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 	for _, portal := range ww.Portals {
 		// do not draw the nearest portal or the portal behind the source portal if available
 		if (nearestPortal != portal) && (srcPortal == nil || srcPortal.Target != portal) {
-
+			gl.Enable(gl.DEPTH_CLAMP)
 			additionalUniforms := map[string]int{"Image": 7}
 			this.RenderEntity(portal, View, clippingPlane, additionalUniforms)
 		}
@@ -256,6 +255,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 				gl.Disable(gl.SCISSOR_TEST)
 			}
 			this.Framebuffer[recursion].Bind()
+			gl.Enable(gl.DEPTH_CLAMP)
 			additionalUniforms := map[string]int{"Image": 0}
 			this.RenderEntity(nearestPortal, View, clippingPlane, additionalUniforms)
 		}

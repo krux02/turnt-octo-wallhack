@@ -3,7 +3,8 @@ package rendering
 import (
 	//"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
-	"github.com/go-gl/gl"
+	//"github.com/go-gl/gl"
+	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 )
 
@@ -18,22 +19,7 @@ func NewTreeRenderer() *TreeRenderer {
 	return renderer
 }
 
-func (this *TreeRenderer) Render(meshData *RenderData, Proj, View, Model mgl.Mat4f, clippingPlane mgl.Vec4f, additionalUniforms map[string]int) {
-	Rot2D := helpers.Mat4toMat3(Model)
-	this.Program.Use()
-	meshData.VAO.Bind()
-
-	this.RenLoc.Proj.UniformMatrix4f(false, glMat4(&Proj))
-	this.RenLoc.View.UniformMatrix4f(false, glMat4(&View))
+func (this *TreeRenderer) Update(entiy gamestate.IRenderEntity, additionalUniforms interface{}) {
+	Rot2D := helpers.Mat4toMat3(additionalUniforms.(mgl.Mat4f))
 	this.RenLoc.Rot2D.UniformMatrix3f(false, glMat3(&Rot2D))
-	this.RenLoc.ClippingPlane_ws.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
-
-	for key, value := range additionalUniforms {
-		loc := this.Program.GetUniformLocation(key)
-		if loc != -1 {
-			loc.Uniform1i(value)
-		}
-	}
-
-	gl.DrawArraysInstanced(meshData.Mode, 0, meshData.Numverts, meshData.NumInstances)
 }

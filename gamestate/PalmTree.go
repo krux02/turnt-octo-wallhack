@@ -42,7 +42,7 @@ func (this *Forest) Vertices() interface{} {
 }
 
 func (this *Forest) Indices() interface{} {
-	return []uint16{0, 1, 2, 3}
+	return nil //[]uint16{0, 1, 2, 3}
 }
 
 func (this *Forest) Mode() Mode {
