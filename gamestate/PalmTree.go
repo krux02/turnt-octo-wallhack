@@ -45,6 +45,10 @@ func (this *Forest) Indices() interface{} {
 	return []uint16{0, 1, 2, 3}
 }
 
+func (this *Forest) Mode() Mode {
+	return TriangleFan
+}
+
 func (this *Forest) InstanceData() interface{} {
 	return this.Positions
 }

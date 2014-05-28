@@ -20,10 +20,23 @@ type Mesh struct {
 	indices  []MeshIndex
 }
 
+type Mode int
+
+const (
+	Points Mode = iota
+	LineStrip
+	LineLoop
+	Lines
+	TriangleStrip
+	TriangleFan
+	Triangles
+)
+
 type IMesh interface {
 	Vertices() interface{}
 	Indices() interface{}
 	InstanceData() interface{}
+	Mode() Mode
 }
 
 func (this *Mesh) Vertices() interface{} {
@@ -36,6 +49,10 @@ func (this *Mesh) Indices() interface{} {
 
 func (this *Mesh) InstanceData() interface{} {
 	return nil
+}
+
+func (this *Mesh) Mode() Mode {
+	return Triangles
 }
 
 func QuadMesh() (mesh *Mesh) {

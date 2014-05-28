@@ -22,8 +22,10 @@ type RenderData struct {
 	InstanceDataBuffer gl.Buffer
 	NumInstances       int
 	Indices            gl.Buffer
+	IndexType          gl.GLenum
 	Vertices           gl.Buffer
 	Numverts           int
+	Mode               gl.GLenum
 }
 
 func (this *RenderData) Delete() {

@@ -11,7 +11,7 @@ type IRenderer interface {
 	Render(renderData *RenderData, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, ClippingPlane_ws mgl.Vec4f, additionalUniforms map[string]int)
 	UseProgram()
 	RenderLocations() *RenderLocations
-	Update(entiy gamestate.IRenderEntity)
+	Update(entiy gamestate.IRenderEntity, etc interface{})
 }
 
 type Renderer struct {
@@ -32,7 +32,7 @@ func (this *Renderer) RenderLocations() *RenderLocations {
 	return &this.RenLoc
 }
 
-func (this *Renderer) Update(entiy gamestate.IRenderEntity) {}
+func (this *Renderer) Update(entiy gamestate.IRenderEntity, etc interface{}) {}
 
 func (this *Renderer) Render(renData *RenderData, Proj, View, Model mgl.Mat4f, ClippingPlane_ws mgl.Vec4f, additionalUniforms map[string]int) {
 	this.Program.Use()
@@ -55,7 +55,20 @@ func (this *Renderer) Render(renData *RenderData, Proj, View, Model mgl.Mat4f, C
 	numverts := renData.Numverts
 
 	gl.Enable(gl.DEPTH_CLAMP)
-	gl.DrawElements(gl.TRIANGLES, numverts, gl.UNSIGNED_SHORT, uintptr(0))
+
+	if renData.InstanceDataBuffer == 0 {
+		if renData.Indices == 0 {
+			gl.DrawArrays(renData.Mode, 0, renData.Numverts)
+		} else {
+			gl.DrawElements(renData.Mode, numverts, renData.IndexType, uintptr(0))
+		}
+	} else {
+		if renData.Indices == 0 {
+			gl.DrawArraysInstanced(renData.Mode, 0, renData.Numverts, renData.NumInstances)
+		} else {
+			gl.DrawElementsInstanced(renData.Mode, renData.Numverts, renData.IndexType, 0, renData.NumInstances)
+		}
+	}
 }
 
 func (this *WorldRenderer) RenderEntity(entity gamestate.IRenderEntity, View mgl.Mat4f, ClippingPlane_ws mgl.Vec4f, additionalUniforms map[string]int) {
@@ -74,7 +87,7 @@ func (this *WorldRenderer) RenderEntity(entity gamestate.IRenderEntity, View mgl
 	}
 
 	renderer.UseProgram()
-	renderer.Update(entity)
+	renderer.Update(entity, additionalUniforms)
 
 	mesh := entity.GetMesh()
 	meshData := this.RenData[mesh]

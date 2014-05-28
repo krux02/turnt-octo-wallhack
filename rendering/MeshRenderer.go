@@ -1,7 +1,7 @@
 package rendering
 
 import (
-	//"fmt"
+	"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
@@ -9,10 +9,7 @@ import (
 	"reflect"
 )
 
-type MeshRenderer struct {
-	Program gl.Program
-	RenLoc  RenderLocations
-}
+type MeshRenderer struct{ Renderer }
 
 func NewMeshRenderer() (mr *MeshRenderer) {
 	mr = new(MeshRenderer)
@@ -42,6 +39,22 @@ func CreateMeshRenderData(mesh gamestate.IMesh, renLoc *RenderLocations) (rd Ren
 		gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(vertices), vertices, gl.STATIC_DRAW)
 		rd.Numverts = reflect.ValueOf(vertices).Len()
 		helpers.SetAttribPointers(renLoc, reflect.ValueOf(vertices).Index(0).Addr().Interface(), false)
+		switch mesh.Mode() {
+		case gamestate.Points:
+			rd.Mode = gl.POINTS
+		case gamestate.LineStrip:
+			rd.Mode = gl.LINE_STRIP
+		case gamestate.LineLoop:
+			rd.Mode = gl.LINE_LOOP
+		case gamestate.Lines:
+			rd.Mode = gl.LINES
+		case gamestate.TriangleStrip:
+			rd.Mode = gl.TRIANGLE_STRIP
+		case gamestate.TriangleFan:
+			rd.Mode = gl.TRIANGLE_FAN
+		case gamestate.Triangles:
+			rd.Mode = gl.TRIANGLES
+		}
 	}
 
 	if indices := mesh.Indices(); indices != nil {
@@ -53,6 +66,16 @@ func CreateMeshRenderData(mesh gamestate.IMesh, renLoc *RenderLocations) (rd Ren
 		rd.Indices.Bind(gl.ELEMENT_ARRAY_BUFFER)
 		gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, helpers.ByteSizeOfSlice(indices), indices, gl.STATIC_DRAW)
 		rd.Numverts = reflect.ValueOf(indices).Len()
+		switch indicesType.Elem().Kind() {
+		case reflect.Uint8, reflect.Int8:
+			rd.IndexType = gl.UNSIGNED_BYTE
+		case reflect.Uint16, reflect.Int16:
+			rd.IndexType = gl.UNSIGNED_SHORT
+		case reflect.Uint32, reflect.Int32:
+			rd.IndexType = gl.UNSIGNED_INT
+		default:
+			panic(fmt.Sprint("unsupported index type", indicesType.Elem().Kind()))
+		}
 	}
 
 	if instanceData := mesh.InstanceData(); instanceData != nil {
@@ -89,13 +112,3 @@ func (this *MeshRenderer) Render(meshData *RenderData, Proj mgl.Mat4f, View mgl.
 
 	gl.DrawElements(gl.TRIANGLES, numverts, gl.UNSIGNED_SHORT, uintptr(0))
 }
-
-func (this *MeshRenderer) UseProgram() {
-	this.Program.Use()
-}
-
-func (this *MeshRenderer) RenderLocations() *RenderLocations {
-	return &this.RenLoc
-}
-
-func (this *MeshRenderer) Update(entiy gamestate.IRenderEntity) {}

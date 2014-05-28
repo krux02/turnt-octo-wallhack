@@ -57,7 +57,7 @@ func (this *HeightMapRenderer) UseProgram() {
 	this.Program.Use()
 }
 
-func (this *HeightMapRenderer) Update(entity gamestate.IRenderEntity) {
+func (this *HeightMapRenderer) Update(entity gamestate.IRenderEntity, etc interface{}) {
 	heightMap := entity.(*gamestate.HeightMap)
 
 	if heightMap.HasChanges {

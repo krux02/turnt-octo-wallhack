@@ -305,6 +305,10 @@ func (this *HeightMap) GetModel() mgl.Mat4f {
 	return mgl.Ident4f()
 }
 
+func (this *HeightMap) Mode() Mode {
+	return Triangles
+}
+
 func TriangulationIndices(w, h int) []int32 {
 	indexCount := 6 * w * h
 	indices := make([]int32, indexCount, indexCount)
