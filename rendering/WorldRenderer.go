@@ -46,14 +46,12 @@ func (this *WorldRenderer) ScreenShot() {
 func NewWorldRenderer(window *sdl.Window, w *gamestate.World) *WorldRenderer {
 	width, height := window.GetSize()
 
-	waterRenderer, debugWaterRenderer := NewWaterRenderer(w.HeightMap)
-
 	return &WorldRenderer{
 		Proj:               mgl.Perspective(90, float32(width)/float32(height), 0.3, 1000),
 		Textures:           NewTextures(w.HeightMap),
 		HeightMapRenderer:  NewHeightMapRenderer(),
-		WaterRenderer:      waterRenderer,
-		DebugWaterRenderer: debugWaterRenderer,
+		WaterRenderer:      NewWaterRenderer(),
+		DebugWaterRenderer: NewDebugWaterRenderer(),
 		MeshRenderer:       NewMeshRenderer(),
 		PortalRenderer:     NewPortalRenderer(),
 		TreeRenderer:       NewTreeRenderer(),
@@ -109,7 +107,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 
 	gl.CullFace(gl.BACK)
 
-	currentTime := float64(sdl.GetTicks()) / 1000
+	time := float64(sdl.GetTicks()) / 1000
 
 	if options.Wireframe {
 		gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
@@ -143,11 +141,13 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 		this.RenderEntity(ww.HeightMap, View, clippingPlane, nil)
 	}
 	if options.WaterRender {
-		this.WaterRenderer.Render(ww.HeightMap, this.Proj, View, currentTime, clippingPlane)
+		this.RenderEntity(ww.Water, View, clippingPlane, WaterRenderUniforms{time, View.Inv().Mul4x1(mgl.Vec4f{0, 0, 0, 1})})
 	}
-	if options.WaterNormals {
-		this.DebugWaterRenderer.Render(ww.HeightMap, this.Proj, View, currentTime, clippingPlane)
-	}
+	/*
+		if options.WaterNormals {
+			this.DebugWaterRenderer.Render(ww.HeightMap, this.Proj, View, currentTime, clippingPlane)
+		}
+	*/
 
 	gl.Disable(gl.CULL_FACE)
 

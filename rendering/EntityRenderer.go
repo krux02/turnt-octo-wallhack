@@ -73,6 +73,9 @@ func (this *WorldRenderer) RenderEntity(entity gamestate.IRenderEntity, View mgl
 		renderer = this.TreeRenderer
 	case *gamestate.Portal:
 		renderer = this.PortalRenderer
+	case *gamestate.Water:
+		renderer = this.WaterRenderer
+		//renderer = this.DebugWaterRenderer
 	default:
 		panic(fmt.Sprintf("unknown entity type %v", entity))
 	}

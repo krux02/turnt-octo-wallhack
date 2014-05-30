@@ -6,6 +6,7 @@ import (
 
 type World struct {
 	HeightMap      *HeightMap
+	Water          *Water
 	KdTree         KdTree
 	Portals        []*Portal
 	Trees          IRenderEntity

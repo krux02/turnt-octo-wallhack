@@ -1,6 +1,7 @@
 package generation
 
 import (
+	//"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
 	gs "github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
@@ -16,6 +17,13 @@ func sigmuid(x float32) float32 {
 func GenerateWorld(W, H, N int) (world *gs.World) {
 	heights := gs.NewHeightMap(W, H)
 	DiamondSquare(heights, float32(W))
+	minH, maxH := heights.Bounds()
+	water := &gs.Water{
+		W:          W,
+		H:          H,
+		LowerBound: mgl.Vec3f{0, 0, minH},
+		UpperBound: mgl.Vec3f{float32(W), float32(H), maxH},
+	}
 	Portals := RandomPortals(heights, N)
 	for i, x := range heights.Data {
 		heights.Data[i] = math32.Mix(0, x-5, sigmuid((x-5)/10)) + 5
@@ -34,7 +42,7 @@ func GenerateWorld(W, H, N int) (world *gs.World) {
 		h := heights.Get2f(x, y) + 1
 		npcs[i] = &gs.Npc{mgl.Vec4f{x, y, h, 1}, mgl.QuatIdentf()}
 	}
-	world = &gs.World{heights, kdTree, Portals, forest, npcs}
+	world = &gs.World{heights, water, kdTree, Portals, forest, npcs}
 	return
 }
 
