@@ -1,7 +1,7 @@
 package generation
 
 import (
-	//"fmt"
+	"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
 	gs "github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
@@ -14,10 +14,16 @@ func sigmuid(x float32) float32 {
 	return ((x / math32.Sqrt(1+x*x)) + 1) / 2
 }
 
+func r() float32 {
+	return rand.Float32()
+}
+
 func GenerateWorld(W, H, N int) (world *gs.World) {
 	heights := gs.NewHeightMap(W, H)
 	DiamondSquare(heights, float32(W))
 	minH, maxH := heights.Bounds()
+
+	fmt.Println(minH, maxH)
 	water := &gs.Water{
 		W:          W,
 		H:          H,
@@ -37,8 +43,8 @@ func GenerateWorld(W, H, N int) (world *gs.World) {
 	forest := GeneratePalmTrees(heights, 5000)
 	npcs := make([]gs.IRenderEntity, 255)
 	for i := 0; i < 255; i++ {
-		x := rand.Float32() * float32(W)
-		y := rand.Float32() * float32(H)
+		x := r() * float32(W)
+		y := r() * float32(H)
 		h := heights.Get2f(x, y) + 1
 		npcs[i] = &gs.Npc{mgl.Vec4f{x, y, h, 1}, mgl.QuatIdentf()}
 	}
@@ -59,7 +65,7 @@ func RandomPortals(hm *gs.HeightMap, N int) []*gs.Portal {
 		x := rand.Float32() * float32(hm.W)
 		y := rand.Float32() * float32(hm.H)
 		z := hm.Get2f(x, y) + 5
-		q := mgl.Quatf{rand.Float32(), mgl.Vec3f{rand.Float32(), rand.Float32(), rand.Float32()}}.Normalize()
+		q := mgl.Quatf{r(), mgl.Vec3f{r(), r(), r()}}.Normalize()
 		Portals[i] = &gs.Portal{
 			gs.Entity{mgl.Vec4f{x, y, z, 1}, q},
 			normal,
