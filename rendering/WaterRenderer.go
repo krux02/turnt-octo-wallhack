@@ -1,7 +1,7 @@
 package rendering
 
 import (
-	"fmt"
+	//"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
@@ -24,7 +24,6 @@ func (this *WaterRenderer) Update(entity gamestate.IRenderEntity, etc interface{
 	lb, ub := water.LowerBound, water.UpperBound
 	this.RenLoc.LowerBound.Uniform3f(lb[0], lb[1], lb[2])
 	this.RenLoc.UpperBound.Uniform3f(ub[0], ub[1], ub[2])
-	fmt.Println("lb ub:", lb, ub)
 	v := uniforms.CameraPos_ws
 	this.RenLoc.CameraPos_ws.Uniform4f(v[0], v[1], v[2], v[3])
 }
@@ -37,7 +36,6 @@ func (this *DebugWaterRenderer) Update(entity gamestate.IRenderEntity, etc inter
 	lb, ub := water.LowerBound, water.UpperBound
 	this.RenLoc.LowerBound.Uniform3f(lb[0], lb[1], lb[2])
 	this.RenLoc.UpperBound.Uniform3f(ub[0], ub[1], ub[2])
-	fmt.Println("lb ub:", lb, ub)
 	v := uniforms.CameraPos_ws
 	this.RenLoc.CameraPos_ws.Uniform4f(v[0], v[1], v[2], v[3])
 }
@@ -67,8 +65,8 @@ func NewDebugWaterRenderer() (this *DebugWaterRenderer) {
 	helpers.BindLocations("water debug", this.Program, &this.RenLoc)
 
 	this.RenLoc.HeightMap.Uniform1i(4)
-	this.RenLoc.LowerBound.Uniform3f(0, 0, -32)
-	this.RenLoc.UpperBound.Uniform3f(64, 64, 32)
+	//this.RenLoc.LowerBound.Uniform3f(0, 0, -32)
+	//this.RenLoc.UpperBound.Uniform3f(64, 64, 32)
 	this.RenLoc.GroundTexture.Uniform1i(1)
 
 	return

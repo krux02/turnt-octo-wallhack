@@ -11,6 +11,8 @@ import (
 )
 
 // import "fmt"
+const MinHeight = -32
+const MaxHeight = 32
 
 type HeightMap struct {
 	W, H       int
@@ -88,6 +90,11 @@ func (this *HeightMap) Get2f(x, y float32) float32 {
 }
 
 func (this *HeightMap) Set(x, y int, v float32) {
+	if v < MinHeight {
+		v = MinHeight
+	} else if v > MaxHeight {
+		v = MaxHeight
+	}
 	if 0 <= x && x < this.W && 0 <= y && y < this.H {
 		this.Data[this.W*y+x] = v
 	}
@@ -157,16 +164,7 @@ func (m *HeightMap) TexturePixels() (pixels []float32) {
 }
 
 func (m *HeightMap) Bounds() (float32, float32) {
-	var min_h, max_h float32 = math.MaxFloat32, -math.MaxFloat32
-	for _, v := range m.Data {
-		if v < min_h {
-			min_h = v
-		}
-		if v > max_h {
-			max_h = v
-		}
-	}
-	return min_h, max_h
+	return MinHeight, MaxHeight
 }
 
 func (m *HeightMap) ExportImage() image.Image {
