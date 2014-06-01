@@ -144,7 +144,7 @@ func Input(gs *gamestate.GameState, worldRenderer *rendering.WorldRenderer) bool
 		}
 	}
 
-	gs.Player.Input = inp
+	gs.World.Player.Input = inp
 
 	return running
 }

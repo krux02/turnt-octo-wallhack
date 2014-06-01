@@ -16,6 +16,7 @@ type TreeVertex struct {
 
 // forest
 type Forest struct {
+	AbstractMesh
 	Positions []PalmTree
 	Model     mgl.Mat4f
 }
@@ -39,10 +40,6 @@ func (this *Forest) Vertices() interface{} {
 		TreeVertex{mgl.Vec4f{0, -1, 0, 1}, mgl.Vec2f{0, 1}},
 		TreeVertex{mgl.Vec4f{0, -1, 2, 1}, mgl.Vec2f{0, 0}},
 	}
-}
-
-func (this *Forest) Indices() interface{} {
-	return nil //[]uint16{0, 1, 2, 3}
 }
 
 func (this *Forest) Mode() Mode {

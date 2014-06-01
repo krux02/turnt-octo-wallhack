@@ -14,23 +14,23 @@ type RenderLocations struct {
 	ColorBand, Texture, Slope              gl.UniformLocation
 	ClippingPlane_ws                       gl.UniformLocation
 	HeightMap, LowerBound, UpperBound      gl.UniformLocation
-	Time                                   gl.UniformLocation
+	Time, WaterHeight                      gl.UniformLocation
 }
 
 type RenderData struct {
-	VAO                gl.VertexArray
-	InstanceDataBuffer gl.Buffer
-	NumInstances       int
-	Indices            gl.Buffer
-	IndexType          gl.GLenum
-	Vertices           gl.Buffer
-	Numverts           int
-	Mode               gl.GLenum
+	VAO          gl.VertexArray
+	InstanceData gl.Buffer
+	NumInstances int
+	Indices      gl.Buffer
+	IndexType    gl.GLenum
+	Vertices     gl.Buffer
+	Numverts     int
+	Mode         gl.GLenum
 }
 
 func (this *RenderData) Delete() {
 	this.VAO.Delete()
-	this.InstanceDataBuffer.Delete()
+	this.InstanceData.Delete()
 	this.Indices.Delete()
 	this.Vertices.Delete()
 	*this = RenderData{}

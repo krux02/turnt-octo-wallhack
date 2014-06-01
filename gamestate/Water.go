@@ -5,9 +5,11 @@ import (
 )
 
 type Water struct {
+	AbstractMesh
 	W, H       int
 	LowerBound mgl.Vec3f
 	UpperBound mgl.Vec3f
+	Height     float32
 }
 
 func (this *Water) GetModel() mgl.Mat4f {

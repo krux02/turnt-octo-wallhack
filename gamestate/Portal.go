@@ -8,7 +8,7 @@ type Portal struct {
 	Entity
 	Normal mgl.Vec4f
 	Target *Portal
-	Mesh   *Mesh
+	Mesh   *TriangleMesh
 }
 
 func (this *Portal) GetMesh() IMesh {

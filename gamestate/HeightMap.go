@@ -15,6 +15,7 @@ const MinHeight = -32
 const MaxHeight = 32
 
 type HeightMap struct {
+	AbstractMesh
 	W, H       int
 	Data       []float32
 	HasChanges bool

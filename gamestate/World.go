@@ -11,6 +11,7 @@ type World struct {
 	Portals        []*Portal
 	Trees          IRenderEntity
 	ExampleObjects []IRenderEntity
+	Player         *Player
 }
 
 type WrapVec4f mgl.Vec4f

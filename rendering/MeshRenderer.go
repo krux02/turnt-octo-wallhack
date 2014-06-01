@@ -2,7 +2,7 @@ package rendering
 
 import (
 	"fmt"
-	mgl "github.com/Jragonmiris/mathgl"
+	//	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
@@ -17,11 +17,6 @@ func NewMeshRenderer() (mr *MeshRenderer) {
 	mr.Program.Use()
 	helpers.BindLocations("mesh", mr.Program, &mr.RenLoc)
 	return
-}
-
-func (this *MeshRenderer) Delete() {
-	this.Program.Delete()
-	*this = MeshRenderer{}
 }
 
 func CreateMeshRenderData(mesh gamestate.IMesh, renLoc *RenderLocations) (rd RenderData) {
@@ -83,32 +78,12 @@ func CreateMeshRenderData(mesh gamestate.IMesh, renLoc *RenderLocations) (rd Ren
 		if Type.Kind() != reflect.Slice {
 			panic("InstanceData is not a slice")
 		}
-		rd.InstanceDataBuffer = gl.GenBuffer()
-		rd.InstanceDataBuffer.Bind(gl.ARRAY_BUFFER)
+		rd.InstanceData = gl.GenBuffer()
+		rd.InstanceData.Bind(gl.ARRAY_BUFFER)
 		gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(instanceData), instanceData, gl.STATIC_DRAW)
 		helpers.SetAttribPointers(renLoc, reflect.ValueOf(instanceData).Index(0).Addr().Interface(), true)
 
 		rd.NumInstances = reflect.ValueOf(instanceData).Len()
 	}
-
 	return
-}
-
-func (this *MeshRenderer) Render(meshData *RenderData, Proj mgl.Mat4f, View mgl.Mat4f, Model mgl.Mat4f, ClippingPlane_ws mgl.Vec4f) {
-	this.Program.Use()
-
-	meshData.VAO.Bind()
-
-	gl.Disable(gl.BLEND)
-	gl.Disable(gl.CULL_FACE)
-
-	Loc := this.RenLoc
-	Loc.Model.UniformMatrix4f(false, glMat4(&Model))
-	Loc.View.UniformMatrix4f(false, glMat4(&View))
-	Loc.Proj.UniformMatrix4f(false, glMat4(&Proj))
-	Loc.ClippingPlane_ws.Uniform4f(ClippingPlane_ws[0], ClippingPlane_ws[1], ClippingPlane_ws[2], ClippingPlane_ws[3])
-
-	numverts := meshData.Numverts
-
-	gl.DrawElements(gl.TRIANGLES, numverts, gl.UNSIGNED_SHORT, uintptr(0))
 }

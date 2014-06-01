@@ -213,7 +213,7 @@ func (ps *ParticleSystem) DoStep(gs *gamestate.GameState) {
 	// SetAttribPointers(&ps.TransformLoc, &ParticleVertex{}, false)
 
 	//var orientation mgl.Quatf = gs.Player.Camera.Orientation
-	var model mgl.Mat4f = gs.Player.Camera.Model()
+	var model mgl.Mat4f = gs.Camera.Model()
 	pPos := model.Mul4x1(mgl.Vec4f{1, -1, 0, 1})
 	ps.TransformLoc.Origin.Uniform3f(pPos[0], pPos[1], pPos[2])
 	dir := model.Mul4x1(mgl.Vec4f{0, 0, 100, 0})

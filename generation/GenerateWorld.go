@@ -48,7 +48,9 @@ func GenerateWorld(W, H, N int) (world *gs.World) {
 		h := heights.Get2f(x, y) + 1
 		npcs[i] = &gs.Npc{mgl.Vec4f{x, y, h, 1}, mgl.QuatIdentf()}
 	}
-	world = &gs.World{heights, water, kdTree, Portals, forest, npcs}
+	startPos := mgl.Vec4f{5, 5, 10, 1}
+	player := &gs.Player{Camera: *gs.NewCameraFromPos4f(startPos)}
+	world = &gs.World{heights, water, kdTree, Portals, forest, npcs, player}
 	return
 }
 
@@ -98,7 +100,10 @@ func GeneratePalmTrees(hm *gs.HeightMap, count int) *gs.Forest {
 		trees[i] = gs.PalmTree{mgl.Vec4f{x, y, z, 1}}
 	}
 
-	return &gs.Forest{trees, mgl.Ident4f()}
+	forest := new(gs.Forest)
+	forest.Positions = trees
+	forest.Model = mgl.Ident4f()
+	return forest
 }
 
 func DiamondSquare(m *gs.HeightMap, factor float32) {

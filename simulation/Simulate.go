@@ -27,10 +27,10 @@ func PortalPassed(portal *gamestate.Portal, pos1, pos2 mgl.Vec4f) bool {
 }
 
 func Simulate(gs *gamestate.GameState, ps *particles.ParticleSystem) {
-	player := gs.Player
-	cam := &gs.Player.Camera
+	player := gs.World.Player
+	cam := &gs.World.Player.Camera
 	oldPos := cam.Position
-	UpdatePlayer(gs.Player, gs)
+	UpdatePlayer(gs.World.Player, gs)
 	newPos := cam.Position
 
 	nearestPortal := gs.World.NearestPortal(oldPos)
