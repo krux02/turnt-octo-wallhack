@@ -13,24 +13,24 @@ import (
 )
 
 type WorldRenderer struct {
-	Proj               mgl.Mat4f
-	Textures           *Textures
-	HeightMapRenderer  *HeightMapRenderer
-	WaterRenderer      *WaterRenderer
-	WaterRendererA     *WaterRenderer
-	WaterRendererB     *WaterRenderer
-	DebugWaterRenderer *DebugWaterRenderer
-	MeshRenderer       *MeshRenderer
-	PortalRenderer     *Renderer
-	TreeRenderer       *TreeRenderer
-	ParticleSystem     *particles.ParticleSystem
-	SkyboxRenderer     *SkyboxRenderer
-	Framebuffer        [2]*FrameBuffer
-	ScreenQuad         *ScreenQuadRenderer
-	DebugRenderer      *LineRenderer
-	RenData            map[gamestate.IMesh]*RenderData
-	MaxRecursion       int
-	screenShot         bool
+	Proj, View        mgl.Mat4f
+	ClippingPlane_ws  mgl.Vec4f
+	Textures          *Textures
+	HeightMapRenderer *Renderer
+	WaterRenderer     *Renderer
+	WaterRendererA    *Renderer
+	WaterRendererB    *Renderer
+	MeshRenderer      *Renderer
+	PortalRenderer    *Renderer
+	TreeRenderer      *Renderer
+	SkyboxRenderer    *SkyboxRenderer
+	ParticleSystem    *particles.ParticleSystem
+	Framebuffer       [2]*FrameBuffer
+	ScreenQuad        *ScreenQuadRenderer
+	DebugRenderer     *LineRenderer
+	RenData           map[gamestate.IMesh]*RenderData
+	MaxRecursion      int
+	screenShot        bool
 }
 
 func (this *WorldRenderer) Resize(width, height int) {
@@ -50,6 +50,8 @@ func NewWorldRenderer(window *sdl.Window, w *gamestate.World) *WorldRenderer {
 
 	return &WorldRenderer{
 		Proj:              mgl.Perspective(90, float32(width)/float32(height), 0.3, 1000),
+		View:              mgl.Ident4f(),
+		ClippingPlane_ws:  mgl.Vec4f{1, 0, 0, -1000000},
 		Textures:          NewTextures(w.HeightMap),
 		HeightMapRenderer: NewHeightMapRenderer(),
 		WaterRenderer:     nil,
@@ -58,8 +60,8 @@ func NewWorldRenderer(window *sdl.Window, w *gamestate.World) *WorldRenderer {
 		MeshRenderer:      NewMeshRenderer(),
 		PortalRenderer:    NewPortalRenderer(),
 		TreeRenderer:      NewTreeRenderer(),
-		ParticleSystem:    particles.NewParticleSystem(w, 10000, mgl.Vec3f{32, 32, 32}, 1, 250),
 		SkyboxRenderer:    NewSkyboxRenderer(),
+		ParticleSystem:    particles.NewParticleSystem(w, 10000, mgl.Vec3f{32, 32, 32}, 1, 250),
 		Framebuffer:       [2]*FrameBuffer{NewFrameBuffer(window.GetSize()), NewFrameBuffer(window.GetSize())},
 		ScreenQuad:        NewScreenQuadRenderer(),
 		DebugRenderer:     NewLineRenderer(),
@@ -76,7 +78,8 @@ func (this *WorldRenderer) Delete() {
 	this.TreeRenderer.Delete()
 	this.ParticleSystem.Delete()
 	this.SkyboxRenderer.Delete()
-	this.WaterRenderer.Delete()
+	this.WaterRendererA.Delete()
+	this.WaterRendererB.Delete()
 	for _, Framebuffer := range this.Framebuffer {
 		Framebuffer.Delete()
 	}
@@ -85,8 +88,8 @@ func (this *WorldRenderer) Delete() {
 	*this = WorldRenderer{}
 }
 
-func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOptions, View mgl.Mat4f, window *sdl.Window) {
-	this.render(ww, options, View, window, 0, mgl.Vec4f{3 / 5.0, 4 / 5.0, 0, math.MaxFloat32}, nil)
+func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOptions, window *sdl.Window) {
+	this.render(ww, options, window, 0, nil)
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	this.Framebuffer[0].RenderTexture.Bind(gl.TEXTURE_RECTANGLE)
@@ -98,14 +101,14 @@ func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOpt
 	}
 }
 
-func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOptions, View mgl.Mat4f, window *sdl.Window, recursion int, clippingPlane mgl.Vec4f, srcPortal *gamestate.Portal) {
+func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOptions, window *sdl.Window, recursion int, srcPortal *gamestate.Portal) {
 
 	this.Framebuffer[recursion].Bind()
 	defer this.Framebuffer[recursion].Unbind()
 
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-	camera := gamestate.NewCameraFromMat4(View)
+	camera := gamestate.NewCameraFromMat4(this.View)
 	Rot2D := camera.Rotation2D()
 
 	gl.CullFace(gl.BACK)
@@ -120,7 +123,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 
 	if options.Skybox {
 		gl.Disable(gl.DEPTH_TEST)
-		this.SkyboxRenderer.Render(this.Proj, View, 7)
+		this.SkyboxRenderer.Render(this.Proj, this.View, 7)
 		gl.Enable(gl.DEPTH_TEST)
 	}
 
@@ -132,7 +135,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 	}
 
 	for _, entity := range ww.ExampleObjects {
-		this.RenderEntity(entity, View, clippingPlane, nil)
+		this.RenderEntity(this.MeshRenderer, entity, nil)
 	}
 
 	gl.Enable(gl.BLEND)
@@ -141,40 +144,38 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 	gl.Disable(gl.CULL_FACE)
 
 	if options.WorldRender {
-		this.RenderEntity(ww.HeightMap, View, clippingPlane, nil)
+		this.RenderEntity(this.HeightMapRenderer, ww.HeightMap, nil)
 	}
 	PlayerPos := ww.Player.Position()
 	ww.Water.Height = PlayerPos[2] - 15
 	if options.WaterRender {
-		this.WaterRenderer = this.WaterRendererA
-		this.RenderEntity(ww.Water, View, clippingPlane, WaterRenderUniforms{time, PlayerPos})
+		this.RenderEntity(this.WaterRendererA, ww.Water, WaterRenderUniforms{time, PlayerPos})
 	}
 	if options.WaterNormals {
-		this.WaterRenderer = this.WaterRendererB
-		this.RenderEntity(ww.Water, View, clippingPlane, WaterRenderUniforms{time, PlayerPos})
+		this.RenderEntity(this.WaterRendererB, ww.Water, WaterRenderUniforms{time, PlayerPos})
 	}
 
 	gl.Disable(gl.CULL_FACE)
 
 	gl.Disable(gl.BLEND)
 	if options.TreeRender {
-		this.RenderEntity(ww.Trees, View, clippingPlane, Rot2D)
+		this.RenderEntity(this.TreeRenderer, ww.Trees, Rot2D)
 	}
 
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE)
 	if options.ParticleRender {
-		this.ParticleSystem.Render(this.Proj, View, clippingPlane)
+		this.ParticleSystem.Render(this.Proj, this.View, this.ClippingPlane_ws)
 	}
 
 	gl.Disable(gl.BLEND)
 
 	boxVertices := gamestate.QuadMesh().MakeBoxVertices()
 
-	pv := this.Proj.Mul4(View)
+	pv := this.Proj.Mul4(this.View)
 
 	// calculating nearest portal
-	pos4f := View.Inv().Mul4x1(mgl.Vec4f{0, 0, 0, 1})
+	pos4f := this.View.Inv().Mul4x1(mgl.Vec4f{0, 0, 0, 1})
 	nearestPortal := ww.NearestPortal(pos4f)
 
 	// draw  all portals except the nearest and the portal that we are looking throug
@@ -183,7 +184,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 		if (nearestPortal != portal) && (srcPortal == nil || srcPortal.Target != portal) {
 			gl.Enable(gl.DEPTH_CLAMP)
 			additionalUniforms := map[string]int{"Image": 7}
-			this.RenderEntity(portal, View, clippingPlane, additionalUniforms)
+			this.RenderEntity(this.PortalRenderer, portal, additionalUniforms)
 		}
 	}
 
@@ -195,7 +196,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 		if options.DepthTestDebugLines {
 			gl.Disable(gl.DEPTH_TEST)
 		}
-		this.DebugRenderer.Render(this.Proj, View)
+		this.DebugRenderer.Render(this.Proj, this.View)
 		gl.Enable(gl.DEPTH_TEST)
 	}
 
@@ -241,16 +242,20 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 			//pos2 := portal.Target.Position
 			Model2 := portal.Target.Model()
 			// model matrix, so that portal 1 in camera 1 looks identical to portal 2 in camera
-			View2 := View.Mul4(Model).Mul4(Model2.Inv())
+			oldView := this.View
+			this.View = this.View.Mul4(Model).Mul4(Model2.Inv())
 
 			normal_os := portal.Target.Normal
 			normal_ws := Model.Mul4x1(normal_os)
 			view_dir := helpers.HomogenDiff(portal.Position, camera.Position)
 			sign := view_dir.Dot(normal_ws)
 
-			clippingPlane = portal.Target.ClippingPlane(sign > 0)
+			oldClippingPlane := this.ClippingPlane_ws
+			this.ClippingPlane_ws = portal.Target.ClippingPlane(sign > 0)
 
-			this.render(ww, options, View2, window, recursion+1, clippingPlane, nearestPortal)
+			this.render(ww, options, window, recursion+1, nearestPortal)
+			this.ClippingPlane_ws = oldClippingPlane
+			this.View = oldView
 
 			gl.ActiveTexture(gl.TEXTURE0)
 			this.Framebuffer[recursion+1].RenderTexture.Bind(gl.TEXTURE_RECTANGLE)
@@ -262,7 +267,8 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 			this.Framebuffer[recursion].Bind()
 			gl.Enable(gl.DEPTH_CLAMP)
 			additionalUniforms := map[string]int{"Image": 0}
-			this.RenderEntity(nearestPortal, View, clippingPlane, additionalUniforms)
+			this.RenderEntity(this.PortalRenderer, nearestPortal, additionalUniforms)
+
 		}
 	}
 }
