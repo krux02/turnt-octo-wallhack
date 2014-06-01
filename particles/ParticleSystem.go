@@ -5,6 +5,7 @@ import (
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
 	"github.com/go-gl/glh"
+	"github.com/krux02/turnt-octo-wallhack/constants"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"io/ioutil"
@@ -144,7 +145,7 @@ func NewParticleSystem(w *gamestate.World, numParticles int, Origin mgl.Vec3f, i
 
 	TransformProg.Use()
 
-	ps.TransformLoc.HeightMap.Uniform1i(4)
+	ps.TransformLoc.HeightMap.Uniform1i(constants.TextureHeightMap)
 	ps.TransformLoc.LowerBound.Uniform3f(0, 0, min_h)
 	ps.TransformLoc.UpperBound.Uniform3f(W, H, max_h)
 
@@ -260,7 +261,7 @@ func (ps *ParticleSystem) Render(Proj mgl.Mat4f, View mgl.Mat4f, clippingPlane m
 	Loc.Proj.UniformMatrix4f(false, (*[16]float32)(&Proj))
 	Loc.View.UniformMatrix4f(false, (*[16]float32)(&View))
 	Loc.MaxLifetime.Uniform1f(ps.MaxLifetime)
-	Loc.Image.Uniform1i(6)
+	Loc.Image.Uniform1i(constants.TextureFireBall)
 	Loc.ClippingPlane_ws.Uniform4f(clippingPlane[0], clippingPlane[1], clippingPlane[2], clippingPlane[3])
 
 	gl.DepthMask(false)

@@ -3,6 +3,7 @@ package rendering
 import (
 	//"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
+	"github.com/krux02/turnt-octo-wallhack/constants"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 )
@@ -13,7 +14,7 @@ func NewTreeRenderer() *Renderer {
 }
 
 func TreeInit(loc *RenderLocations) {
-	loc.PalmTree.Uniform1i(5)
+	loc.PalmTree.Uniform1i(constants.TextureTree)
 }
 
 func TreeUpdate(loc *RenderLocations, entiy gamestate.IRenderEntity, additionalUniforms interface{}) {

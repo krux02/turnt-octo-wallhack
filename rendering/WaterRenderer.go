@@ -3,6 +3,7 @@ package rendering
 import (
 	//"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
+	"github.com/krux02/turnt-octo-wallhack/constants"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 )
@@ -28,9 +29,9 @@ func WaterUpdate(loc *RenderLocations, entity gamestate.IRenderEntity, etc inter
 }
 
 func WaterInit(loc *RenderLocations) {
-	loc.HeightMap.Uniform1i(4)
-	loc.GroundTexture.Uniform1i(1)
-	loc.Skybox.Uniform1i(7)
+	loc.HeightMap.Uniform1i(constants.TextureHeightMap)
+	loc.GroundTexture.Uniform1i(constants.TextureGround)
+	loc.Skybox.Uniform1i(constants.TextureSkybox)
 }
 
 func NewSurfaceWaterRenderer() *Renderer {

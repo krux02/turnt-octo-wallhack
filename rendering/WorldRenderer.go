@@ -23,7 +23,8 @@ type WorldRenderer struct {
 	MeshRenderer      *Renderer
 	PortalRenderer    *Renderer
 	TreeRenderer      *Renderer
-	SkyboxRenderer    *SkyboxRenderer
+	Skybox            *Skybox
+	SkyboxRenderer    *Renderer
 	ParticleSystem    *particles.ParticleSystem
 	Framebuffer       [2]*FrameBuffer
 	ScreenQuad        *ScreenQuadRenderer
@@ -54,13 +55,13 @@ func NewWorldRenderer(window *sdl.Window, w *gamestate.World) *WorldRenderer {
 		ClippingPlane_ws:  mgl.Vec4f{1, 0, 0, -1000000},
 		Textures:          NewTextures(w.HeightMap),
 		HeightMapRenderer: NewHeightMapRenderer(),
-		WaterRenderer:     nil,
 		WaterRendererA:    NewSurfaceWaterRenderer(),
 		WaterRendererB:    NewDebugWaterRenderer(),
 		MeshRenderer:      NewMeshRenderer(),
 		PortalRenderer:    NewPortalRenderer(),
 		TreeRenderer:      NewTreeRenderer(),
 		SkyboxRenderer:    NewSkyboxRenderer(),
+		Skybox:            new(Skybox).Init(),
 		ParticleSystem:    particles.NewParticleSystem(w, 10000, mgl.Vec3f{32, 32, 32}, 1, 250),
 		Framebuffer:       [2]*FrameBuffer{NewFrameBuffer(window.GetSize()), NewFrameBuffer(window.GetSize())},
 		ScreenQuad:        NewScreenQuadRenderer(),
@@ -123,7 +124,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 
 	if options.Skybox {
 		gl.Disable(gl.DEPTH_TEST)
-		this.SkyboxRenderer.Render(this.Proj, this.View, 7)
+		this.RenderEntity(this.SkyboxRenderer, this.Skybox, nil)
 		gl.Enable(gl.DEPTH_TEST)
 	}
 

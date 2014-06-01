@@ -22,7 +22,7 @@ type Renderer struct {
 	Program              gl.Program
 	RenLoc               RenderLocations
 	OverrideModeToPoints bool
-	UpdateFunc           func(loc *RenderLocations, entity gamestate.IRenderEntity, etc interface{})
+	UpdateFunc           RenderUpdateFunc
 }
 
 func NewRenderer(program gl.Program, name string, initFunc RenderInitFunc, updateFunc RenderUpdateFunc) *Renderer {
@@ -46,57 +46,10 @@ func (this *Renderer) Delete() {
 	*this = Renderer{}
 }
 
-func (this *Renderer) UseProgram() {
-	this.Program.Use()
-}
-
-func (this *Renderer) RenderLocations() *RenderLocations {
-	return &this.RenLoc
-}
-
-/*
-func (this *Renderer) SetUniformByName(name string, value interface{}) {
-	location := this.Program.GetUniformLocation(name)
-	this.SetUniform(location, value)
-}
-
-func (this *Renderer) SetUniform(location gl.UniformLocation, value interface{}) {
-	switch Value := value.(type) {
-	case int:
-		location.Uniform1i(Value)
-	case float32:
-		location.Uniform1f(Value)
-	case mgl.Vec2f:
-		location.Uniform2f(Value[0], Value[1])
-	case mgl.Vec3f:
-		location.Uniform3f(Value[0], Value[1], Value[2])
-	case mgl.Vec4f:
-		location.Uniform4f(Value[0], Value[1], Value[2], Value[3])
-	case mgl.Mat2f:
-		location.UniformMatrix2f(false, glMat2(&Value))
-	case mgl.Mat3f:
-		location.UniformMatrix3f(false, glMat3(&Value))
-	case mgl.Mat4f:
-		location.UniformMatrix4f(false, glMat4(&Value))
-	}
-}
-*/
-
 func (this *Renderer) Update(entiy gamestate.IRenderEntity, etc interface{}) {
 	if this.UpdateFunc != nil {
 		this.UpdateFunc(&this.RenLoc, entiy, etc)
 	}
-	/*
-		else if etc != nil {
-			switch Map := etc.(type) {
-			case map[string]interface{}:
-				for name, value := range Map {
-					this.SetUniformByName(name, value)
-				}
-			default:
-			}
-		}
-	*/
 }
 
 func (this *Renderer) Render(renData *RenderData, Proj, View, Model mgl.Mat4f, ClippingPlane_ws mgl.Vec4f) {
