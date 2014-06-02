@@ -3,9 +3,7 @@ package rendering
 import (
 	//"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
-	"github.com/go-gl/gl"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
-	"github.com/krux02/turnt-octo-wallhack/helpers"
 )
 
 type Skybox struct {
@@ -58,14 +56,4 @@ func (this *Skybox) Init() *Skybox {
 		6, 7, 2, 2, 7, 3,
 	}
 	return this
-}
-
-type SkyboxRenderLocations struct {
-	Proj, View, Skybox gl.UniformLocation
-	InTexCoord         gl.AttribLocation
-}
-
-func NewSkyboxRenderer() *Renderer {
-	program := helpers.MakeProgram("Skybox.vs", "Skybox.fs")
-	return NewRenderer(program, "Skybox", nil, nil)
 }

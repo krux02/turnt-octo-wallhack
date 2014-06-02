@@ -7,6 +7,21 @@ import (
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 )
 
+func NewSkyboxRenderer() *Renderer {
+	program := helpers.MakeProgram("Skybox.vs", "Skybox.fs")
+	return NewRenderer(program, "Skybox", nil, nil)
+}
+
+func NewTreeRenderer() *Renderer {
+	program := helpers.MakeProgram("Sprite.vs", "Sprite.fs")
+	return NewRenderer(program, "TreeSprite", nil, TreeUpdate)
+}
+
+func TreeUpdate(loc *RenderLocations, entiy gamestate.IRenderEntity, additionalUniforms interface{}) {
+	Rot2D := helpers.Mat4toMat3(additionalUniforms.(mgl.Mat4f))
+	loc.Rot2D.UniformMatrix3f(false, glMat3(&Rot2D))
+}
+
 type WaterRenderUniforms struct {
 	Time         float64
 	CameraPos_ws mgl.Vec4f
@@ -37,4 +52,18 @@ func NewDebugWaterRenderer() *Renderer {
 	renderer := NewRenderer(program, name, nil, WaterUpdate)
 	renderer.OverrideModeToPoints = true
 	return renderer
+}
+
+func NewPortalRenderer() *Renderer {
+	program := helpers.MakeProgram("Portal.vs", "Portal.fs")
+	return NewRenderer(program, "Portal", nil, nil)
+}
+
+func NewMeshRenderer() (this *Renderer) {
+	return NewRenderer(helpers.MakeProgram("Mesh.vs", "Mesh.fs"), "mesh", nil, nil)
+}
+
+func NewScreenQuadRenderer() (this *Renderer) {
+	program := helpers.MakeProgram("ScreenQuad.vs", "ScreenQuad.fs")
+	return NewRenderer(program, "ScreenQuad", nil, nil)
 }

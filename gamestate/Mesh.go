@@ -22,12 +22,6 @@ type IMesh interface {
 	Indices() interface{}
 	InstanceData() interface{}
 	Mode() Mode
-	VerticesChanged() bool
-	SetVerticesChanged(bool)
-	IndicesChanged() bool
-	SetIndicesChanged(bool)
-	InstanceDataChanged() bool
-	SetInstanceDataChanged(bool)
 }
 
 // embed this for default values
