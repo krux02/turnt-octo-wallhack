@@ -70,11 +70,10 @@ func RandomPortals(hm *gs.HeightMap, N int) []*gs.Portal {
 		z := hm.Get2f(x, y) + 5
 		q := mgl.Quatf{r(), mgl.Vec3f{r(), r(), r()}}.Normalize()
 		Portals[i] = &gs.Portal{
-			gs.Entity{mgl.Vec4f{x, y, z, 1}, q},
-			normal,
-			nil,
-			mesh,
+			Entity: gs.Entity{mgl.Vec4f{x, y, z, 1}, q},
+			Normal: normal,
 		}
+		Portals[i].SetMesh(mesh)
 	}
 	for i := range Portals {
 		j := i ^ 1
@@ -103,7 +102,7 @@ func GeneratePalmTrees(hm *gs.HeightMap, count int) *gs.Forest {
 
 	forest := new(gs.Forest)
 	forest.Positions = trees
-	forest.Model = mgl.Ident4f()
+	forest.SetModel(mgl.Ident4f())
 	return forest
 }
 

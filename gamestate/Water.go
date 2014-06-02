@@ -6,35 +6,25 @@ import (
 )
 
 type Water struct {
-	renderstuff.AbstractMesh
+	mesh       *renderstuff.Mesh
 	W, H       int
 	LowerBound mgl.Vec3f
 	UpperBound mgl.Vec3f
 	Height     float32
 }
 
-func (this *Water) GetModel() mgl.Mat4f {
+func (this *Water) Model() mgl.Mat4f {
 	return mgl.Ident4f()
 }
 
-func (this *Water) GetMesh() renderstuff.IMesh {
-	return this
-}
-
-func (this *Water) Vertices() interface{} {
-	return WaterVertices(this.W, this.H)
-}
-
-func (this *Water) Indices() interface{} {
-	return TriangulationIndices(this.W, this.H)
-}
-
-func (this *Water) InstanceData() interface{} {
-	return nil
-}
-
-func (this *Water) Mode() renderstuff.Mode {
-	return renderstuff.Triangles
+func (this *Water) Mesh() *renderstuff.Mesh {
+	if this.mesh == nil {
+		this.mesh = new(renderstuff.Mesh)
+		this.mesh.Vertices = WaterVertices(this.W, this.H)
+		this.mesh.Indices = TriangulationIndices(this.W, this.H)
+		this.mesh.Mode = renderstuff.Triangles
+	}
+	return this.mesh
 }
 
 type WaterVertex struct {

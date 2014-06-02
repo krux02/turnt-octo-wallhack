@@ -5,15 +5,15 @@ import (
 	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 )
 
-var NpcMesh = LoadMeshManaged("meshes/Torso.obj")
+var NpcMesh = (*renderstuff.Mesh)(LoadMeshManaged("meshes/Torso.obj"))
 
 type Npc Entity
 
-func (this *Npc) GetMesh() renderstuff.IMesh {
+func (this *Npc) Mesh() *renderstuff.Mesh {
 	return NpcMesh
 }
 
-func (this *Npc) GetModel() mgl.Mat4f {
+func (this *Npc) Model() mgl.Mat4f {
 	return (*Entity)(this).Model()
 }
 

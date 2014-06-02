@@ -7,6 +7,7 @@ import (
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/particles"
+	//"github.com/krux02/turnt-octo-wallhack/renderstuff"
 	"github.com/krux02/turnt-octo-wallhack/settings"
 	"github.com/veandco/go-sdl2/sdl"
 	"math"
@@ -61,10 +62,10 @@ func NewWorldRenderer(window *sdl.Window, w *gamestate.World) *WorldRenderer {
 		PortalRenderer:     NewPortalRenderer(),
 		TreeRenderer:       NewTreeRenderer(),
 		SkyboxRenderer:     NewSkyboxRenderer(),
-		Skybox:             new(Skybox).Init(),
+		Skybox:             &Skybox{},
 		ParticleSystem:     particles.NewParticleSystem(w, 10000, mgl.Vec3f{32, 32, 32}, 1, 250),
 		Framebuffer:        [2]*FrameBuffer{NewFrameBuffer(window.GetSize()), NewFrameBuffer(window.GetSize())},
-		ScreenQuad:         new(ScreenQuad).Init(),
+		ScreenQuad:         &ScreenQuad{},
 		ScreenQuadRenderer: NewScreenQuadRenderer(),
 		DebugRenderer:      NewLineRenderer(),
 		MaxRecursion:       1,
@@ -171,7 +172,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 
 	gl.Disable(gl.BLEND)
 
-	boxVertices := gamestate.QuadMesh().MakeBoxVertices()
+	boxVertices := (*gamestate.TriangleMesh)(gamestate.QuadMesh()).MakeBoxVertices()
 
 	pv := this.Proj.Mul4(this.View)
 

@@ -9,15 +9,15 @@ type Portal struct {
 	Entity
 	Normal mgl.Vec4f
 	Target *Portal
-	Mesh   *TriangleMesh
+	mesh   *renderstuff.Mesh
 }
 
-func (this *Portal) GetMesh() renderstuff.IMesh {
-	return this.Mesh
+func (this *Portal) Mesh() *renderstuff.Mesh {
+	return this.mesh
 }
 
-func (this *Portal) GetModel() mgl.Mat4f {
-	return this.Model()
+func (this *Portal) SetMesh(mesh *renderstuff.Mesh) {
+	this.mesh = mesh
 }
 
 func (this *Portal) ClippingPlane(front bool) mgl.Vec4f {

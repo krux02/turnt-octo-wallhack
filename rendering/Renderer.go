@@ -17,7 +17,7 @@ type Renderer struct {
 	RenLoc               RenderLocations
 	OverrideModeToPoints bool
 	UpdateFunc           RenderUpdateFunc
-	RenData              map[renderstuff.IMesh]*RenderData
+	RenData              map[*renderstuff.Mesh]*RenderData
 }
 
 func NewRenderer(program gl.Program, name string, initFunc RenderInitFunc, updateFunc RenderUpdateFunc) *Renderer {
@@ -35,7 +35,7 @@ func NewRenderer(program gl.Program, name string, initFunc RenderInitFunc, updat
 	}
 
 	this.UpdateFunc = updateFunc
-	this.RenData = map[renderstuff.IMesh]*RenderData{}
+	this.RenData = map[*renderstuff.Mesh]*RenderData{}
 	return this
 }
 
@@ -64,14 +64,14 @@ func (this *Renderer) Delete() {
 
 func (this *Renderer) Render(entity renderstuff.IRenderEntity, Proj, View mgl.Mat4f, ClippingPlane_ws mgl.Vec4f, additionalUniforms interface{}) {
 	this.Program.Use()
-	mesh := entity.GetMesh()
+	mesh := entity.Mesh()
 	renData := this.RenData[mesh]
 	if renData == nil {
 		md := LoadMeshToGpu(mesh, &this.RenLoc)
 		renData = &md
 		this.RenData[mesh] = &md
 	}
-	Model := entity.GetModel()
+	Model := entity.Model()
 
 	renData.VAO.Bind()
 

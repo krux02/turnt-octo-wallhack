@@ -9,37 +9,21 @@ type ScreenQuadVertex struct {
 	Vertex_ndc mgl.Vec4f
 }
 
-type ScreenQuad struct {
-	renderstuff.AbstractMesh
-	vertices []ScreenQuadVertex
-	indices  []uint16
-}
-
-func (this *ScreenQuad) Init() *ScreenQuad {
-	this.vertices = []ScreenQuadVertex{
+var ScreenQuadMesh = renderstuff.Mesh{
+	Vertices: []ScreenQuadVertex{
 		ScreenQuadVertex{mgl.Vec4f{-1, -1, 0, 1}},
 		ScreenQuadVertex{mgl.Vec4f{3, -1, 0, 1}},
 		ScreenQuadVertex{mgl.Vec4f{-1, 3, 0, 1}},
-	}
-	return this
+	},
+	Mode: renderstuff.Triangles,
 }
 
-func (this *ScreenQuad) GetModel() mgl.Mat4f {
+type ScreenQuad struct{}
+
+func (this *ScreenQuad) Mesh() *renderstuff.Mesh {
+	return &ScreenQuadMesh
+}
+
+func (this *ScreenQuad) Model() mgl.Mat4f {
 	return mgl.Ident4f()
-}
-
-func (this *ScreenQuad) GetMesh() renderstuff.IMesh {
-	return this
-}
-
-func (this *ScreenQuad) Vertices() interface{} {
-	return this.vertices
-}
-
-func (this *ScreenQuad) Indices() interface{} {
-	return nil
-}
-
-func (this *ScreenQuad) Mode() renderstuff.Mode {
-	return renderstuff.Triangles
 }

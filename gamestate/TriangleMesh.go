@@ -16,43 +16,24 @@ type MeshVertex struct {
 	Normal_ms mgl.Vec4f
 }
 
-type TriangleMesh struct {
-	renderstuff.AbstractMesh
-	vertices []MeshVertex
-	indices  []MeshIndex
-}
+type TriangleMesh renderstuff.Mesh
 
-func (this *TriangleMesh) Vertices() interface{} {
-	return this.vertices
-}
-
-func (this *TriangleMesh) Indices() interface{} {
-	return this.indices
-}
-
-func (this *TriangleMesh) InstanceData() interface{} {
-	return nil
-}
-
-func (this *TriangleMesh) Mode() renderstuff.Mode {
-	return renderstuff.Triangles
-}
-
-func QuadMesh() (mesh *TriangleMesh) {
-	mesh = new(TriangleMesh)
-	mesh.vertices = []MeshVertex{
+func QuadMesh() (mesh *renderstuff.Mesh) {
+	mesh = new(renderstuff.Mesh)
+	mesh.Vertices = []MeshVertex{
 		MeshVertex{mgl.Vec4f{-1, -1, 0, 1}, mgl.Vec4f{0, 0, 1, 0}},
 		MeshVertex{mgl.Vec4f{1, -1, 0, 1}, mgl.Vec4f{0, 0, 1, 0}},
 		MeshVertex{mgl.Vec4f{1, 1, 0, 1}, mgl.Vec4f{0, 0, 1, 0}},
 		MeshVertex{mgl.Vec4f{-1, 1, 0, 1}, mgl.Vec4f{0, 0, 1, 0}},
 	}
-	mesh.indices = []MeshIndex{0, 1, 2, 2, 3, 0}
+	mesh.Indices = []MeshIndex{0, 1, 2, 2, 3, 0}
+	mesh.Mode = renderstuff.Triangles
 	return mesh
 }
 
-func PortalQuad() (mesh *TriangleMesh) {
-	mesh = new(TriangleMesh)
-	mesh.vertices = []MeshVertex{
+func PortalQuad() (mesh *renderstuff.Mesh) {
+	mesh = new(renderstuff.Mesh)
+	mesh.Vertices = []MeshVertex{
 		MeshVertex{mgl.Vec4f{-1, -1, 0, 1}, mgl.Vec4f{0, 0, 1, 0}},
 		MeshVertex{mgl.Vec4f{1, -1, 0, 1}, mgl.Vec4f{0, 0, 1, 0}},
 		MeshVertex{mgl.Vec4f{1, 1, 0, 1}, mgl.Vec4f{0, 0, 1, 0}},
@@ -63,22 +44,24 @@ func PortalQuad() (mesh *TriangleMesh) {
 		MeshVertex{mgl.Vec4f{1, 1, 0.5, 1}, mgl.Vec4f{0, 0, 1, 0}},
 		MeshVertex{mgl.Vec4f{-1, 1, 0.5, 1}, mgl.Vec4f{0, 0, 1, 0}},
 	}
-	mesh.indices = []MeshIndex{
+	mesh.Indices = []MeshIndex{
 		0, 1, 2, 2, 3, 0,
 		4, 5, 6, 6, 7, 4,
 	}
+	mesh.Mode = renderstuff.Triangles
 	return
 }
 
-func PortalRect() (mesh *TriangleMesh) {
-	mesh = new(TriangleMesh)
-	mesh.vertices = []MeshVertex{
+func PortalRect() (mesh *renderstuff.Mesh) {
+	mesh = new(renderstuff.Mesh)
+	mesh.Vertices = []MeshVertex{
 		MeshVertex{mgl.Vec4f{-1, 0, -2, 1}, mgl.Vec4f{0, 1, 0, 0}},
 		MeshVertex{mgl.Vec4f{-1, 0, 2, 1}, mgl.Vec4f{0, 1, 0, 0}},
 		MeshVertex{mgl.Vec4f{1, 0, 2, 1}, mgl.Vec4f{0, 1, 0, 0}},
 		MeshVertex{mgl.Vec4f{1, 0, -2, 1}, mgl.Vec4f{0, 1, 0, 0}},
 	}
-	mesh.indices = []MeshIndex{0, 1, 2, 2, 3, 0}
+	mesh.Indices = []MeshIndex{0, 1, 2, 2, 3, 0}
+	mesh.Mode = renderstuff.Triangles
 	return mesh
 }
 
@@ -110,7 +93,7 @@ func (mls MyLogStream) Log(msg string) {
 	fmt.Println(msg)
 }
 
-func LoadMesh(filename string) (mesh *TriangleMesh) {
+func LoadMesh(filename string) (mesh *renderstuff.Mesh) {
 	scene := ai.ImportFile(filename, 0)
 	if scene == nil {
 		panic(ai.GetErrorString())
@@ -124,45 +107,49 @@ func LoadMesh(filename string) (mesh *TriangleMesh) {
 	}
 	aimesh := meshes[0]
 
-	mesh = new(TriangleMesh)
+	mesh = new(renderstuff.Mesh)
 
-	mesh.vertices = make([]MeshVertex, aimesh.NumVertices())
+	meshvertices := make([]MeshVertex, aimesh.NumVertices())
 	for i, pos := range aimesh.Vertices() {
 		v := pos.Values()
-		mesh.vertices[i].Vertex_ms = mgl.Vec4f([4]float32{v[0], v[1], v[2], 1})
+		meshvertices[i].Vertex_ms = mgl.Vec4f([4]float32{v[0], v[1], v[2], 1})
 	}
 	for i, norm := range aimesh.Normals() {
 		n := norm.Values()
-		mesh.vertices[i].Normal_ms = mgl.Vec4f([4]float32{n[0], n[1], n[2], 0})
+		meshvertices[i].Normal_ms = mgl.Vec4f([4]float32{n[0], n[1], n[2], 0})
 	}
+	mesh.Vertices = meshvertices
 
-	mesh.indices = make([]MeshIndex, aimesh.NumFaces()*3)
+	meshindices := make([]MeshIndex, aimesh.NumFaces()*3)
 	for i, face := range aimesh.Faces() {
 		indices := face.CopyIndices()
-		mesh.indices[i*3+0] = MeshIndex(indices[0])
-		mesh.indices[i*3+1] = MeshIndex(indices[1])
-		mesh.indices[i*3+2] = MeshIndex(indices[2])
+		meshindices[i*3+0] = MeshIndex(indices[0])
+		meshindices[i*3+1] = MeshIndex(indices[1])
+		meshindices[i*3+2] = MeshIndex(indices[2])
 	}
+	mesh.Indices = meshindices
 
+	mesh.Mode = renderstuff.Triangles
 	fmt.Println("loaded mesh with", aimesh.NumVertices(), "Vertices")
 	return mesh
 }
 
-func LoadMeshManaged(filename string) (mesh *TriangleMesh) {
+func LoadMeshManaged(filename string) (mesh *renderstuff.Mesh) {
 	mesh = LoadMesh(filename)
-	helpers.Manage(mesh, filename)
+	helpers.Manage((*TriangleMesh)(mesh), filename)
 	return mesh
 }
 
 func (this *TriangleMesh) Update(filename string) {
-	*this = *LoadMesh(filename)
+	*this = TriangleMesh(*LoadMesh(filename))
 }
 
 func (m *TriangleMesh) BoundingBox() (min mgl.Vec4f, max mgl.Vec4f) {
 	min = mgl.Vec4f{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32}
 	max = mgl.Vec4f{-math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32}
 
-	for _, v := range m.vertices {
+	vertices := m.Vertices.([]MeshVertex)
+	for _, v := range vertices {
 		min = Min(min, v.Vertex_ms)
 		max = Max(max, v.Vertex_ms)
 	}

@@ -17,36 +17,31 @@ type TreeVertex struct {
 
 // forest
 type Forest struct {
-	renderstuff.AbstractMesh
+	mesh      *renderstuff.Mesh
 	Positions []PalmTree
-	Model     mgl.Mat4f
+	model     mgl.Mat4f
 }
 
-func (this *Forest) GetModel() mgl.Mat4f {
-	return this.Model
+func (this *Forest) Model() mgl.Mat4f {
+	return this.model
 }
 
 func (this *Forest) SetModel(model mgl.Mat4f) {
-	this.Model = model
+	this.model = model
 }
 
-func (this *Forest) GetMesh() renderstuff.IMesh {
-	return this
-}
-
-func (this *Forest) Vertices() interface{} {
-	return []TreeVertex{
-		TreeVertex{mgl.Vec4f{0, 1, 2, 1}, mgl.Vec2f{1, 0}},
-		TreeVertex{mgl.Vec4f{0, 1, 0, 1}, mgl.Vec2f{1, 1}},
-		TreeVertex{mgl.Vec4f{0, -1, 0, 1}, mgl.Vec2f{0, 1}},
-		TreeVertex{mgl.Vec4f{0, -1, 2, 1}, mgl.Vec2f{0, 0}},
+func (this *Forest) Mesh() *renderstuff.Mesh {
+	if this.mesh == nil {
+		this.mesh = &renderstuff.Mesh{
+			Vertices: []TreeVertex{
+				TreeVertex{mgl.Vec4f{0, 1, 2, 1}, mgl.Vec2f{1, 0}},
+				TreeVertex{mgl.Vec4f{0, 1, 0, 1}, mgl.Vec2f{1, 1}},
+				TreeVertex{mgl.Vec4f{0, -1, 0, 1}, mgl.Vec2f{0, 1}},
+				TreeVertex{mgl.Vec4f{0, -1, 2, 1}, mgl.Vec2f{0, 0}},
+			},
+			InstanceData: this.Positions,
+			Mode:         renderstuff.TriangleFan,
+		}
 	}
-}
-
-func (this *Forest) Mode() renderstuff.Mode {
-	return renderstuff.TriangleFan
-}
-
-func (this *Forest) InstanceData() interface{} {
-	return this.Positions
+	return this.mesh
 }

@@ -16,7 +16,7 @@ const MinHeight = -32
 const MaxHeight = 32
 
 type HeightMap struct {
-	renderstuff.AbstractMesh
+	mesh       *renderstuff.Mesh
 	W, H       int
 	Data       []float32
 	HasChanges bool
@@ -285,28 +285,18 @@ type HeightMapVertex struct {
 	Vertex_ms, Normal_ms mgl.Vec3f
 }
 
-func (this *HeightMap) Vertices() interface{} {
-	return Vertices(this)
+func (this *HeightMap) Mesh() *renderstuff.Mesh {
+	if this.mesh == nil {
+		this.mesh = new(renderstuff.Mesh)
+		this.mesh.Vertices = Vertices(this)
+		this.mesh.Indices = TriangulationIndices(this.W, this.H)
+		this.mesh.Mode = renderstuff.Triangles
+	}
+	return this.mesh
 }
 
-func (this *HeightMap) Indices() interface{} {
-	return TriangulationIndices(this.W, this.H)
-}
-
-func (this *HeightMap) InstanceData() interface{} {
-	return nil
-}
-
-func (this *HeightMap) GetMesh() renderstuff.IMesh {
-	return this
-}
-
-func (this *HeightMap) GetModel() mgl.Mat4f {
+func (this *HeightMap) Model() mgl.Mat4f {
 	return mgl.Ident4f()
-}
-
-func (this *HeightMap) Mode() renderstuff.Mode {
-	return renderstuff.Triangles
 }
 
 func TriangulationIndices(w, h int) []int32 {

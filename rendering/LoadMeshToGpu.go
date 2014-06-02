@@ -9,12 +9,12 @@ import (
 	"reflect"
 )
 
-func LoadMeshToGpu(mesh renderstuff.IMesh, renLoc *RenderLocations) (rd RenderData) {
+func LoadMeshToGpu(mesh *renderstuff.Mesh, renLoc *RenderLocations) (rd RenderData) {
 	rd.VAO = gl.GenVertexArray()
 	rd.VAO.Bind()
 
 	{
-		vertices := mesh.Vertices()
+		vertices := mesh.Vertices
 		verticesType := reflect.TypeOf(vertices)
 		if verticesType.Kind() != reflect.Slice {
 			panic("Vertices is not a slice")
@@ -24,7 +24,7 @@ func LoadMeshToGpu(mesh renderstuff.IMesh, renLoc *RenderLocations) (rd RenderDa
 		gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(vertices), vertices, gl.STATIC_DRAW)
 		rd.Numverts = reflect.ValueOf(vertices).Len()
 		helpers.SetAttribPointers(renLoc, reflect.ValueOf(vertices).Index(0).Addr().Interface(), false)
-		switch mesh.Mode() {
+		switch mesh.Mode {
 		case renderstuff.Points:
 			rd.Mode = gl.POINTS
 		case renderstuff.LineStrip:
@@ -39,10 +39,12 @@ func LoadMeshToGpu(mesh renderstuff.IMesh, renLoc *RenderLocations) (rd RenderDa
 			rd.Mode = gl.TRIANGLE_FAN
 		case renderstuff.Triangles:
 			rd.Mode = gl.TRIANGLES
+		default:
+			panic("unsupported mode")
 		}
 	}
 
-	if indices := mesh.Indices(); indices != nil {
+	if indices := mesh.Indices; indices != nil {
 		indicesType := reflect.TypeOf(indices)
 		if indicesType.Kind() != reflect.Slice {
 			panic("Indices is not a slice")
@@ -63,7 +65,7 @@ func LoadMeshToGpu(mesh renderstuff.IMesh, renLoc *RenderLocations) (rd RenderDa
 		}
 	}
 
-	if instanceData := mesh.InstanceData(); instanceData != nil {
+	if instanceData := mesh.InstanceData; instanceData != nil {
 		Type := reflect.TypeOf(instanceData)
 		if Type.Kind() != reflect.Slice {
 			panic("InstanceData is not a slice")
