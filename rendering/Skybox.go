@@ -3,11 +3,11 @@ package rendering
 import (
 	//"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
-	"github.com/krux02/turnt-octo-wallhack/gamestate"
+	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 )
 
 type Skybox struct {
-	gamestate.AbstractMesh
+	renderstuff.AbstractMesh
 	vertices []SkyboxVertex
 	indices  []uint16
 }
@@ -20,7 +20,7 @@ func (this *Skybox) GetModel() mgl.Mat4f {
 	return mgl.Ident4f()
 }
 
-func (this *Skybox) GetMesh() gamestate.IMesh {
+func (this *Skybox) GetMesh() renderstuff.IMesh {
 	return this
 }
 
@@ -32,8 +32,8 @@ func (this *Skybox) Indices() interface{} {
 	return this.indices
 }
 
-func (this *Skybox) Mode() gamestate.Mode {
-	return gamestate.Triangles
+func (this *Skybox) Mode() renderstuff.Mode {
+	return renderstuff.Triangles
 }
 
 func (this *Skybox) Init() *Skybox {

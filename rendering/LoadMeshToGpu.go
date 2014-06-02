@@ -4,12 +4,12 @@ import (
 	"fmt"
 	//	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
-	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
+	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 	"reflect"
 )
 
-func LoadMeshToGpu(mesh gamestate.IMesh, renLoc *RenderLocations) (rd RenderData) {
+func LoadMeshToGpu(mesh renderstuff.IMesh, renLoc *RenderLocations) (rd RenderData) {
 	rd.VAO = gl.GenVertexArray()
 	rd.VAO.Bind()
 
@@ -25,19 +25,19 @@ func LoadMeshToGpu(mesh gamestate.IMesh, renLoc *RenderLocations) (rd RenderData
 		rd.Numverts = reflect.ValueOf(vertices).Len()
 		helpers.SetAttribPointers(renLoc, reflect.ValueOf(vertices).Index(0).Addr().Interface(), false)
 		switch mesh.Mode() {
-		case gamestate.Points:
+		case renderstuff.Points:
 			rd.Mode = gl.POINTS
-		case gamestate.LineStrip:
+		case renderstuff.LineStrip:
 			rd.Mode = gl.LINE_STRIP
-		case gamestate.LineLoop:
+		case renderstuff.LineLoop:
 			rd.Mode = gl.LINE_LOOP
-		case gamestate.Lines:
+		case renderstuff.Lines:
 			rd.Mode = gl.LINES
-		case gamestate.TriangleStrip:
+		case renderstuff.TriangleStrip:
 			rd.Mode = gl.TRIANGLE_STRIP
-		case gamestate.TriangleFan:
+		case renderstuff.TriangleFan:
 			rd.Mode = gl.TRIANGLE_FAN
-		case gamestate.Triangles:
+		case renderstuff.Triangles:
 			rd.Mode = gl.TRIANGLES
 		}
 	}

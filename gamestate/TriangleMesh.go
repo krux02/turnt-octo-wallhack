@@ -5,6 +5,7 @@ import (
 	mgl "github.com/Jragonmiris/mathgl"
 	ai "github.com/krux02/assimp"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
+	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 	"math"
 )
 
@@ -16,7 +17,7 @@ type MeshVertex struct {
 }
 
 type TriangleMesh struct {
-	AbstractMesh
+	renderstuff.AbstractMesh
 	vertices []MeshVertex
 	indices  []MeshIndex
 }
@@ -33,8 +34,8 @@ func (this *TriangleMesh) InstanceData() interface{} {
 	return nil
 }
 
-func (this *TriangleMesh) Mode() Mode {
-	return Triangles
+func (this *TriangleMesh) Mode() renderstuff.Mode {
+	return renderstuff.Triangles
 }
 
 func QuadMesh() (mesh *TriangleMesh) {

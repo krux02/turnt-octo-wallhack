@@ -2,7 +2,7 @@ package rendering
 
 import (
 	mgl "github.com/Jragonmiris/mathgl"
-	"github.com/krux02/turnt-octo-wallhack/gamestate"
+	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 )
 
 type ScreenQuadVertex struct {
@@ -10,7 +10,7 @@ type ScreenQuadVertex struct {
 }
 
 type ScreenQuad struct {
-	gamestate.AbstractMesh
+	renderstuff.AbstractMesh
 	vertices []ScreenQuadVertex
 	indices  []uint16
 }
@@ -28,7 +28,7 @@ func (this *ScreenQuad) GetModel() mgl.Mat4f {
 	return mgl.Ident4f()
 }
 
-func (this *ScreenQuad) GetMesh() gamestate.IMesh {
+func (this *ScreenQuad) GetMesh() renderstuff.IMesh {
 	return this
 }
 
@@ -40,6 +40,6 @@ func (this *ScreenQuad) Indices() interface{} {
 	return nil
 }
 
-func (this *ScreenQuad) Mode() gamestate.Mode {
-	return gamestate.Triangles
+func (this *ScreenQuad) Mode() renderstuff.Mode {
+	return renderstuff.Triangles
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/math32"
 	"github.com/krux02/turnt-octo-wallhack/mathint"
+	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 	"image"
 	"image/color"
 	"math"
@@ -15,7 +16,7 @@ const MinHeight = -32
 const MaxHeight = 32
 
 type HeightMap struct {
-	AbstractMesh
+	renderstuff.AbstractMesh
 	W, H       int
 	Data       []float32
 	HasChanges bool
@@ -296,7 +297,7 @@ func (this *HeightMap) InstanceData() interface{} {
 	return nil
 }
 
-func (this *HeightMap) GetMesh() IMesh {
+func (this *HeightMap) GetMesh() renderstuff.IMesh {
 	return this
 }
 
@@ -304,8 +305,8 @@ func (this *HeightMap) GetModel() mgl.Mat4f {
 	return mgl.Ident4f()
 }
 
-func (this *HeightMap) Mode() Mode {
-	return Triangles
+func (this *HeightMap) Mode() renderstuff.Mode {
+	return renderstuff.Triangles
 }
 
 func TriangulationIndices(w, h int) []int32 {

@@ -5,6 +5,7 @@ import (
 	"github.com/krux02/turnt-octo-wallhack/constants"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
+	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 )
 
 func NewHeightMapRenderer() *Renderer {
@@ -16,7 +17,7 @@ func NewHeightMapRenderer() *Renderer {
 	)
 }
 
-func HeightMapUpdate(loc *RenderLocations, entity gamestate.IRenderEntity, etc interface{}) {
+func HeightMapUpdate(loc *RenderLocations, entity renderstuff.IRenderEntity, etc interface{}) {
 	heightMap := entity.(*gamestate.HeightMap)
 
 	if heightMap.HasChanges {

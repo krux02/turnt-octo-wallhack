@@ -2,10 +2,11 @@ package gamestate
 
 import (
 	mgl "github.com/Jragonmiris/mathgl"
+	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 )
 
 type Water struct {
-	AbstractMesh
+	renderstuff.AbstractMesh
 	W, H       int
 	LowerBound mgl.Vec3f
 	UpperBound mgl.Vec3f
@@ -16,7 +17,7 @@ func (this *Water) GetModel() mgl.Mat4f {
 	return mgl.Ident4f()
 }
 
-func (this *Water) GetMesh() IMesh {
+func (this *Water) GetMesh() renderstuff.IMesh {
 	return this
 }
 
@@ -32,8 +33,8 @@ func (this *Water) InstanceData() interface{} {
 	return nil
 }
 
-func (this *Water) Mode() Mode {
-	return Triangles
+func (this *Water) Mode() renderstuff.Mode {
+	return renderstuff.Triangles
 }
 
 type WaterVertex struct {

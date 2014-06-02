@@ -5,6 +5,7 @@ import (
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
+	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 )
 
 func NewSkyboxRenderer() *Renderer {
@@ -17,7 +18,7 @@ func NewTreeRenderer() *Renderer {
 	return NewRenderer(program, "TreeSprite", nil, TreeUpdate)
 }
 
-func TreeUpdate(loc *RenderLocations, entiy gamestate.IRenderEntity, additionalUniforms interface{}) {
+func TreeUpdate(loc *RenderLocations, entiy renderstuff.IRenderEntity, additionalUniforms interface{}) {
 	Rot2D := helpers.Mat4toMat3(additionalUniforms.(mgl.Mat4f))
 	loc.Rot2D.UniformMatrix3f(false, glMat3(&Rot2D))
 }
@@ -27,7 +28,7 @@ type WaterRenderUniforms struct {
 	CameraPos_ws mgl.Vec4f
 }
 
-func WaterUpdate(loc *RenderLocations, entity gamestate.IRenderEntity, etc interface{}) {
+func WaterUpdate(loc *RenderLocations, entity renderstuff.IRenderEntity, etc interface{}) {
 	water := entity.(*gamestate.Water)
 	uniforms := etc.(WaterRenderUniforms)
 

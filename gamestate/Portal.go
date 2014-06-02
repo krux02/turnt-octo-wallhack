@@ -2,6 +2,7 @@ package gamestate
 
 import (
 	mgl "github.com/Jragonmiris/mathgl"
+	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 )
 
 type Portal struct {
@@ -11,7 +12,7 @@ type Portal struct {
 	Mesh   *TriangleMesh
 }
 
-func (this *Portal) GetMesh() IMesh {
+func (this *Portal) GetMesh() renderstuff.IMesh {
 	return this.Mesh
 }
 

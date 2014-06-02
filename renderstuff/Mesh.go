@@ -1,4 +1,4 @@
-package gamestate
+package renderstuff
 
 import (
 // "fmt"

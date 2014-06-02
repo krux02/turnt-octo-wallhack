@@ -2,6 +2,7 @@ package gamestate
 
 import (
 	mgl "github.com/Jragonmiris/mathgl"
+	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 )
 
 type World struct {
@@ -9,8 +10,8 @@ type World struct {
 	Water          *Water
 	KdTree         KdTree
 	Portals        []*Portal
-	Trees          IRenderEntity
-	ExampleObjects []IRenderEntity
+	Trees          renderstuff.IRenderEntity
+	ExampleObjects []renderstuff.IRenderEntity
 	Player         *Player
 }
 

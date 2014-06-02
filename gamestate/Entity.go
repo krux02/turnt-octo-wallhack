@@ -12,11 +12,6 @@ type Entity struct {
 	Orientation mgl.Quatf
 }
 
-type IRenderEntity interface {
-	GetMesh() IMesh
-	GetModel() mgl.Mat4f
-}
-
 func (e *Entity) Model() mgl.Mat4f {
 	pos := e.Position
 	return mgl.Translate3D(pos[0], pos[1], pos[2]).Mul4(e.Orientation.Mat4())

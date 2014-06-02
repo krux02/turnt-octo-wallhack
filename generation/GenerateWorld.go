@@ -6,6 +6,7 @@ import (
 	gs "github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/math32"
+	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 	//"image"
 	"math/rand"
 )
@@ -41,7 +42,7 @@ func GenerateWorld(W, H, N int) (world *gs.World) {
 	kdTree = gs.NewTree(kdTree)
 
 	forest := GeneratePalmTrees(heights, 5000)
-	npcs := make([]gs.IRenderEntity, 255)
+	npcs := make([]renderstuff.IRenderEntity, 255)
 	for i := 0; i < 255; i++ {
 		x := r() * float32(W)
 		y := r() * float32(H)

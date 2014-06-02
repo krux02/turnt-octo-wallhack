@@ -2,6 +2,7 @@ package gamestate
 
 import (
 	mgl "github.com/Jragonmiris/mathgl"
+	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 )
 
 // instance data for each tree
@@ -16,7 +17,7 @@ type TreeVertex struct {
 
 // forest
 type Forest struct {
-	AbstractMesh
+	renderstuff.AbstractMesh
 	Positions []PalmTree
 	Model     mgl.Mat4f
 }
@@ -29,7 +30,7 @@ func (this *Forest) SetModel(model mgl.Mat4f) {
 	this.Model = model
 }
 
-func (this *Forest) GetMesh() IMesh {
+func (this *Forest) GetMesh() renderstuff.IMesh {
 	return this
 }
 
@@ -42,8 +43,8 @@ func (this *Forest) Vertices() interface{} {
 	}
 }
 
-func (this *Forest) Mode() Mode {
-	return TriangleFan
+func (this *Forest) Mode() renderstuff.Mode {
+	return renderstuff.TriangleFan
 }
 
 func (this *Forest) InstanceData() interface{} {

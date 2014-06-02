@@ -4,12 +4,12 @@ import (
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
 	"github.com/krux02/turnt-octo-wallhack/constants"
-	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
+	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 	"reflect"
 )
 
-type RenderUpdateFunc func(*RenderLocations, gamestate.IRenderEntity, interface{})
+type RenderUpdateFunc func(*RenderLocations, renderstuff.IRenderEntity, interface{})
 type RenderInitFunc func(*RenderLocations)
 
 type Renderer struct {
@@ -17,7 +17,7 @@ type Renderer struct {
 	RenLoc               RenderLocations
 	OverrideModeToPoints bool
 	UpdateFunc           RenderUpdateFunc
-	RenData              map[gamestate.IMesh]*RenderData
+	RenData              map[renderstuff.IMesh]*RenderData
 }
 
 func NewRenderer(program gl.Program, name string, initFunc RenderInitFunc, updateFunc RenderUpdateFunc) *Renderer {
@@ -35,7 +35,7 @@ func NewRenderer(program gl.Program, name string, initFunc RenderInitFunc, updat
 	}
 
 	this.UpdateFunc = updateFunc
-	this.RenData = map[gamestate.IMesh]*RenderData{}
+	this.RenData = map[renderstuff.IMesh]*RenderData{}
 	return this
 }
 
@@ -62,7 +62,7 @@ func (this *Renderer) Delete() {
 	*this = Renderer{}
 }
 
-func (this *Renderer) Render(entity gamestate.IRenderEntity, Proj, View mgl.Mat4f, ClippingPlane_ws mgl.Vec4f, additionalUniforms interface{}) {
+func (this *Renderer) Render(entity renderstuff.IRenderEntity, Proj, View mgl.Mat4f, ClippingPlane_ws mgl.Vec4f, additionalUniforms interface{}) {
 	this.Program.Use()
 	mesh := entity.GetMesh()
 	renData := this.RenData[mesh]
