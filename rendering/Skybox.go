@@ -4,7 +4,6 @@ import (
 	//"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
-	"github.com/krux02/turnt-octo-wallhack/constants"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 )
@@ -68,9 +67,5 @@ type SkyboxRenderLocations struct {
 
 func NewSkyboxRenderer() *Renderer {
 	program := helpers.MakeProgram("Skybox.vs", "Skybox.fs")
-	return NewRenderer(program, "Skybox", SkyboxInit, nil)
-}
-
-func SkyboxInit(loc *RenderLocations) {
-	loc.Skybox.Uniform1i(constants.TextureSkybox)
+	return NewRenderer(program, "Skybox", nil, nil)
 }

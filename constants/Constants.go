@@ -11,3 +11,14 @@ const (
 	TextureSkybox
 	TextureFont
 )
+
+var Texture = map[string]int{
+	"TextureGround":    TextureGround,
+	"TextureCliffs":    TextureCliffs,
+	"TextureColorBand": TextureColorBand,
+	"TextureHeightMap": TextureHeightMap,
+	"TextureTree":      TextureTree,
+	"TextureFireBall":  TextureFireBall,
+	"TextureSkybox":    TextureSkybox,
+	"TextureFont":      TextureFont,
+}

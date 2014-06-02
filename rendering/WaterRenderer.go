@@ -3,12 +3,9 @@ package rendering
 import (
 	//"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
-	"github.com/krux02/turnt-octo-wallhack/constants"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 )
-
-type WaterRenderer struct{ Renderer }
 
 type WaterRenderUniforms struct {
 	Time         float64
@@ -28,22 +25,16 @@ func WaterUpdate(loc *RenderLocations, entity gamestate.IRenderEntity, etc inter
 	loc.WaterHeight.Uniform1f(water.Height)
 }
 
-func WaterInit(loc *RenderLocations) {
-	loc.HeightMap.Uniform1i(constants.TextureHeightMap)
-	loc.GroundTexture.Uniform1i(constants.TextureGround)
-	loc.Skybox.Uniform1i(constants.TextureSkybox)
-}
-
 func NewSurfaceWaterRenderer() *Renderer {
 	program := helpers.MakeProgram("Water.vs", "Water.fs")
 	name := "Water"
-	return NewRenderer(program, name, WaterInit, WaterUpdate)
+	return NewRenderer(program, name, nil, WaterUpdate)
 }
 
 func NewDebugWaterRenderer() *Renderer {
 	program := helpers.MakeProgram3("Water.vs", "Normal.gs", "Line.fs")
 	name := "Water Normals"
-	renderer := NewRenderer(program, name, WaterInit, WaterUpdate)
+	renderer := NewRenderer(program, name, nil, WaterUpdate)
 	renderer.OverrideModeToPoints = true
 	return renderer
 }

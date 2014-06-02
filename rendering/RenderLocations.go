@@ -10,11 +10,11 @@ type RenderLocations struct {
 	Proj, View, Model, Rot2D gl.UniformLocation
 	CameraPos_ws             gl.UniformLocation
 	// Textures
-	PalmTree, Image, GroundTexture, Skybox gl.UniformLocation
-	ColorBand, Texture, Slope              gl.UniformLocation
-	ClippingPlane_ws                       gl.UniformLocation
-	HeightMap, LowerBound, UpperBound      gl.UniformLocation
-	Time, WaterHeight                      gl.UniformLocation
+	TextureTree, Image, TextureGround, TextureSkybox gl.UniformLocation
+	TextureColorBand, TextureCliffs                  gl.UniformLocation
+	ClippingPlane_ws                                 gl.UniformLocation
+	TextureHeightMap, LowerBound, UpperBound         gl.UniformLocation
+	Time, WaterHeight                                gl.UniformLocation
 }
 
 type RenderData struct {

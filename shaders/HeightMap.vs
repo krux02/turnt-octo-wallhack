@@ -6,7 +6,7 @@ uniform vec3 UpperBound;
 uniform mat4 Model;
 uniform mat4 View;
 uniform mat4 Proj;
-uniform sampler2D HeightMap;
+uniform sampler2D TextureHeightMap;
 uniform vec4 ClippingPlane_ws;
 
 // Input vertex data, different for all executions of this shader.
@@ -26,7 +26,7 @@ float worldHeight(float nHeight) {
 }
 
 float heightAt(vec2 pos) {
-	return worldHeight(texture(HeightMap, textureCoords(pos)).r);
+	return worldHeight(texture(TextureHeightMap, textureCoords(pos)).r);
 }
 
 vec3 normalAt(vec2 pos) {

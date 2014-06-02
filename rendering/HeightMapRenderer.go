@@ -11,16 +11,9 @@ func NewHeightMapRenderer() *Renderer {
 	return NewRenderer(
 		helpers.MakeProgram("HeightMap.vs", "HeightMap.fs"),
 		"height map",
-		HeightMapInit,
+		nil,
 		HeightMapUpdate,
 	)
-}
-
-func HeightMapInit(loc *RenderLocations) {
-	loc.HeightMap.Uniform1i(constants.TextureHeightMap)
-	loc.ColorBand.Uniform1i(constants.TextureColorBand)
-	loc.Slope.Uniform1i(constants.TextureCliffs)
-	loc.Texture.Uniform1i(constants.TextureGround)
 }
 
 func HeightMapUpdate(loc *RenderLocations, entity gamestate.IRenderEntity, etc interface{}) {

@@ -3,9 +3,9 @@
 uniform vec3 LowerBound;
 uniform vec3 UpperBound;
 
-uniform sampler1D ColorBand;
-uniform sampler2D Texture;
-uniform sampler2D Slope;
+uniform sampler1D TextureColorBand;
+uniform sampler2D TextureGround;
+uniform sampler2D TextureCliffs;
 
 uniform vec3 LightDir = vec3(-0.57735);
 uniform vec3 AmbientColor = vec3(0.5);
@@ -21,9 +21,9 @@ void main() {
 	float sunIntensity = dot(-LightDir,normal_ws.xyz);
 	vec3 light = max((sunIntensity * SunColor),AmbientColor);
 	
-	vec3 colorA = texture(ColorBand,(pos_ws.z-LowerBound.z)/(UpperBound.z-LowerBound.z)).rgb * texture(Texture, pos_ws.xy).xyz;;
-	vec3 colorB = texture(Slope, pos_ws.xz).xyz;
-	vec3 colorC = texture(Slope, pos_ws.yz).xyz;
+	vec3 colorA = texture(TextureColorBand,(pos_ws.z-LowerBound.z)/(UpperBound.z-LowerBound.z)).rgb * texture(TextureGround, pos_ws.xy).xyz;;
+	vec3 colorB = texture(TextureCliffs, pos_ws.xz).xyz;
+	vec3 colorC = texture(TextureCliffs, pos_ws.yz).xyz;
 	float fractionA = pow(max(normal_ws.z, 0), 15);
 	float fractionB = pow(abs(normal_ws.y), 15);
 	float fractionC = pow(abs(normal_ws.x), 15);

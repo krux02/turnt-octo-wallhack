@@ -3,8 +3,10 @@ package rendering
 import (
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
+	"github.com/krux02/turnt-octo-wallhack/constants"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
+	"reflect"
 )
 
 type IRenderer interface {
@@ -35,10 +37,27 @@ func NewRenderer(program gl.Program, name string, initFunc RenderInitFunc, updat
 
 	if initFunc != nil {
 		initFunc(&this.RenLoc)
+	} else {
+		this.setImageUniforms()
 	}
 
 	this.UpdateFunc = updateFunc
 	return this
+}
+
+func (this *Renderer) setImageUniforms() {
+	locType := reflect.TypeOf(this.RenLoc)
+	locVal := reflect.ValueOf(this.RenLoc)
+
+	for i := 0; i < locType.NumField(); i++ {
+		fieldName := locType.Field(i).Name
+		switch uniform := locVal.Field(i).Interface().(type) {
+		case gl.UniformLocation:
+			if val, ok := constants.Texture[fieldName]; ok {
+				uniform.Uniform1i(val)
+			}
+		}
+	}
 }
 
 func (this *Renderer) Delete() {
