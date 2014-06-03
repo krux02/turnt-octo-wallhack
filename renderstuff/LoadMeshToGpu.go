@@ -1,15 +1,14 @@
-package rendering
+package renderstuff
 
 import (
 	"fmt"
 	//	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
-	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 	"reflect"
 )
 
-func LoadMeshToGpu(mesh *renderstuff.Mesh, renLoc *RenderLocations) (rd RenderData) {
+func LoadMeshToGpu(mesh *Mesh, renLoc *RenderLocations) (rd RenderData) {
 	rd.VAO = gl.GenVertexArray()
 	rd.VAO.Bind()
 
@@ -25,19 +24,19 @@ func LoadMeshToGpu(mesh *renderstuff.Mesh, renLoc *RenderLocations) (rd RenderDa
 		rd.Numverts = reflect.ValueOf(vertices).Len()
 		helpers.SetAttribPointers(renLoc, reflect.ValueOf(vertices).Index(0).Addr().Interface(), false)
 		switch mesh.Mode {
-		case renderstuff.Points:
+		case Points:
 			rd.Mode = gl.POINTS
-		case renderstuff.LineStrip:
+		case LineStrip:
 			rd.Mode = gl.LINE_STRIP
-		case renderstuff.LineLoop:
+		case LineLoop:
 			rd.Mode = gl.LINE_LOOP
-		case renderstuff.Lines:
+		case Lines:
 			rd.Mode = gl.LINES
-		case renderstuff.TriangleStrip:
+		case TriangleStrip:
 			rd.Mode = gl.TRIANGLE_STRIP
-		case renderstuff.TriangleFan:
+		case TriangleFan:
 			rd.Mode = gl.TRIANGLE_FAN
-		case renderstuff.Triangles:
+		case Triangles:
 			rd.Mode = gl.TRIANGLES
 		default:
 			panic("unsupported mode")

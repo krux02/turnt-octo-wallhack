@@ -1,15 +1,14 @@
-package rendering
+package renderstuff
 
 import (
 	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
 	"github.com/krux02/turnt-octo-wallhack/constants"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
-	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 	"reflect"
 )
 
-type RenderUpdateFunc func(*RenderLocations, renderstuff.IRenderEntity, interface{})
+type RenderUpdateFunc func(*RenderLocations, IRenderEntity, interface{})
 type RenderInitFunc func(*RenderLocations)
 
 type Renderer struct {
@@ -17,7 +16,7 @@ type Renderer struct {
 	RenLoc               RenderLocations
 	OverrideModeToPoints bool
 	UpdateFunc           RenderUpdateFunc
-	RenData              map[*renderstuff.Mesh]*RenderData
+	RenData              map[*Mesh]*RenderData
 }
 
 func NewRenderer(program gl.Program, name string, initFunc RenderInitFunc, updateFunc RenderUpdateFunc) *Renderer {
@@ -35,7 +34,7 @@ func NewRenderer(program gl.Program, name string, initFunc RenderInitFunc, updat
 	}
 
 	this.UpdateFunc = updateFunc
-	this.RenData = map[*renderstuff.Mesh]*RenderData{}
+	this.RenData = map[*Mesh]*RenderData{}
 	return this
 }
 
@@ -62,7 +61,7 @@ func (this *Renderer) Delete() {
 	*this = Renderer{}
 }
 
-func (this *Renderer) Render(entity renderstuff.IRenderEntity, Proj, View mgl.Mat4f, ClippingPlane_ws mgl.Vec4f, additionalUniforms interface{}) {
+func (this *Renderer) Render(entity IRenderEntity, Proj, View mgl.Mat4f, ClippingPlane_ws mgl.Vec4f, additionalUniforms interface{}) {
 	this.Program.Use()
 	mesh := entity.Mesh()
 	renData := this.RenData[mesh]
@@ -80,9 +79,9 @@ func (this *Renderer) Render(entity renderstuff.IRenderEntity, Proj, View mgl.Ma
 	}
 
 	Loc := this.RenLoc
-	Loc.View.UniformMatrix4f(false, glMat4(&View))
-	Loc.Model.UniformMatrix4f(false, glMat4(&Model))
-	Loc.Proj.UniformMatrix4f(false, glMat4(&Proj))
+	Loc.View.UniformMatrix4f(false, GlMat4(&View))
+	Loc.Model.UniformMatrix4f(false, GlMat4(&Model))
+	Loc.Proj.UniformMatrix4f(false, GlMat4(&Proj))
 	Loc.ClippingPlane_ws.Uniform4f(ClippingPlane_ws[0], ClippingPlane_ws[1], ClippingPlane_ws[2], ClippingPlane_ws[3])
 
 	// simple but dirty way to render with points instead

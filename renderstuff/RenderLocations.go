@@ -1,4 +1,4 @@
-package rendering
+package renderstuff
 
 import "github.com/go-gl/gl"
 

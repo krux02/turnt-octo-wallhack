@@ -113,10 +113,21 @@ func ByteSizeOfSlice(slice interface{}) int {
 	return size
 }
 
+func BindUniformLocations(name string, prog gl.Program, locations map[string]gl.UniformLocation) {
+	for name, _ := range locations {
+		locations[name] = prog.GetUniformLocation(name)
+	}
+}
+
+func BindAttribLocations(name string, prog gl.Program, locations map[string]gl.AttribLocation) {
+	for name, _ := range locations {
+		locations[name] = prog.GetAttribLocation(name)
+	}
+}
+
 func BindLocations(name string, prog gl.Program, locations interface{}) {
 	value := reflect.ValueOf(locations).Elem()
 	Type := reflect.TypeOf(locations).Elem()
-
 	for i := 0; i < value.NumField(); i++ {
 		fieldValue := value.Field(i)
 		fieldType := Type.Field(i)
@@ -128,9 +139,6 @@ func BindLocations(name string, prog gl.Program, locations interface{}) {
 			fieldValue.SetInt(int64(loc))
 		case gl.UniformLocation:
 			loc := prog.GetUniformLocation(fieldName)
-			if loc == -1 {
-				log.Println("warning ", fieldName, " in ", name, " not valid")
-			}
 			fieldValue.SetInt(int64(loc))
 		default:
 		}

@@ -6,11 +6,12 @@ import (
 	"github.com/go-gl/gl"
 	"github.com/krux02/turnt-octo-wallhack/debug"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
+	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 )
 
 type LineRenderer struct {
 	Prog   gl.Program
-	RenLoc RenderLocations
+	RenLoc renderstuff.RenderLocations
 	vao    gl.VertexArray
 	buffer gl.Buffer
 }
@@ -38,8 +39,8 @@ func (this *LineRenderer) Render(Proj, View mgl.Mat4f) {
 		this.vao.Bind()
 		this.buffer.Bind(gl.ARRAY_BUFFER)
 		gl.BufferData(gl.ARRAY_BUFFER, helpers.ByteSizeOfSlice(data), data, gl.STREAM_DRAW)
-		this.RenLoc.Proj.UniformMatrix4f(false, glMat4(&Proj))
-		this.RenLoc.View.UniformMatrix4f(false, glMat4(&View))
+		this.RenLoc.Proj.UniformMatrix4f(false, renderstuff.GlMat4(&Proj))
+		this.RenLoc.View.UniformMatrix4f(false, renderstuff.GlMat4(&View))
 		gl.DrawArrays(gl.LINES, 0, len(data))
 	}
 }

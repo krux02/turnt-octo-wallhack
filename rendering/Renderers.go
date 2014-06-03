@@ -3,24 +3,26 @@ package rendering
 import (
 	//"fmt"
 	mgl "github.com/Jragonmiris/mathgl"
+	"github.com/go-gl/gl"
+	"github.com/krux02/turnt-octo-wallhack/constants"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 )
 
-func NewSkyboxRenderer() *Renderer {
+func NewSkyboxRenderer() *renderstuff.Renderer {
 	program := helpers.MakeProgram("Skybox.vs", "Skybox.fs")
-	return NewRenderer(program, "Skybox", nil, nil)
+	return renderstuff.NewRenderer(program, "Skybox", nil, nil)
 }
 
-func NewTreeRenderer() *Renderer {
+func NewTreeRenderer() *renderstuff.Renderer {
 	program := helpers.MakeProgram("Sprite.vs", "Sprite.fs")
-	return NewRenderer(program, "TreeSprite", nil, TreeUpdate)
+	return renderstuff.NewRenderer(program, "TreeSprite", nil, TreeUpdate)
 }
 
-func TreeUpdate(loc *RenderLocations, entiy renderstuff.IRenderEntity, additionalUniforms interface{}) {
+func TreeUpdate(loc *renderstuff.RenderLocations, entiy renderstuff.IRenderEntity, additionalUniforms interface{}) {
 	Rot2D := helpers.Mat4toMat3(additionalUniforms.(mgl.Mat4f))
-	loc.Rot2D.UniformMatrix3f(false, glMat3(&Rot2D))
+	loc.Rot2D.UniformMatrix3f(false, renderstuff.GlMat3(&Rot2D))
 }
 
 type WaterRenderUniforms struct {
@@ -28,7 +30,7 @@ type WaterRenderUniforms struct {
 	CameraPos_ws mgl.Vec4f
 }
 
-func WaterUpdate(loc *RenderLocations, entity renderstuff.IRenderEntity, etc interface{}) {
+func WaterUpdate(loc *renderstuff.RenderLocations, entity renderstuff.IRenderEntity, etc interface{}) {
 	water := entity.(*gamestate.Water)
 	uniforms := etc.(WaterRenderUniforms)
 
@@ -41,30 +43,53 @@ func WaterUpdate(loc *RenderLocations, entity renderstuff.IRenderEntity, etc int
 	loc.WaterHeight.Uniform1f(water.Height)
 }
 
-func NewSurfaceWaterRenderer() *Renderer {
+func NewSurfaceWaterRenderer() *renderstuff.Renderer {
 	program := helpers.MakeProgram("Water.vs", "Water.fs")
 	name := "Water"
-	return NewRenderer(program, name, nil, WaterUpdate)
+	return renderstuff.NewRenderer(program, name, nil, WaterUpdate)
 }
 
-func NewDebugWaterRenderer() *Renderer {
+func NewDebugWaterRenderer() *renderstuff.Renderer {
 	program := helpers.MakeProgram3("Water.vs", "Normal.gs", "Line.fs")
 	name := "Water Normals"
-	renderer := NewRenderer(program, name, nil, WaterUpdate)
+	renderer := renderstuff.NewRenderer(program, name, nil, WaterUpdate)
 	renderer.OverrideModeToPoints = true
 	return renderer
 }
 
-func NewPortalRenderer() *Renderer {
+func NewPortalRenderer() *renderstuff.Renderer {
 	program := helpers.MakeProgram("Portal.vs", "Portal.fs")
-	return NewRenderer(program, "Portal", nil, nil)
+	return renderstuff.NewRenderer(program, "Portal", nil, nil)
 }
 
-func NewMeshRenderer() (this *Renderer) {
-	return NewRenderer(helpers.MakeProgram("Mesh.vs", "Mesh.fs"), "mesh", nil, nil)
+func NewMeshRenderer() (this *renderstuff.Renderer) {
+	return renderstuff.NewRenderer(helpers.MakeProgram("Mesh.vs", "Mesh.fs"), "mesh", nil, nil)
 }
 
-func NewScreenQuadRenderer() (this *Renderer) {
+func NewScreenQuadRenderer() (this *renderstuff.Renderer) {
 	program := helpers.MakeProgram("ScreenQuad.vs", "ScreenQuad.fs")
-	return NewRenderer(program, "ScreenQuad", nil, nil)
+	return renderstuff.NewRenderer(program, "ScreenQuad", nil, nil)
+}
+
+func NewHeightMapRenderer() *renderstuff.Renderer {
+	return renderstuff.NewRenderer(
+		helpers.MakeProgram("HeightMap.vs", "HeightMap.fs"),
+		"height map",
+		nil,
+		HeightMapUpdate,
+	)
+}
+
+func HeightMapUpdate(loc *renderstuff.RenderLocations, entity renderstuff.IRenderEntity, etc interface{}) {
+	heightMap := entity.(*gamestate.HeightMap)
+
+	if heightMap.HasChanges {
+		min_h, max_h := heightMap.Bounds()
+		loc.LowerBound.Uniform3f(0, 0, min_h)
+		loc.UpperBound.Uniform3f(float32(heightMap.W), float32(heightMap.H), max_h)
+		gl.ActiveTexture(gl.TEXTURE0 + constants.TextureHeightMap)
+		gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, heightMap.W, heightMap.H, gl.RED, gl.FLOAT, heightMap.TexturePixels())
+		gl.ActiveTexture(gl.TEXTURE0)
+		heightMap.HasChanges = false
+	}
 }

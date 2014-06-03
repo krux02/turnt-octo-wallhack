@@ -7,7 +7,7 @@ import (
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/particles"
-	//"github.com/krux02/turnt-octo-wallhack/renderstuff"
+	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 	"github.com/krux02/turnt-octo-wallhack/settings"
 	"github.com/veandco/go-sdl2/sdl"
 	"math"
@@ -17,19 +17,19 @@ type WorldRenderer struct {
 	Proj, View         mgl.Mat4f
 	ClippingPlane_ws   mgl.Vec4f
 	Textures           *Textures
-	HeightMapRenderer  *Renderer
-	WaterRenderer      *Renderer
-	WaterRendererA     *Renderer
-	WaterRendererB     *Renderer
-	MeshRenderer       *Renderer
-	PortalRenderer     *Renderer
-	TreeRenderer       *Renderer
+	HeightMapRenderer  *renderstuff.Renderer
+	WaterRenderer      *renderstuff.Renderer
+	WaterRendererA     *renderstuff.Renderer
+	WaterRendererB     *renderstuff.Renderer
+	MeshRenderer       *renderstuff.Renderer
+	PortalRenderer     *renderstuff.Renderer
+	TreeRenderer       *renderstuff.Renderer
 	Skybox             *Skybox
-	SkyboxRenderer     *Renderer
+	SkyboxRenderer     *renderstuff.Renderer
 	ParticleSystem     *particles.ParticleSystem
 	Framebuffer        [2]*FrameBuffer
 	ScreenQuad         *ScreenQuad
-	ScreenQuadRenderer *Renderer
+	ScreenQuadRenderer *renderstuff.Renderer
 	DebugRenderer      *LineRenderer
 	MaxRecursion       int
 	screenShot         bool
