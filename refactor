@@ -1,0 +1,14 @@
+#!/usr/bin/fish
+
+set files (grep -rl Jragonmiris)[2..-1]
+set patterns "s?Vec2f?Vec2?g" "s?Vec3f?Vec3?g" "s?Vec4f?Vec4?g"  "s?Jragonmiris/mathgl?krux02/mathgl/mgl32?g" "s?Mat2f?Mat2?g" "s?Mat3f?Mat3?g" "s?Mat4f?Mat4?g" "s?Quatf?Quat?g"
+
+for file in $files
+	mv $file file1
+    for pattern in $patterns
+    	sed $pattern file1 > file2
+    	cat file2 > file1
+    end
+    mv file1 $file
+    rm file2
+end
