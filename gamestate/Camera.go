@@ -1,79 +1,79 @@
 package gamestate
 
 import (
-	mgl "github.com/Jragonmiris/mathgl"
+	mgl "github.com/krux02/mathgl/mgl32"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
-	"math"
+	"github.com/krux02/turnt-octo-wallhack/math32"
 )
 
 type Camera struct {
 	Entity
 }
 
-func NewCameraFromPos3f(p mgl.Vec3f) *Camera {
-	return NewCameraFromPos4f(mgl.Vec4f{p[0], p[1], p[2], 1})
+func NewCameraFromPos3f(p mgl.Vec3) *Camera {
+	return NewCameraFromPos4f(mgl.Vec4{p[0], p[1], p[2], 1})
 }
 
-func NewCameraFromPos4f(position mgl.Vec4f) *Camera {
-	return &Camera{Entity{position, mgl.QuatIdentf()}}
+func NewCameraFromPos4f(position mgl.Vec4) *Camera {
+	return &Camera{Entity{position, mgl.QuatIdent()}}
 }
 
-func NewCameraFromLookAt(eye mgl.Vec3f, center mgl.Vec3f, up mgl.Vec3f) *Camera {
+func NewCameraFromLookAt(eye mgl.Vec3, center mgl.Vec3, up mgl.Vec3) *Camera {
 	return NewCameraFromMat4(mgl.LookAtV(eye, center, up))
 }
 
-func (camera *Camera) SetCameraFromLookAt(eye mgl.Vec3f, center mgl.Vec3f, up mgl.Vec3f) {
+func (camera *Camera) SetCameraFromLookAt(eye mgl.Vec3, center mgl.Vec3, up mgl.Vec3) {
 	camera.SetView(mgl.LookAtV(eye, center, up))
 }
 
-func NewCameraFromMat4(view mgl.Mat4f) (camera *Camera) {
+func NewCameraFromMat4(view mgl.Mat4) (camera *Camera) {
 	camera = new(Camera)
 	camera.SetView(view)
 	return camera
 }
 
-func (camera *Camera) MoveAbsolute(dist mgl.Vec4f) {
+func (camera *Camera) MoveAbsolute(dist mgl.Vec4) {
 	camera.Position[0] += dist[0]
 	camera.Position[1] += dist[1]
 	camera.Position[2] += dist[2]
 }
 
-func (camera *Camera) MoveRelative(dist mgl.Vec4f) {
-	dist_xyz := mgl.Vec3f{dist[0], dist[1], dist[2]}
+func (camera *Camera) MoveRelative(dist mgl.Vec4) {
+	dist_xyz := mgl.Vec3{dist[0], dist[1], dist[2]}
 	v := camera.Orientation.Rotate(dist_xyz)
-	camera.MoveAbsolute(mgl.Vec4f{v[0], v[1], v[2], 0})
+	camera.MoveAbsolute(mgl.Vec4{v[0], v[1], v[2], 0})
 }
 
-func (camera *Camera) Pos4f() mgl.Vec4f {
+func (camera *Camera) Pos4f() mgl.Vec4 {
 	p := camera.Position
-	return mgl.Vec4f{p[0], p[1], p[2], 1}
+	return mgl.Vec4{p[0], p[1], p[2], 1}
 }
 
-func (camera *Camera) Rotation2D() mgl.Mat4f {
-	Orientation := camera.Orientation.Rotate(mgl.Vec3f{0, 0, -1})
-	angle := math.Atan2(float64(Orientation[1]), float64(Orientation[0]))
-	Rot2D := mgl.Rotate3DZ(float32(angle / math.Pi * 180))
+func (camera *Camera) Rotation2D() mgl.Mat4 {
+	Orientation := camera.Orientation.Rotate(mgl.Vec3{0, 0, -1})
+	angle := math32.Atan2(Orientation[1], Orientation[0])
+	Rot2D := mgl.Rotate3DZ(angle)
 	return helpers.Mat3toMat4(Rot2D)
 }
 
-func (camera *Camera) Rotate(angle float32, axis mgl.Vec3f) {
-	quat2 := mgl.QuatRotatef(angle, axis).Normalize()
+func (camera *Camera) Rotate(angle float32, axis mgl.Vec3) {
+	quat2 := mgl.QuatRotate(angle, axis).Normalize()
 	camera.Orientation = camera.Orientation.Mul(quat2).Normalize()
 }
 
 func (camera *Camera) Yaw(yaw float32) {
-	camera.Rotate(yaw, mgl.Vec3f{1, 0, 0})
+	camera.Rotate(yaw, mgl.Vec3{1, 0, 0})
 }
 
 func (camera *Camera) Pitch(pitch float32) {
-	camera.Rotate(pitch, mgl.Vec3f{0, 1, 0})
+	camera.Rotate(pitch, mgl.Vec3{0, 1, 0})
 }
 
 func (camera *Camera) Roll(roll float32) {
-	camera.Rotate(roll, mgl.Vec3f{0, 0, 1})
+	camera.Rotate(roll, mgl.Vec3{0, 0, 1})
 }
 
-func (camera *Camera) DirVec() (dir mgl.Vec3f) {
-	dir = camera.Orientation.Rotate(mgl.Vec3f{0, 0, -1})
+func (camera *Camera) DirVec() (dir mgl.Vec3) {
+	dir = camera.Orientation.Rotate(mgl.Vec3{0, 0, -1})
 	return
 }

@@ -2,7 +2,7 @@ package rendering
 
 import (
 	"fmt"
-	mgl "github.com/Jragonmiris/mathgl"
+	mgl "github.com/krux02/mathgl/mgl32"
 	"github.com/go-gl/gl"
 	"github.com/krux02/turnt-octo-wallhack/debug"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
@@ -31,7 +31,7 @@ func NewLineRenderer() *LineRenderer {
 	return &renderer
 }
 
-func (this *LineRenderer) Render(Proj, View mgl.Mat4f) {
+func (this *LineRenderer) Render(Proj, View mgl.Mat4) {
 
 	data := debug.Read()
 	if len(data) > 0 {

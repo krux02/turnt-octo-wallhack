@@ -2,6 +2,10 @@ package math32
 
 import "math"
 
+func Atan2(y, x float32) float32 {
+	return float32(math.Atan2(float64(y), float64(x)))
+}
+
 func Mix(x, y, a float32) float32 {
 	return (1-a)*x + a*y
 }

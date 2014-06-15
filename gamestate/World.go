@@ -1,7 +1,7 @@
 package gamestate
 
 import (
-	mgl "github.com/Jragonmiris/mathgl"
+	mgl "github.com/krux02/mathgl/mgl32"
 	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 )
 
@@ -15,9 +15,9 @@ type World struct {
 	Player         *Player
 }
 
-type WrapVec4f mgl.Vec4f
+type WrapVec4 mgl.Vec4
 
-func (this WrapVec4f) Dimension(dim int) float32 {
+func (this WrapVec4) Dimension(dim int) float32 {
 	return this[dim]
 }
 
@@ -30,10 +30,10 @@ func portalFilter(kdElement KdElement) bool {
 	}
 }
 
-func (this *World) NearestPortal(pos mgl.Vec4f) *Portal {
-	return this.KdTree.NearestQuery(WrapVec4f(pos), portalFilter).(*Portal)
+func (this *World) NearestPortal(pos mgl.Vec4) *Portal {
+	return this.KdTree.NearestQuery(WrapVec4(pos), portalFilter).(*Portal)
 }
 
-func (this *World) NearestPortal2D(pos mgl.Vec2f) *Portal {
+func (this *World) NearestPortal2D(pos mgl.Vec2) *Portal {
 	panic("not implemented")
 }

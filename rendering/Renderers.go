@@ -2,7 +2,7 @@ package rendering
 
 import (
 	//"fmt"
-	mgl "github.com/Jragonmiris/mathgl"
+	mgl "github.com/krux02/mathgl/mgl32"
 	"github.com/go-gl/gl"
 	"github.com/krux02/turnt-octo-wallhack/constants"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
@@ -21,13 +21,13 @@ func NewTreeRenderer() *renderstuff.Renderer {
 }
 
 func TreeUpdate(loc *renderstuff.RenderLocations, entiy renderstuff.IRenderEntity, additionalUniforms interface{}) {
-	Rot2D := helpers.Mat4toMat3(additionalUniforms.(mgl.Mat4f))
+	Rot2D := helpers.Mat4toMat3(additionalUniforms.(mgl.Mat4))
 	loc.Rot2D.UniformMatrix3f(false, renderstuff.GlMat3(&Rot2D))
 }
 
 type WaterRenderUniforms struct {
 	Time         float64
-	CameraPos_ws mgl.Vec4f
+	CameraPos_ws mgl.Vec4
 }
 
 func WaterUpdate(loc *renderstuff.RenderLocations, entity renderstuff.IRenderEntity, etc interface{}) {

@@ -1,7 +1,7 @@
 package gamestate
 
 import (
-	mgl "github.com/Jragonmiris/mathgl"
+	mgl "github.com/krux02/mathgl/mgl32"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/math32"
 	"github.com/krux02/turnt-octo-wallhack/mathint"
@@ -40,11 +40,11 @@ func NewHeightMap(w, h int) (out *HeightMap) {
 	}
 }
 
-func Gauss2fv(v mgl.Vec2f) float32 {
+func Gauss2fv(v mgl.Vec2) float32 {
 	return math32.Gauss(v.Len())
 }
 
-func (this *HeightMap) Bump(center mgl.Vec2f, height float32) {
+func (this *HeightMap) Bump(center mgl.Vec2, height float32) {
 	minX := mathint.Max(math32.RoundInt(center[0])-5, 0)
 	maxX := mathint.Min(math32.RoundInt(center[0])+5, this.W)
 	minY := mathint.Max(math32.RoundInt(center[1])-5, 0)
@@ -52,7 +52,7 @@ func (this *HeightMap) Bump(center mgl.Vec2f, height float32) {
 
 	for x := minX; x < maxX; x++ {
 		for y := minY; y < maxY; y++ {
-			v := mgl.Vec2f{float32(x), float32(y)}
+			v := mgl.Vec2{float32(x), float32(y)}
 			v = v.Sub(center)
 			bump := math32.Gauss(v.Len())
 			h := this.Get(x, y)
@@ -110,7 +110,7 @@ func (m *HeightMap) unflat(i int) (int, int) {
 	return i % m.W, i / m.W
 }
 
-func (m *HeightMap) Normal(x int, y int) mgl.Vec3f {
+func (m *HeightMap) Normal(x int, y int) mgl.Vec3 {
 	l := x - 1
 	r := x + 1
 	b := y - 1
@@ -122,10 +122,10 @@ func (m *HeightMap) Normal(x int, y int) mgl.Vec3f {
 	bh := m.Get(x, b) - hi
 	th := m.Get(x, t) - hi
 
-	v1 := mgl.Vec3f{1, 0, rh}.Normalize()
-	v2 := mgl.Vec3f{0, 1, th}.Normalize()
-	v3 := mgl.Vec3f{-1, 0, lh}.Normalize()
-	v4 := mgl.Vec3f{0, -1, bh}.Normalize()
+	v1 := mgl.Vec3{1, 0, rh}.Normalize()
+	v2 := mgl.Vec3{0, 1, th}.Normalize()
+	v3 := mgl.Vec3{-1, 0, lh}.Normalize()
+	v4 := mgl.Vec3{0, -1, bh}.Normalize()
 
 	n1 := v1.Cross(v2).Normalize()
 	n2 := v2.Cross(v3).Normalize()
@@ -135,7 +135,7 @@ func (m *HeightMap) Normal(x int, y int) mgl.Vec3f {
 	return n1.Add(n2).Add(n3).Add(n4).Normalize()
 }
 
-func (m *HeightMap) Normal2f(x float32, y float32) (n mgl.Vec3f) {
+func (m *HeightMap) Normal2f(x float32, y float32) (n mgl.Vec3) {
 	x0 := int(math32.Floor(x))
 	x1 := x0 + 1
 	y0 := int(math32.Floor(y))
@@ -205,17 +205,17 @@ func NewHeightMapFromFile(filename string) *HeightMap {
 	return m
 }
 
-func (m *HeightMap) RayCast(pos mgl.Vec3f, dir mgl.Vec3f) (factor float32, hit bool) {
+func (m *HeightMap) RayCast(pos mgl.Vec3, dir mgl.Vec3) (factor float32, hit bool) {
 
 	var visit = func(x, y int) bool {
 		if !m.InRange(x, y) {
 			return false
 		}
 
-		p1 := mgl.Vec3f{float32(x), float32(y), m.Get(x, y)}
-		p2 := mgl.Vec3f{float32(x + 1), float32(y), m.Get(x+1, y)}
-		p3 := mgl.Vec3f{float32(x + 1), float32(y + 1), m.Get(x+1, y+1)}
-		p4 := mgl.Vec3f{float32(x), float32(y + 1), m.Get(x, y+1)}
+		p1 := mgl.Vec3{float32(x), float32(y), m.Get(x, y)}
+		p2 := mgl.Vec3{float32(x + 1), float32(y), m.Get(x+1, y)}
+		p3 := mgl.Vec3{float32(x + 1), float32(y + 1), m.Get(x+1, y+1)}
+		p4 := mgl.Vec3{float32(x), float32(y + 1), m.Get(x, y+1)}
 
 		factor, hit = helpers.TriangleIntersection(p4, p1, p2, pos, dir)
 		if hit {
@@ -282,7 +282,7 @@ func raytrace(x0, y0, x1, y1 float32, visit func(x, y int) bool) {
 }
 
 type HeightMapVertex struct {
-	Vertex_ms, Normal_ms mgl.Vec3f
+	Vertex_ms, Normal_ms mgl.Vec3
 }
 
 func (this *HeightMap) Mesh() *renderstuff.Mesh {
@@ -295,8 +295,8 @@ func (this *HeightMap) Mesh() *renderstuff.Mesh {
 	return this.mesh
 }
 
-func (this *HeightMap) Model() mgl.Mat4f {
-	return mgl.Ident4f()
+func (this *HeightMap) Model() mgl.Mat4 {
+	return mgl.Ident4()
 }
 
 func TriangulationIndices(w, h int) []int32 {
@@ -343,7 +343,7 @@ func Vertices(m *HeightMap) []HeightMapVertex {
 	for y := 0; y <= m.H; y++ {
 		for x := 0; x <= m.W; x++ {
 			h := m.Get(x, y)
-			pos := mgl.Vec3f{float32(x), float32(y), h}
+			pos := mgl.Vec3{float32(x), float32(y), h}
 			nor := m.Normal(x, y)
 			vertices[i] = HeightMapVertex{pos, nor}
 			i += 1

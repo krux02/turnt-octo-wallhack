@@ -2,8 +2,8 @@ package rendering
 
 import (
 	//	"fmt"
-	mgl "github.com/Jragonmiris/mathgl"
 	"github.com/go-gl/gl"
+	mgl "github.com/krux02/mathgl/mgl32"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/particles"
@@ -14,8 +14,8 @@ import (
 )
 
 type WorldRenderer struct {
-	Proj, View         mgl.Mat4f
-	ClippingPlane_ws   mgl.Vec4f
+	Proj, View         mgl.Mat4
+	ClippingPlane_ws   mgl.Vec4
 	Textures           *Textures
 	HeightMapRenderer  *renderstuff.Renderer
 	WaterRenderer      *renderstuff.Renderer
@@ -52,8 +52,8 @@ func NewWorldRenderer(window *sdl.Window, w *gamestate.World) *WorldRenderer {
 
 	return &WorldRenderer{
 		Proj:               mgl.Perspective(90, float32(width)/float32(height), 0.3, 1000),
-		View:               mgl.Ident4f(),
-		ClippingPlane_ws:   mgl.Vec4f{1, 0, 0, -1000000},
+		View:               mgl.Ident4(),
+		ClippingPlane_ws:   mgl.Vec4{1, 0, 0, -1000000},
 		Textures:           NewTextures(w.HeightMap),
 		HeightMapRenderer:  NewHeightMapRenderer(),
 		WaterRendererA:     NewSurfaceWaterRenderer(),
@@ -63,7 +63,7 @@ func NewWorldRenderer(window *sdl.Window, w *gamestate.World) *WorldRenderer {
 		TreeRenderer:       NewTreeRenderer(),
 		SkyboxRenderer:     NewSkyboxRenderer(),
 		Skybox:             &Skybox{},
-		ParticleSystem:     particles.NewParticleSystem(w, 10000, mgl.Vec3f{32, 32, 32}, 1, 250),
+		ParticleSystem:     particles.NewParticleSystem(w, 10000, mgl.Vec3{32, 32, 32}, 1, 250),
 		Framebuffer:        [2]*FrameBuffer{NewFrameBuffer(window.GetSize()), NewFrameBuffer(window.GetSize())},
 		ScreenQuad:         &ScreenQuad{},
 		ScreenQuadRenderer: NewScreenQuadRenderer(),
@@ -177,7 +177,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 	pv := this.Proj.Mul4(this.View)
 
 	// calculating nearest portal
-	pos4f := this.View.Inv().Mul4x1(mgl.Vec4f{0, 0, 0, 1})
+	pos4f := this.View.Inv().Mul4x1(mgl.Vec4{0, 0, 0, 1})
 	nearestPortal := ww.NearestPortal(pos4f)
 
 	// draw  all portals except the nearest and the portal that we are looking throug
@@ -210,8 +210,8 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 		Model := mgl.Translate3D(pos[0], pos[1], pos[2]).Mul4(rotation)
 
 		pvm := pv.Mul4(Model)
-		meshMin := mgl.Vec4f{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32}
-		meshMax := mgl.Vec4f{-math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32}
+		meshMin := mgl.Vec4{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32}
+		meshMax := mgl.Vec4{-math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32}
 		for _, v := range boxVertices {
 			v = pvm.Mul4x1(v)
 			v = v.Mul(1 / v[3])
@@ -225,8 +225,8 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 			-1 < meshMax[2] && meshMin[2] < 1 {
 
 			w, h := window.GetSize()
-			p1x, p1y := convertToPixelCoords(mgl.Vec2f{meshMin[0], meshMin[1]}, w, h)
-			p2x, p2y := convertToPixelCoords(mgl.Vec2f{meshMax[0], meshMax[1]}, w, h)
+			p1x, p1y := convertToPixelCoords(mgl.Vec2{meshMin[0], meshMin[1]}, w, h)
+			p2x, p2y := convertToPixelCoords(mgl.Vec2{meshMax[0], meshMax[1]}, w, h)
 			pw, ph := p2x-p1x, p2y-p1y
 
 			// do scissoring only when all vertices are in front of the camera
@@ -274,7 +274,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 	}
 }
 
-func convertToPixelCoords(pos mgl.Vec2f, w, h int) (x, y int) {
+func convertToPixelCoords(pos mgl.Vec2, w, h int) (x, y int) {
 	x = int(float32(w) * (pos[0] + 1) / 2)
 	y = int(float32(h) * (pos[1] + 1) / 2)
 

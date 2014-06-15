@@ -2,7 +2,7 @@ package gamestate
 
 import (
 	"fmt"
-	mgl "github.com/Jragonmiris/mathgl"
+	mgl "github.com/krux02/mathgl/mgl32"
 	ai "github.com/krux02/assimp"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/renderstuff"
@@ -12,8 +12,8 @@ import (
 type MeshIndex uint16
 
 type MeshVertex struct {
-	Vertex_ms mgl.Vec4f
-	Normal_ms mgl.Vec4f
+	Vertex_ms mgl.Vec4
+	Normal_ms mgl.Vec4
 }
 
 type TriangleMesh renderstuff.Mesh
@@ -21,10 +21,10 @@ type TriangleMesh renderstuff.Mesh
 func QuadMesh() (mesh *renderstuff.Mesh) {
 	mesh = new(renderstuff.Mesh)
 	mesh.Vertices = []MeshVertex{
-		MeshVertex{mgl.Vec4f{-1, -1, 0, 1}, mgl.Vec4f{0, 0, 1, 0}},
-		MeshVertex{mgl.Vec4f{1, -1, 0, 1}, mgl.Vec4f{0, 0, 1, 0}},
-		MeshVertex{mgl.Vec4f{1, 1, 0, 1}, mgl.Vec4f{0, 0, 1, 0}},
-		MeshVertex{mgl.Vec4f{-1, 1, 0, 1}, mgl.Vec4f{0, 0, 1, 0}},
+		MeshVertex{mgl.Vec4{-1, -1, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
+		MeshVertex{mgl.Vec4{1, -1, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
+		MeshVertex{mgl.Vec4{1, 1, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
+		MeshVertex{mgl.Vec4{-1, 1, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
 	}
 	mesh.Indices = []MeshIndex{0, 1, 2, 2, 3, 0}
 	mesh.Mode = renderstuff.Triangles
@@ -34,15 +34,15 @@ func QuadMesh() (mesh *renderstuff.Mesh) {
 func PortalQuad() (mesh *renderstuff.Mesh) {
 	mesh = new(renderstuff.Mesh)
 	mesh.Vertices = []MeshVertex{
-		MeshVertex{mgl.Vec4f{-1, -1, 0, 1}, mgl.Vec4f{0, 0, 1, 0}},
-		MeshVertex{mgl.Vec4f{1, -1, 0, 1}, mgl.Vec4f{0, 0, 1, 0}},
-		MeshVertex{mgl.Vec4f{1, 1, 0, 1}, mgl.Vec4f{0, 0, 1, 0}},
-		MeshVertex{mgl.Vec4f{-1, 1, 0, 1}, mgl.Vec4f{0, 0, 1, 0}},
+		MeshVertex{mgl.Vec4{-1, -1, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
+		MeshVertex{mgl.Vec4{1, -1, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
+		MeshVertex{mgl.Vec4{1, 1, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
+		MeshVertex{mgl.Vec4{-1, 1, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
 
-		MeshVertex{mgl.Vec4f{-1, -1, 0.5, 1}, mgl.Vec4f{0, 0, 1, 0}},
-		MeshVertex{mgl.Vec4f{1, -1, 0.5, 1}, mgl.Vec4f{0, 0, 1, 0}},
-		MeshVertex{mgl.Vec4f{1, 1, 0.5, 1}, mgl.Vec4f{0, 0, 1, 0}},
-		MeshVertex{mgl.Vec4f{-1, 1, 0.5, 1}, mgl.Vec4f{0, 0, 1, 0}},
+		MeshVertex{mgl.Vec4{-1, -1, 0.5, 1}, mgl.Vec4{0, 0, 1, 0}},
+		MeshVertex{mgl.Vec4{1, -1, 0.5, 1}, mgl.Vec4{0, 0, 1, 0}},
+		MeshVertex{mgl.Vec4{1, 1, 0.5, 1}, mgl.Vec4{0, 0, 1, 0}},
+		MeshVertex{mgl.Vec4{-1, 1, 0.5, 1}, mgl.Vec4{0, 0, 1, 0}},
 	}
 	mesh.Indices = []MeshIndex{
 		0, 1, 2, 2, 3, 0,
@@ -55,17 +55,17 @@ func PortalQuad() (mesh *renderstuff.Mesh) {
 func PortalRect() (mesh *renderstuff.Mesh) {
 	mesh = new(renderstuff.Mesh)
 	mesh.Vertices = []MeshVertex{
-		MeshVertex{mgl.Vec4f{-1, 0, -2, 1}, mgl.Vec4f{0, 1, 0, 0}},
-		MeshVertex{mgl.Vec4f{-1, 0, 2, 1}, mgl.Vec4f{0, 1, 0, 0}},
-		MeshVertex{mgl.Vec4f{1, 0, 2, 1}, mgl.Vec4f{0, 1, 0, 0}},
-		MeshVertex{mgl.Vec4f{1, 0, -2, 1}, mgl.Vec4f{0, 1, 0, 0}},
+		MeshVertex{mgl.Vec4{-1, 0, -2, 1}, mgl.Vec4{0, 1, 0, 0}},
+		MeshVertex{mgl.Vec4{-1, 0, 2, 1}, mgl.Vec4{0, 1, 0, 0}},
+		MeshVertex{mgl.Vec4{1, 0, 2, 1}, mgl.Vec4{0, 1, 0, 0}},
+		MeshVertex{mgl.Vec4{1, 0, -2, 1}, mgl.Vec4{0, 1, 0, 0}},
 	}
 	mesh.Indices = []MeshIndex{0, 1, 2, 2, 3, 0}
 	mesh.Mode = renderstuff.Triangles
 	return mesh
 }
 
-func Min(v1, v2 mgl.Vec4f) (min mgl.Vec4f) {
+func Min(v1, v2 mgl.Vec4) (min mgl.Vec4) {
 	for i := 0; i < 4; i++ {
 		if v1[i] < v2[i] {
 			min[i] = v1[i]
@@ -76,7 +76,7 @@ func Min(v1, v2 mgl.Vec4f) (min mgl.Vec4f) {
 	return
 }
 
-func Max(v1, v2 mgl.Vec4f) (min mgl.Vec4f) {
+func Max(v1, v2 mgl.Vec4) (min mgl.Vec4) {
 	for i := 0; i < 4; i++ {
 		if v1[i] < v2[i] {
 			min[i] = v2[i]
@@ -112,11 +112,11 @@ func LoadMesh(filename string) (mesh *renderstuff.Mesh) {
 	meshvertices := make([]MeshVertex, aimesh.NumVertices())
 	for i, pos := range aimesh.Vertices() {
 		v := pos.Values()
-		meshvertices[i].Vertex_ms = mgl.Vec4f([4]float32{v[0], v[1], v[2], 1})
+		meshvertices[i].Vertex_ms = mgl.Vec4([4]float32{v[0], v[1], v[2], 1})
 	}
 	for i, norm := range aimesh.Normals() {
 		n := norm.Values()
-		meshvertices[i].Normal_ms = mgl.Vec4f([4]float32{n[0], n[1], n[2], 0})
+		meshvertices[i].Normal_ms = mgl.Vec4([4]float32{n[0], n[1], n[2], 0})
 	}
 	mesh.Vertices = meshvertices
 
@@ -144,9 +144,9 @@ func (this *TriangleMesh) Update(filename string) {
 	*this = TriangleMesh(*LoadMesh(filename))
 }
 
-func (m *TriangleMesh) BoundingBox() (min mgl.Vec4f, max mgl.Vec4f) {
-	min = mgl.Vec4f{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32}
-	max = mgl.Vec4f{-math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32}
+func (m *TriangleMesh) BoundingBox() (min mgl.Vec4, max mgl.Vec4) {
+	min = mgl.Vec4{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32}
+	max = mgl.Vec4{-math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32}
 
 	vertices := m.Vertices.([]MeshVertex)
 	for _, v := range vertices {
@@ -157,11 +157,11 @@ func (m *TriangleMesh) BoundingBox() (min mgl.Vec4f, max mgl.Vec4f) {
 }
 
 // returns the 8 vertices of the box that is defined by two if it's vertices
-func (m *TriangleMesh) MakeBoxVertices() (verts [8]mgl.Vec4f) {
+func (m *TriangleMesh) MakeBoxVertices() (verts [8]mgl.Vec4) {
 	bottomLeft, topRight := m.BoundingBox()
 
 	var i int
-	bounds := [2]mgl.Vec4f{bottomLeft, topRight}
+	bounds := [2]mgl.Vec4{bottomLeft, topRight}
 	for x := 0; x <= 1; x++ {
 		for y := 0; y <= 1; y++ {
 			for z := 0; z <= 1; z++ {

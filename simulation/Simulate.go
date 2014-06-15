@@ -2,13 +2,13 @@ package simulation
 
 import (
 	//	"fmt"
-	mgl "github.com/Jragonmiris/mathgl"
+	mgl "github.com/krux02/mathgl/mgl32"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/particles"
 )
 
-func PortalPassed(portal *gamestate.Portal, pos1, pos2 mgl.Vec4f) bool {
+func PortalPassed(portal *gamestate.Portal, pos1, pos2 mgl.Vec4) bool {
 	m := portal.View()
 	pos1 = m.Mul4x1(pos1)
 	pos2 = m.Mul4x1(pos2)
@@ -57,9 +57,9 @@ func UpdatePlayer(p *gamestate.Player, gs *gamestate.GameState) {
 	if move.Len() > 0 {
 		move = move.Normalize()
 	}
-	move_xyz := mgl.Vec3f{move[0], move[1], move[2]}
-	move_xyz = p.Camera.Orientation.Rotate(move_xyz)
-	move = mgl.Vec4f{move_xyz[0], move_xyz[1], move_xyz[2], 0}
+
+	move_xyz := p.Camera.Orientation.Rotate(move.Vec3())
+	move = move_xyz.Vec4(0)
 
 	if !gs.Options.PlayerPhysics {
 		move = move.Mul(0.1)

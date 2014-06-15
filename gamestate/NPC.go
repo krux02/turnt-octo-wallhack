@@ -1,7 +1,7 @@
 package gamestate
 
 import (
-	mgl "github.com/Jragonmiris/mathgl"
+	mgl "github.com/krux02/mathgl/mgl32"
 	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 )
 
@@ -13,7 +13,7 @@ func (this *Npc) Mesh() *renderstuff.Mesh {
 	return NpcMesh
 }
 
-func (this *Npc) Model() mgl.Mat4f {
+func (this *Npc) Model() mgl.Mat4 {
 	return (*Entity)(this).Model()
 }
 

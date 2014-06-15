@@ -1,13 +1,13 @@
 package gamestate
 
 import (
-	mgl "github.com/Jragonmiris/mathgl"
+	mgl "github.com/krux02/mathgl/mgl32"
 	"math/rand"
 	"testing"
 )
 
 type MyPos struct {
-	pos mgl.Vec3f
+	pos mgl.Vec3
 }
 
 func (mp MyPos) Dimension(dim int) float32 {
@@ -15,7 +15,7 @@ func (mp MyPos) Dimension(dim int) float32 {
 }
 
 func randPos() MyPos {
-	return MyPos{mgl.Vec3f{rand.Float32(), rand.Float32(), rand.Float32()}}
+	return MyPos{mgl.Vec3{rand.Float32(), rand.Float32(), rand.Float32()}}
 }
 
 const length = 200
@@ -26,7 +26,7 @@ func TestKdTree(t *testing.T) {
 		positions[i] = randPos()
 	}
 
-	center := mgl.Vec3f{0.5, 0.5, 0.5}
+	center := mgl.Vec3{0.5, 0.5, 0.5}
 	nearestPos := positions[0]
 	dist := nearestPos.(MyPos).pos.Sub(center).Len()
 	for i := 1; i < length; i++ {

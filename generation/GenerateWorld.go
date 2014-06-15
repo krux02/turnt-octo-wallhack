@@ -2,7 +2,7 @@ package generation
 
 import (
 	"fmt"
-	mgl "github.com/Jragonmiris/mathgl"
+	mgl "github.com/krux02/mathgl/mgl32"
 	gs "github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/math32"
@@ -28,8 +28,8 @@ func GenerateWorld(W, H, N int) (world *gs.World) {
 	water := &gs.Water{
 		W:          W,
 		H:          H,
-		LowerBound: mgl.Vec3f{0, 0, minH},
-		UpperBound: mgl.Vec3f{float32(W), float32(H), maxH},
+		LowerBound: mgl.Vec3{0, 0, minH},
+		UpperBound: mgl.Vec3{float32(W), float32(H), maxH},
 	}
 	Portals := RandomPortals(heights, N)
 	for i, x := range heights.Data {
@@ -47,9 +47,9 @@ func GenerateWorld(W, H, N int) (world *gs.World) {
 		x := r() * float32(W)
 		y := r() * float32(H)
 		h := heights.Get2f(x, y) + 1
-		npcs[i] = &gs.Npc{mgl.Vec4f{x, y, h, 1}, mgl.QuatIdentf()}
+		npcs[i] = &gs.Npc{mgl.Vec4{x, y, h, 1}, mgl.QuatIdent()}
 	}
-	startPos := mgl.Vec4f{5, 5, 10, 1}
+	startPos := mgl.Vec4{5, 5, 10, 1}
 	player := &gs.Player{Camera: *gs.NewCameraFromPos4f(startPos)}
 	world = &gs.World{heights, water, kdTree, Portals, forest, npcs, player}
 	return
@@ -60,7 +60,7 @@ func RandomPortals(hm *gs.HeightMap, N int) []*gs.Portal {
 		panic("not an even number of portals")
 	}
 
-	normal := mgl.Vec4f{0, 0, 1, 0}
+	normal := mgl.Vec4{0, 0, 1, 0}
 	mesh := gs.QuadMesh()
 
 	Portals := make([]*gs.Portal, N)
@@ -68,9 +68,9 @@ func RandomPortals(hm *gs.HeightMap, N int) []*gs.Portal {
 		x := rand.Float32() * float32(hm.W)
 		y := rand.Float32() * float32(hm.H)
 		z := hm.Get2f(x, y) + 5
-		q := mgl.Quatf{r(), mgl.Vec3f{r(), r(), r()}}.Normalize()
+		q := mgl.Quat{r(), mgl.Vec3{r(), r(), r()}}.Normalize()
 		Portals[i] = &gs.Portal{
-			Entity: gs.Entity{mgl.Vec4f{x, y, z, 1}, q},
+			Entity: gs.Entity{mgl.Vec4{x, y, z, 1}, q},
 			Normal: normal,
 		}
 		Portals[i].SetMesh(mesh)
@@ -97,12 +97,12 @@ func GeneratePalmTrees(hm *gs.HeightMap, count int) *gs.Forest {
 		}
 
 		z := hm.Get2f(x, y)
-		trees[i] = gs.PalmTree{mgl.Vec4f{x, y, z, 1}}
+		trees[i] = gs.PalmTree{mgl.Vec4{x, y, z, 1}}
 	}
 
 	forest := new(gs.Forest)
 	forest.Positions = trees
-	forest.SetModel(mgl.Ident4f())
+	forest.SetModel(mgl.Ident4())
 	return forest
 }
 

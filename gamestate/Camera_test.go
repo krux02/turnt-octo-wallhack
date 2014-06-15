@@ -1,7 +1,7 @@
 package gamestate
 
 import (
-	mgl "github.com/Jragonmiris/mathgl"
+	mgl "github.com/krux02/mathgl/mgl32"
 	"math"
 	"math/rand"
 	"testing"
@@ -13,7 +13,7 @@ func TestCameraMatrix(t *testing.T) {
 	camera1.Yaw(rand.Float32() * 2 * math.Pi)
 	camera1.Pitch(rand.Float32() * 2 * math.Pi)
 	camera1.Roll(rand.Float32() * 2 * math.Pi)
-	camera1.Position = mgl.Vec4f{rand.Float32() * 10, rand.Float32() * 10, rand.Float32() * 10, 1}
+	camera1.Position = mgl.Vec4{rand.Float32() * 10, rand.Float32() * 10, rand.Float32() * 10, 1}
 	t.Log(camera1)
 
 	view1 := camera1.View()
@@ -27,7 +27,7 @@ func TestCameraMatrix(t *testing.T) {
 	}
 }
 
-func SquareErrorMat4(m mgl.Mat4f) (err float32) {
+func SquareErrorMat4(m mgl.Mat4) (err float32) {
 	for i := 0; i < 16; i++ {
 		err += m[i] * m[i]
 	}

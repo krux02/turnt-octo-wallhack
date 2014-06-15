@@ -1,19 +1,19 @@
 package rendering
 
 import (
-	mgl "github.com/Jragonmiris/mathgl"
+	mgl "github.com/krux02/mathgl/mgl32"
 	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 )
 
 type ScreenQuadVertex struct {
-	Vertex_ndc mgl.Vec4f
+	Vertex_ndc mgl.Vec4
 }
 
 var ScreenQuadMesh = renderstuff.Mesh{
 	Vertices: []ScreenQuadVertex{
-		ScreenQuadVertex{mgl.Vec4f{-1, -1, 0, 1}},
-		ScreenQuadVertex{mgl.Vec4f{3, -1, 0, 1}},
-		ScreenQuadVertex{mgl.Vec4f{-1, 3, 0, 1}},
+		ScreenQuadVertex{mgl.Vec4{-1, -1, 0, 1}},
+		ScreenQuadVertex{mgl.Vec4{3, -1, 0, 1}},
+		ScreenQuadVertex{mgl.Vec4{-1, 3, 0, 1}},
 	},
 	Mode: renderstuff.Triangles,
 }
@@ -24,6 +24,6 @@ func (this *ScreenQuad) Mesh() *renderstuff.Mesh {
 	return &ScreenQuadMesh
 }
 
-func (this *ScreenQuad) Model() mgl.Mat4f {
-	return mgl.Ident4f()
+func (this *ScreenQuad) Model() mgl.Mat4 {
+	return mgl.Ident4()
 }

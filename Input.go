@@ -2,7 +2,7 @@ package main
 
 import (
 	//"fmt"
-	mgl "github.com/Jragonmiris/mathgl"
+	mgl "github.com/krux02/mathgl/mgl32"
 	"github.com/krux02/turnt-octo-wallhack/debug"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
@@ -22,19 +22,19 @@ func GrabCursor() {
 	}
 }
 
-func GetMouseDirection(window *sdl.Window, mx, my int) (dir_cs mgl.Vec4f) {
+func GetMouseDirection(window *sdl.Window, mx, my int) (dir_cs mgl.Vec4) {
 	if !sdl.GetRelativeMouseMode() {
 		W, H := window.GetSize()
 		x := (2*float32(mx) - float32(W)) / float32(H)
 		y := (float32(H) - 2*float32(my)) / float32(H)
-		dir_cs = mgl.Vec4f{x, y, -1, 0}
+		dir_cs = mgl.Vec4{x, y, -1, 0}
 	} else {
-		dir_cs = mgl.Vec4f{0, 0, -1, 0}
+		dir_cs = mgl.Vec4{0, 0, -1, 0}
 	}
 	return
 }
 
-func RayCastInCameraSpace(gs *gamestate.GameState, dir_cs mgl.Vec4f) (hit_ws mgl.Vec4f, hit bool) {
+func RayCastInCameraSpace(gs *gamestate.GameState, dir_cs mgl.Vec4) (hit_ws mgl.Vec4, hit bool) {
 	pos_ws := gs.Camera.Position
 	dir_ws := gs.Camera.Model().Mul4x1(dir_cs)
 
@@ -90,7 +90,7 @@ func Input(gs *gamestate.GameState, worldRenderer *rendering.WorldRenderer) bool
 					out, hit := RayCastInCameraSpace(gs, dir_cs)
 					if hit {
 						n := helpers.Vector(gs.World.HeightMap.Normal2f(out[0], out[1]))
-						debug.Color(mgl.Vec4f{0, 1, 0, 1})
+						debug.Color(mgl.Vec4{0, 1, 0, 1})
 						debug.Line(out, out.Add(n))
 					}
 				}
@@ -109,8 +109,8 @@ func Input(gs *gamestate.GameState, worldRenderer *rendering.WorldRenderer) bool
 
 	if sdl.GetRelativeMouseMode() {
 		x, y, _ := sdl.GetRelativeMouseState()
-		inp.Rotate[0] = -float32(y) / 5
-		inp.Rotate[1] = -float32(x) / 5
+		inp.Rotate[0] = -float32(y) / 500
+		inp.Rotate[1] = -float32(x) / 500
 	}
 
 	keyState := sdl.GetKeyboardState()
@@ -128,10 +128,10 @@ func Input(gs *gamestate.GameState, worldRenderer *rendering.WorldRenderer) bool
 		inp.Move[0] += 1
 	}
 	if keyState[sdl.SCANCODE_R] == 1 {
-		inp.Rotate[2] -= 1
+		inp.Rotate[2] -= 0.01
 	}
 	if keyState[sdl.SCANCODE_W] == 1 {
-		inp.Rotate[2] += 1
+		inp.Rotate[2] += 0.01
 	}
 
 	x, y, button_state := sdl.GetMouseState()
@@ -140,7 +140,7 @@ func Input(gs *gamestate.GameState, worldRenderer *rendering.WorldRenderer) bool
 		out, hit := RayCastInCameraSpace(gs, dir_cs)
 		if hit {
 			heightMap := gs.World.HeightMap
-			heightMap.Bump(mgl.Vec2f{out[0], out[1]}, 3)
+			heightMap.Bump(mgl.Vec2{out[0], out[1]}, 3)
 		}
 	}
 

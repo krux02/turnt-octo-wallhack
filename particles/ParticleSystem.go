@@ -2,7 +2,7 @@ package particles
 
 import (
 	"fmt"
-	mgl "github.com/Jragonmiris/mathgl"
+	mgl "github.com/krux02/mathgl/mgl32"
 	"github.com/go-gl/gl"
 	"github.com/go-gl/glh"
 	"github.com/krux02/turnt-octo-wallhack/constants"
@@ -14,17 +14,17 @@ import (
 )
 
 type NonTransformBuffer struct {
-	StartDir mgl.Vec3f
+	StartDir mgl.Vec3
 }
 
 type ParticleVertex struct {
-	Pos1, Pos2 mgl.Vec3f
+	Pos1, Pos2 mgl.Vec3
 	Lifetime   float32
 }
 
 type ParticleShapeVertex struct {
-	Vertex_ms mgl.Vec4f
-	TexCoord  mgl.Vec2f
+	Vertex_ms mgl.Vec4
+	TexCoord  mgl.Vec2
 }
 
 type ProgramLocations struct {
@@ -50,20 +50,20 @@ type ParticleSystem struct {
 	ShapeData                                gl.Buffer
 	NonTransformBuffer                       gl.Buffer
 	NumParticles                             int
-	Origin                                   mgl.Vec3f
+	Origin                                   mgl.Vec3
 	Gravity                                  float32
 	InitialSpeed                             float32
 	MaxLifetime                              float32
 }
 
-func NewParticleSystem(w *gamestate.World, numParticles int, Origin mgl.Vec3f, initialSpeed, MaxLifetime float32) *ParticleSystem {
+func NewParticleSystem(w *gamestate.World, numParticles int, Origin mgl.Vec3, initialSpeed, MaxLifetime float32) *ParticleSystem {
 	vertices := make([]ParticleVertex, numParticles)
 	directions := make([]NonTransformBuffer, numParticles)
 
 	for i, _ := range vertices {
-		dir := mgl.Vec3f{rand.Float32()*2 - 1, rand.Float32()*2 - 1, rand.Float32()*2 - 1}
+		dir := mgl.Vec3{rand.Float32()*2 - 1, rand.Float32()*2 - 1, rand.Float32()*2 - 1}
 		for dir.Len() > 1 {
-			dir = mgl.Vec3f{rand.Float32()*2 - 1, rand.Float32()*2 - 1, rand.Float32()*2 - 1}
+			dir = mgl.Vec3{rand.Float32()*2 - 1, rand.Float32()*2 - 1, rand.Float32()*2 - 1}
 		}
 		dir = dir.Mul(initialSpeed)
 		vertices[i] = ParticleVertex{
@@ -191,9 +191,9 @@ func (ps *ParticleSystem) SetUniforms() {
 
 	dirs := make([]float32, 64*3)
 	for i := 0; i < 64; i++ {
-		dir := mgl.Vec3f{rand.Float32()*2 - 1, rand.Float32()*2 - 1, rand.Float32()*2 - 1}
+		dir := mgl.Vec3{rand.Float32()*2 - 1, rand.Float32()*2 - 1, rand.Float32()*2 - 1}
 		for dir.Len() > 1 {
-			dir = mgl.Vec3f{rand.Float32()*2 - 1, rand.Float32()*2 - 1, rand.Float32()*2 - 1}
+			dir = mgl.Vec3{rand.Float32()*2 - 1, rand.Float32()*2 - 1, rand.Float32()*2 - 1}
 		}
 		dirs[i*3+0] = dir[0]
 		dirs[i*3+1] = dir[1]
@@ -213,11 +213,11 @@ func (ps *ParticleSystem) DoStep(gs *gamestate.GameState) {
 	// ps.Data1.Bind(gl.ARRAY_BUFFER)
 	// SetAttribPointers(&ps.TransformLoc, &ParticleVertex{}, false)
 
-	//var orientation mgl.Quatf = gs.Player.Camera.Orientation
-	var model mgl.Mat4f = gs.Camera.Model()
-	pPos := model.Mul4x1(mgl.Vec4f{1, -1, 0, 1})
+	//var orientation mgl.Quat = gs.Player.Camera.Orientation
+	var model mgl.Mat4 = gs.Camera.Model()
+	pPos := model.Mul4x1(mgl.Vec4{1, -1, 0, 1})
 	ps.TransformLoc.Origin.Uniform3f(pPos[0], pPos[1], pPos[2])
-	dir := model.Mul4x1(mgl.Vec4f{0, 0, 100, 0})
+	dir := model.Mul4x1(mgl.Vec4{0, 0, 100, 0})
 	ps.TransformLoc.Dir.Uniform3f(dir[0], dir[1], dir[2])
 
 	ps.Data2.BindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0)
@@ -237,10 +237,10 @@ func CreateShapeDataBuffer() gl.Buffer {
 	fmt.Println("CreateShapeDataBuffer:")
 
 	particleShape := []ParticleShapeVertex{
-		ParticleShapeVertex{mgl.Vec4f{-R, -R, 0, 1}, mgl.Vec2f{0, 1}},
-		ParticleShapeVertex{mgl.Vec4f{R, -R, 0, 1}, mgl.Vec2f{1, 1}},
-		ParticleShapeVertex{mgl.Vec4f{R, R, 0, 1}, mgl.Vec2f{1, 0}},
-		ParticleShapeVertex{mgl.Vec4f{-R, R, 0, 1}, mgl.Vec2f{0, 0}},
+		ParticleShapeVertex{mgl.Vec4{-R, -R, 0, 1}, mgl.Vec2{0, 1}},
+		ParticleShapeVertex{mgl.Vec4{R, -R, 0, 1}, mgl.Vec2{1, 1}},
+		ParticleShapeVertex{mgl.Vec4{R, R, 0, 1}, mgl.Vec2{1, 0}},
+		ParticleShapeVertex{mgl.Vec4{-R, R, 0, 1}, mgl.Vec2{0, 0}},
 	}
 
 	particleShapeBuffer := gl.GenBuffer()
@@ -250,7 +250,7 @@ func CreateShapeDataBuffer() gl.Buffer {
 	return particleShapeBuffer
 }
 
-func (ps *ParticleSystem) Render(Proj mgl.Mat4f, View mgl.Mat4f, clippingPlane mgl.Vec4f) {
+func (ps *ParticleSystem) Render(Proj mgl.Mat4, View mgl.Mat4, clippingPlane mgl.Vec4) {
 	gl.PointSize(64)
 
 	ps.VaoRender1.Bind()

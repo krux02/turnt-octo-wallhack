@@ -1,20 +1,20 @@
 package gamestate
 
 import (
-	mgl "github.com/Jragonmiris/mathgl"
+	mgl "github.com/krux02/mathgl/mgl32"
 	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 )
 
 type Water struct {
 	mesh       *renderstuff.Mesh
 	W, H       int
-	LowerBound mgl.Vec3f
-	UpperBound mgl.Vec3f
+	LowerBound mgl.Vec3
+	UpperBound mgl.Vec3
 	Height     float32
 }
 
-func (this *Water) Model() mgl.Mat4f {
-	return mgl.Ident4f()
+func (this *Water) Model() mgl.Mat4 {
+	return mgl.Ident4()
 }
 
 func (this *Water) Mesh() *renderstuff.Mesh {
@@ -28,7 +28,7 @@ func (this *Water) Mesh() *renderstuff.Mesh {
 }
 
 type WaterVertex struct {
-	Vertex_ms, Normal_ms mgl.Vec3f
+	Vertex_ms, Normal_ms mgl.Vec3
 }
 
 func WaterVertices(W, H int) []WaterVertex {
@@ -36,8 +36,8 @@ func WaterVertices(W, H int) []WaterVertex {
 	i := 0
 	for y := 0; y <= H; y++ {
 		for x := 0; x <= W; x++ {
-			pos := mgl.Vec3f{float32(x), float32(y), 0}
-			nor := mgl.Vec3f{0, 0, 1}
+			pos := mgl.Vec3{float32(x), float32(y), 0}
+			nor := mgl.Vec3{0, 0, 1}
 			vertices[i] = WaterVertex{pos, nor}
 			i += 1
 		}

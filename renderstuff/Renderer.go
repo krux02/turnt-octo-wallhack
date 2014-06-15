@@ -1,7 +1,7 @@
 package renderstuff
 
 import (
-	mgl "github.com/Jragonmiris/mathgl"
+	mgl "github.com/krux02/mathgl/mgl32"
 	"github.com/go-gl/gl"
 	"github.com/krux02/turnt-octo-wallhack/constants"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
@@ -61,7 +61,7 @@ func (this *Renderer) Delete() {
 	*this = Renderer{}
 }
 
-func (this *Renderer) Render(entity IRenderEntity, Proj, View mgl.Mat4f, ClippingPlane_ws mgl.Vec4f, additionalUniforms interface{}) {
+func (this *Renderer) Render(entity IRenderEntity, Proj, View mgl.Mat4, ClippingPlane_ws mgl.Vec4, additionalUniforms interface{}) {
 	this.Program.Use()
 	mesh := entity.Mesh()
 	renData := this.RenData[mesh]
