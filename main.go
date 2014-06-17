@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/go-gl/gl"
+	"github.com/krux02/libovr"
 	"github.com/krux02/turnt-octo-wallhack/debugContext"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/generation"
@@ -65,24 +66,29 @@ func main() {
 
 	glcontext := sdl.GL_CreateContext(window)
 	if glcontext == nil {
-		fmt.Sprintf("can't create context %v", sdl.GetError())
+		panic(fmt.Sprintf("can't create context %v", sdl.GetError()))
 	}
-
+	defer sdl.GL_DeleteContext(glcontext)
 	sdl.GL_MakeCurrent(window, glcontext)
 
 	//err := gl.GlewInit()
 	//fmt.Println(gl.GlewGetErrorString(err))
 	//glew init
 	gl.Init()
-
-	defer sdl.GL_DeleteContext(glcontext)
-
 	sdl.GL_SetSwapInterval(1)
 
 	fmt.Println("glVersion", gl.GetString(gl.VERSION))
 
 	tw.Init(tw.OPENGL_CORE, nil)
 	defer tw.Terminate()
+
+	ok := ovr.Initialize()
+	if !ok {
+		panic("cant't initialize ovr")
+	}
+	defer ovr.Shutdown()
+
+	OvrTest()
 
 	gl.GetError() // Ignore error
 	debugContext.InitDebugContext()
@@ -105,5 +111,20 @@ func main() {
 		pprof.WriteHeapProfile(f)
 		f.Close()
 		return
+	}
+}
+
+func OvrTest() {
+	numDevices := ovr.HmdDetect()
+	fmt.Printf("libovr found %d connected devices\n")
+
+	if numDevices > 0 {
+		hmd := ovr.HmdCreate(0)
+		defer hmd.Destroy()
+		desc := hmd.GetDesc()
+		fmt.Println("%+v", desc)
+
+		fmt.Println(hmd.GetEnabledCaps())
+
 	}
 }
