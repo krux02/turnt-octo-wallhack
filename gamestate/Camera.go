@@ -39,9 +39,9 @@ func (camera *Camera) MoveAbsolute(dist mgl.Vec4) {
 }
 
 func (camera *Camera) MoveRelative(dist mgl.Vec4) {
-	dist_xyz := mgl.Vec3{dist[0], dist[1], dist[2]}
+	dist_xyz := dist.Vec3()
 	v := camera.Orientation.Rotate(dist_xyz)
-	camera.MoveAbsolute(mgl.Vec4{v[0], v[1], v[2], 0})
+	camera.MoveAbsolute(v.Vec4(0))
 }
 
 func (camera *Camera) Pos4f() mgl.Vec4 {

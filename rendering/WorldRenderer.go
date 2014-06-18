@@ -6,6 +6,7 @@ import (
 	mgl "github.com/krux02/mathgl/mgl32"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
+	//	"github.com/krux02/turnt-octo-wallhack/math32"
 	"github.com/krux02/turnt-octo-wallhack/particles"
 	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 	"github.com/krux02/turnt-octo-wallhack/settings"
@@ -91,7 +92,24 @@ func (this *WorldRenderer) Delete() {
 }
 
 func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOptions, window *sdl.Window) {
-	this.render(ww, options, window, 0, nil)
+	camera := ww.Player.Camera
+	p0 := camera.Pos4f()
+
+	w, h := window.GetSize()
+
+	camera.MoveRelative(mgl.Vec4{-0.1, 0, 0, 0})
+	this.View = (ww.PortalTransform(p0, camera.Pos4f()).Mul4(camera.Model())).Inv()
+	viewport := Viewport{0, 0, w / 2, h}
+	viewport.Activate()
+	this.render(ww, options, viewport, 0, nil)
+
+	camera.MoveRelative(mgl.Vec4{+0.2, 0, 0, 0})
+	this.View = (ww.PortalTransform(p0, camera.Pos4f()).Mul4(camera.Model())).Inv()
+	viewport.X = w / 2
+	viewport.Activate()
+	this.render(ww, options, viewport, 0, nil)
+
+	gl.Viewport(0, 0, w, h)
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	this.Framebuffer[0].RenderTexture.Bind(gl.TEXTURE_RECTANGLE)
@@ -103,12 +121,39 @@ func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOpt
 	}
 }
 
-func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOptions, window *sdl.Window, recursion int, srcPortal *gamestate.Portal) {
+type Viewport struct {
+	X, Y, W, H int
+}
+
+func (this *Viewport) Activate() {
+	gl.Viewport(this.X, this.Y, this.W, this.H)
+}
+
+func (this *Viewport) ToPixel(pos mgl.Vec2) (X, Y int) {
+	x := int(float32(this.W) * (pos[0] + 1) / 2)
+	y := int(float32(this.H) * (pos[1] + 1) / 2)
+
+	if x < 0 {
+		x = 0
+	}
+	if x >= this.W {
+		x = this.W - 1
+	}
+	if y < 0 {
+		y = 0
+	}
+	if y >= this.H {
+		y = this.H - 1
+	}
+	return x + this.X, y + this.Y
+}
+
+func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOptions, viewport Viewport, recursion int, srcPortal *gamestate.Portal) {
 
 	this.Framebuffer[recursion].Bind()
 	defer this.Framebuffer[recursion].Unbind()
 
-	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+	gl.Clear(gl.DEPTH_BUFFER_BIT)
 
 	camera := gamestate.NewCameraFromMat4(this.View)
 	Rot2D := camera.Rotation2D()
@@ -224,14 +269,13 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 			-1 < meshMax[1] && meshMin[1] < 1 &&
 			-1 < meshMax[2] && meshMin[2] < 1 {
 
-			w, h := window.GetSize()
-			p1x, p1y := convertToPixelCoords(mgl.Vec2{meshMin[0], meshMin[1]}, w, h)
-			p2x, p2y := convertToPixelCoords(mgl.Vec2{meshMax[0], meshMax[1]}, w, h)
+			p1x, p1y := viewport.ToPixel(meshMin.Vec2())
+			p2x, p2y := viewport.ToPixel(meshMax.Vec2())
 			pw, ph := p2x-p1x, p2y-p1y
 
 			// do scissoring only when all vertices are in front of the camera
 			scissor := meshMax[2] < 1
-			scissor = scissor && (p1x != 0 || p1y != 0 || pw != w-1 || ph != h-1)
+			scissor = scissor && (p1x != 0 || p1y != 0 || pw != viewport.W-1 || ph != viewport.H-1)
 
 			if scissor {
 				gl.Enable(gl.SCISSOR_TEST)
@@ -255,7 +299,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 			oldClippingPlane := this.ClippingPlane_ws
 			this.ClippingPlane_ws = portal.Target.ClippingPlane(sign > 0)
 
-			this.render(ww, options, window, recursion+1, nearestPortal)
+			this.render(ww, options, viewport, recursion+1, nearestPortal)
 			this.ClippingPlane_ws = oldClippingPlane
 			this.View = oldView
 
@@ -263,7 +307,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 			this.Framebuffer[recursion+1].RenderTexture.Bind(gl.TEXTURE_RECTANGLE)
 
 			if scissor {
-				gl.Scissor(0, 0, w, h)
+				//gl.Scissor(0, 0, w, h)
 				gl.Disable(gl.SCISSOR_TEST)
 			}
 			this.Framebuffer[recursion].Bind()
@@ -272,23 +316,4 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 			this.PortalRenderer.Render(nearestPortal, this.Proj, this.View, this.ClippingPlane_ws, additionalUniforms)
 		}
 	}
-}
-
-func convertToPixelCoords(pos mgl.Vec2, w, h int) (x, y int) {
-	x = int(float32(w) * (pos[0] + 1) / 2)
-	y = int(float32(h) * (pos[1] + 1) / 2)
-
-	if x < 0 {
-		x = 0
-	}
-	if x >= w {
-		x = w - 1
-	}
-	if y < 0 {
-		y = 0
-	}
-	if y >= h {
-		y = h - 1
-	}
-	return
 }

@@ -2,29 +2,11 @@ package simulation
 
 import (
 	//	"fmt"
-	mgl "github.com/krux02/mathgl/mgl32"
+	//mgl "github.com/krux02/mathgl/mgl32"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/particles"
 )
-
-func PortalPassed(portal *gamestate.Portal, pos1, pos2 mgl.Vec4) bool {
-	m := portal.View()
-	pos1 = m.Mul4x1(pos1)
-	pos2 = m.Mul4x1(pos2)
-	n := portal.Normal
-
-	a := n.Dot(pos1)
-	b := n.Dot(pos2)
-
-	if a*b < 0 {
-		c := a / (a - b)
-		pos3 := pos1.Mul(c).Add(pos2.Mul(1 - c))
-		return -1 < pos3[0] && pos3[0] < 1 && -1 < pos3[1] && pos3[1] < 1
-	} else {
-		return false
-	}
-}
 
 func Simulate(gs *gamestate.GameState, ps *particles.ParticleSystem) {
 	player := gs.World.Player
@@ -33,14 +15,9 @@ func Simulate(gs *gamestate.GameState, ps *particles.ParticleSystem) {
 	UpdatePlayer(gs.World.Player, gs)
 	newPos := cam.Position
 
-	nearestPortal := gs.World.NearestPortal(oldPos)
-
-	if PortalPassed(nearestPortal, oldPos, newPos) {
-		// Enter Portal
-		transform := nearestPortal.Transform()
-		cam.SetModel(transform.Mul4(cam.Model()))
-		player.Velocity = transform.Mul4x1(player.Velocity)
-	}
+	transform := gs.World.PortalTransform(oldPos, newPos)
+	cam.SetModel(transform.Mul4(cam.Model()))
+	player.Velocity = transform.Mul4x1(player.Velocity)
 
 	if gs.Options.ParticlePhysics {
 		ps.DoStep(gs)
