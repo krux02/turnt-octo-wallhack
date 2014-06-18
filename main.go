@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/go-gl/gl"
-	//"github.com/krux02/libovr"
+	"github.com/krux02/libovr"
 	"github.com/krux02/turnt-octo-wallhack/debugContext"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/generation"
@@ -82,15 +82,12 @@ func main() {
 	tw.Init(tw.OPENGL_CORE, nil)
 	defer tw.Terminate()
 
-	/*
-		ok := ovr.Initialize()
-		if !ok {
-			panic("cant't initialize ovr")
-		}
-		defer ovr.Shutdown()
-
-		OvrTest()
-	*/
+	ok := ovr.Initialize()
+	if !ok {
+		panic("cant't initialize ovr")
+	}
+	defer ovr.Shutdown()
+	OvrTest()
 
 	gl.GetError() // Ignore error
 	debugContext.InitDebugContext()
@@ -116,7 +113,6 @@ func main() {
 	}
 }
 
-/*
 func OvrTest() {
 	numDevices := ovr.HmdDetect()
 	fmt.Printf("libovr found %d connected devices\n")
@@ -131,4 +127,3 @@ func OvrTest() {
 
 	}
 }
-*/

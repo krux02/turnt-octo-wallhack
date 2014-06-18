@@ -1,12 +1,13 @@
 package rendering
 
 import (
-	//	"fmt"
+	"fmt"
 	"github.com/go-gl/gl"
 	mgl "github.com/krux02/mathgl/mgl32"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
-	//	"github.com/krux02/turnt-octo-wallhack/math32"
+	//"github.com/krux02/turnt-octo-wallhack/math32"
+	"github.com/krux02/libovr"
 	"github.com/krux02/turnt-octo-wallhack/particles"
 	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 	"github.com/krux02/turnt-octo-wallhack/settings"
@@ -32,6 +33,7 @@ type WorldRenderer struct {
 	ScreenQuad         *ScreenQuad
 	ScreenQuadRenderer *renderstuff.Renderer
 	DebugRenderer      *LineRenderer
+	Hmd                *ovr.Hmd
 	MaxRecursion       int
 	screenShot         bool
 }
@@ -51,25 +53,22 @@ func (this *WorldRenderer) ScreenShot() {
 func NewWorldRenderer(window *sdl.Window, w *gamestate.World) *WorldRenderer {
 	width, height := window.GetSize()
 
-	return &WorldRenderer{
-		Proj:               mgl.Perspective(90, float32(width)/float32(height), 0.3, 1000),
-		View:               mgl.Ident4(),
-		ClippingPlane_ws:   mgl.Vec4{1, 0, 0, -1000000},
-		Textures:           NewTextures(w.HeightMap),
-		HeightMapRenderer:  NewHeightMapRenderer(),
-		WaterRendererA:     NewSurfaceWaterRenderer(),
-		WaterRendererB:     NewDebugWaterRenderer(),
-		MeshRenderer:       NewMeshRenderer(),
-		PortalRenderer:     NewPortalRenderer(),
-		TreeRenderer:       NewTreeRenderer(),
-		SkyboxRenderer:     NewSkyboxRenderer(),
-		Skybox:             &Skybox{},
-		ParticleSystem:     particles.NewParticleSystem(w, 10000, mgl.Vec3{32, 32, 32}, 1, 250),
-		Framebuffer:        [2]*FrameBuffer{NewFrameBuffer(window.GetSize()), NewFrameBuffer(window.GetSize())},
-		ScreenQuad:         &ScreenQuad{},
-		ScreenQuadRenderer: NewScreenQuadRenderer(),
-		DebugRenderer:      NewLineRenderer(),
-		MaxRecursion:       1,
+	hmd := ovr.HmdCreate(0)
+	desc := hmd.GetDesc()
+	eyeFovIn := desc.DefaultEyeFov
+
+	fmt.Println(desc)
+
+	var apiConfig ovr.RenderApiConfig
+	apiConfig.Header.API = ovr.RenderAPI_OpenGL
+	apiConfig.Header.Multisample = 1
+	apiConfig.Header.RTSize = ovr.Sizei{1024, 768}
+	distortionCaps := ovr.DistortionCap_Chromatic
+
+	eyeRenderDesc, ok := hmd.ConfigureRendering(&apiConfig, distortionCaps, eyeFovIn)
+	if !ok {
+		panic("configure rendering failed")
+	} else {
 	}
 }
 
@@ -92,6 +91,8 @@ func (this *WorldRenderer) Delete() {
 }
 
 func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOptions, window *sdl.Window) {
+
+	this.Hmd.BeginEyeRender(ovr.Eye_Left)
 	camera := ww.Player.Camera
 	p0 := camera.Pos4f()
 
