@@ -15,10 +15,10 @@ type GameState struct {
 	Bar     *tw.Bar
 	World   *World
 	Fps     float32
-	Options settings.BoolOptions
+	Options *settings.BoolOptions
 }
 
-func NewGameState(window *sdl.Window, world *World) (gamestate *GameState) {
+func NewGameState(options *settings.BoolOptions, window *sdl.Window, world *World) (gamestate *GameState) {
 	gl.ClearColor(0., 0., 0.4, 0.0)
 
 	gl.Enable(gl.DEPTH_TEST)
@@ -31,16 +31,14 @@ func NewGameState(window *sdl.Window, world *World) (gamestate *GameState) {
 		Bar:     bar,
 		World:   world,
 		Fps:     0,
-		Options: settings.BoolOptions{},
+		Options: options,
 	}
 
-	opt := &gamestate.Options
-	opt.Load()
 	gamestate.Camera = gamestate.World.Player.GetCamera()
 
 	tw.Define(" GLOBAL help='This example shows how to integrate AntTweakBar with SDL2 and OpenGL.' ")
 	bar.AddVarRO("fps", tw.TYPE_FLOAT, unsafe.Pointer(&gamestate.Fps), "")
-	opt.CreateGui(bar)
+	options.CreateGui(bar)
 
 	for i, portal := range gamestate.World.KdTree {
 		ptr := &(portal.(*Portal).Orientation)
@@ -55,6 +53,5 @@ func NewGameState(window *sdl.Window, world *World) (gamestate *GameState) {
 }
 
 func (this *GameState) Delete() {
-	this.Options.Save()
 	this.Bar.Delete()
 }

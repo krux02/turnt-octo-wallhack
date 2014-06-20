@@ -9,6 +9,7 @@ import (
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/generation"
 	"github.com/krux02/turnt-octo-wallhack/rendering"
+	"github.com/krux02/turnt-octo-wallhack/settings"
 	"github.com/krux02/tw"
 	"github.com/veandco/go-sdl2/sdl"
 	"os"
@@ -56,7 +57,18 @@ func main() {
 	sdl.GL_SetAttribute(sdl.GL_DEPTH_SIZE, 24)
 	sdl.GL_SetAttribute(sdl.GL_CONTEXT_FLAGS, sdl.GL_CONTEXT_DEBUG_FLAG|sdl.GL_CONTEXT_FORWARD_COMPATIBLE_FLAG)
 
-	window := sdl.CreateWindow("TOW", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, 1024, 768, sdl.WINDOW_OPENGL|sdl.WINDOW_SHOWN|sdl.WINDOW_RESIZABLE)
+	options := new(settings.BoolOptions)
+	options.Load()
+	defer options.Save()
+
+	if options.Width == 0 {
+		options.Width = 1280
+	}
+	if options.Height == 0 {
+		options.Height = 800
+	}
+
+	window := sdl.CreateWindow("TOW", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, options.Width, options.Height, sdl.WINDOW_OPENGL|sdl.WINDOW_SHOWN|sdl.WINDOW_RESIZABLE)
 	if window == nil {
 		panic("cant create window")
 	}
@@ -93,7 +105,7 @@ func main() {
 	debugContext.InitDebugContext()
 
 	world := generation.GenerateWorld(64, 64, 2)
-	gs := gamestate.NewGameState(window, world)
+	gs := gamestate.NewGameState(options, window, world)
 	defer gs.Delete()
 	worldRenderer := rendering.NewWorldRenderer(window, gs.World)
 	defer worldRenderer.Delete()
@@ -115,7 +127,7 @@ func main() {
 
 func OvrTest() {
 	numDevices := ovr.HmdDetect()
-	fmt.Printf("libovr found %d connected devices\n")
+	fmt.Printf("libovr found %d connected devices\n", numDevices)
 
 	if numDevices > 0 {
 		hmd := ovr.HmdCreate(0)

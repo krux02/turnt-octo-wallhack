@@ -21,7 +21,8 @@ type BoolOptions struct {
 	DebugLines,
 	DepthTestDebugLines,
 	PersistentPlayerPos bool
-	WaterHeight float32
+	WaterHeight   float32
+	Width, Height int
 }
 
 func (this *BoolOptions) Load() {
@@ -52,6 +53,10 @@ func (this *BoolOptions) Load() {
 			var f float64
 			fmt.Sscan(value, &f)
 			fieldValue.SetFloat(f)
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			var f int64
+			fmt.Sscan(value, &f)
+			fieldValue.SetInt(f)
 		}
 	}
 }
@@ -71,9 +76,10 @@ func (this *BoolOptions) Save() {
 			fmt.Fprintf(file, "%s %t\n", field.Name, fieldValue.Bool())
 		case reflect.Float32, reflect.Float64:
 			fmt.Fprintf(file, "%s %f\n", field.Name, fieldValue.Float())
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			fmt.Fprintf(file, "%s %d\n", field.Name, fieldValue.Int())
 		}
 	}
-
 }
 
 func (this *BoolOptions) CreateGui(bar *tw.Bar) {
@@ -91,6 +97,12 @@ func (this *BoolOptions) CreateGui(bar *tw.Bar) {
 			bar.AddVarRW(field.Name, tw.TYPE_FLOAT, unsafe.Pointer(fieldValue.Addr().Pointer()), "")
 		case reflect.Float64:
 			bar.AddVarRW(field.Name, tw.TYPE_DOUBLE, unsafe.Pointer(fieldValue.Addr().Pointer()), "")
+		case reflect.Int, reflect.Int32, reflect.Int64:
+			bar.AddVarRW(field.Name, tw.TYPE_INT32, unsafe.Pointer(fieldValue.Addr().Pointer()), "")
+		case reflect.Int16:
+			bar.AddVarRW(field.Name, tw.TYPE_INT16, unsafe.Pointer(fieldValue.Addr().Pointer()), "")
+		case reflect.Int8:
+			bar.AddVarRW(field.Name, tw.TYPE_INT8, unsafe.Pointer(fieldValue.Addr().Pointer()), "")
 		}
 	}
 }

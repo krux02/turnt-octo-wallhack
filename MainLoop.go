@@ -32,7 +32,7 @@ func MainLoop(gs *gamestate.GameState, renderer *rendering.WorldRenderer) {
 
 		simulation.Simulate(gs, renderer.ParticleSystem)
 		renderer.View = gs.Camera.View()
-		renderer.Render(gs.World, &gs.Options, window)
+		renderer.Render(gs.World, gs.Options, window)
 
 		tw.Draw()
 		sdl.GL_SwapWindow(window)

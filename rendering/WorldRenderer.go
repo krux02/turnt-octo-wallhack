@@ -33,7 +33,8 @@ type WorldRenderer struct {
 	ScreenQuad         *ScreenQuad
 	ScreenQuadRenderer *renderstuff.Renderer
 	DebugRenderer      *LineRenderer
-	Hmd                *ovr.Hmd
+	OvrStuff           *OvrStuff
+	FrameIndex         int
 	MaxRecursion       int
 	screenShot         bool
 }
@@ -50,25 +51,64 @@ func (this *WorldRenderer) ScreenShot() {
 	this.screenShot = true
 }
 
+type OvrStuff struct {
+	Hmd           *ovr.Hmd
+	HmdDesc       ovr.HmdDesc
+	Proj          [2]mgl.Mat4
+	EyeRenderDesc [2]ovr.EyeRenderDesc
+}
+
 func NewWorldRenderer(window *sdl.Window, w *gamestate.World) *WorldRenderer {
 	width, height := window.GetSize()
 
-	hmd := ovr.HmdCreate(0)
-	desc := hmd.GetDesc()
-	eyeFovIn := desc.DefaultEyeFov
+	ovrStuff := new(OvrStuff)
 
-	fmt.Println(desc)
+	ovrStuff.Hmd = ovr.HmdCreate(0)
+	if ovrStuff.Hmd == nil {
+		fmt.Println("cant create Hmd device")
+		ovrStuff.Hmd = ovr.HmdCreateDebug(ovr.Hmd_DK1)
+	}
+	ovrStuff.HmdDesc = ovrStuff.Hmd.GetDesc()
+	eyeFovIn := ovrStuff.HmdDesc.DefaultEyeFov
 
-	var apiConfig ovr.RenderApiConfig
-	apiConfig.Header.API = ovr.RenderAPI_OpenGL
-	apiConfig.Header.Multisample = 1
-	apiConfig.Header.RTSize = ovr.Sizei{1024, 768}
+	fmt.Printf("%+v\n", ovrStuff.HmdDesc)
+
+	var apiConfig ovr.GLConfig
+	apiConfig.OGL().Header.API = ovr.RenderAPI_OpenGL
+	apiConfig.OGL().Header.Multisample = 1
+	apiConfig.OGL().Header.RTSize = ovr.Sizei{int32(width), int32(height)}
 	distortionCaps := ovr.DistortionCap_Chromatic
-
-	eyeRenderDesc, ok := hmd.ConfigureRendering(&apiConfig, distortionCaps, eyeFovIn)
+	var ok bool
+	ovrStuff.EyeRenderDesc, ok = ovrStuff.Hmd.ConfigureRendering(apiConfig.Config(), distortionCaps, eyeFovIn)
 	if !ok {
 		panic("configure rendering failed")
 	} else {
+		fmt.Printf("%+v\n", ovrStuff.EyeRenderDesc)
+	}
+
+	ovrStuff.Proj[0] = mgl.Mat4(ovr.MatrixProjection(eyeFovIn[0], 0.3, 100000, false).FlatArray())
+	ovrStuff.Proj[1] = mgl.Mat4(ovr.MatrixProjection(eyeFovIn[1], 0.3, 100000, false).FlatArray())
+
+	return &WorldRenderer{
+		Proj:               mgl.Perspective(90, float32(width)/float32(height), 0.3, 1000),
+		View:               mgl.Ident4(),
+		ClippingPlane_ws:   mgl.Vec4{1, 0, 0, -1000000},
+		Textures:           NewTextures(w.HeightMap),
+		HeightMapRenderer:  NewHeightMapRenderer(),
+		WaterRendererA:     NewSurfaceWaterRenderer(),
+		WaterRendererB:     NewDebugWaterRenderer(),
+		MeshRenderer:       NewMeshRenderer(),
+		PortalRenderer:     NewPortalRenderer(),
+		TreeRenderer:       NewTreeRenderer(),
+		SkyboxRenderer:     NewSkyboxRenderer(),
+		Skybox:             &Skybox{},
+		ParticleSystem:     particles.NewParticleSystem(w, 10000, mgl.Vec3{32, 32, 32}, 1, 250),
+		Framebuffer:        [2]*FrameBuffer{NewFrameBuffer(window.GetSize()), NewFrameBuffer(window.GetSize())},
+		ScreenQuad:         &ScreenQuad{},
+		ScreenQuadRenderer: NewScreenQuadRenderer(),
+		DebugRenderer:      NewLineRenderer(),
+		OvrStuff:           ovrStuff,
+		MaxRecursion:       1,
 	}
 }
 
@@ -92,23 +132,33 @@ func (this *WorldRenderer) Delete() {
 
 func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOptions, window *sdl.Window) {
 
-	this.Hmd.BeginEyeRender(ovr.Eye_Left)
-	camera := ww.Player.Camera
-	p0 := camera.Pos4f()
-
+	p0 := ww.Player.Camera.Pos4f()
 	w, h := window.GetSize()
 
-	camera.MoveRelative(mgl.Vec4{-0.1, 0, 0, 0})
-	this.View = (ww.PortalTransform(p0, camera.Pos4f()).Mul4(camera.Model())).Inv()
-	viewport := Viewport{0, 0, w / 2, h}
-	viewport.Activate()
-	this.render(ww, options, viewport, 0, nil)
+	var texture ovr.GLTexture
+	textureData := texture.OGL()
+	textureData.Header.API = ovr.RenderAPI_OpenGL
+	textureData.Header.TextureSize = ovr.Sizei{int32(w), int32(h)}
+	textureData.TexId = uint32(this.Framebuffer[0].RenderTexture)
 
-	camera.MoveRelative(mgl.Vec4{+0.2, 0, 0, 0})
-	this.View = (ww.PortalTransform(p0, camera.Pos4f()).Mul4(camera.Model())).Inv()
-	viewport.X = w / 2
-	viewport.Activate()
-	this.render(ww, options, viewport, 0, nil)
+	viewports := [2]Viewport{Viewport{0, 0, w / 2, h}, Viewport{w / 2, 0, w / 2, h}}
+
+	this.OvrStuff.Hmd.BeginFrame(this.FrameIndex)
+	for i := 0; i < 2; i++ {
+		eye := this.OvrStuff.HmdDesc.EyeRenderOrder[i]
+		pose := this.OvrStuff.Hmd.BeginEyeRender(eye)
+
+		va := this.OvrStuff.EyeRenderDesc[eye].ViewAdjust
+
+		camera := ww.Player.Camera
+		camera.MoveRelative(mgl.Vec4{va.X, va.Y, va.Z, 0})
+		this.View = (ww.PortalTransform(p0, camera.Pos4f()).Mul4(camera.Model())).Inv()
+		viewports[eye].Activate()
+		textureData.Header.RenderViewport = viewports[eye].ToOvrRecti()
+		this.render(ww, options, viewports[eye], 0, nil)
+		this.OvrStuff.Hmd.EndEyeRender(eye, pose, texture.Texture())
+	}
+	this.OvrStuff.Hmd.EndFrame()
 
 	gl.Viewport(0, 0, w, h)
 
@@ -120,10 +170,20 @@ func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOpt
 		this.screenShot = false
 		helpers.SaveTexture(gl.TEXTURE_RECTANGLE, 0, "screenshot.png")
 	}
+
+	this.FrameIndex++
 }
 
 type Viewport struct {
 	X, Y, W, H int
+}
+
+func (this *Viewport) ToOvrRecti() (rect ovr.Recti) {
+	rect.Pos.X = int32(this.X)
+	rect.Pos.Y = int32(this.Y)
+	rect.Size.W = int32(this.W)
+	rect.Size.H = int32(this.H)
+	return
 }
 
 func (this *Viewport) Activate() {
