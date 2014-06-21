@@ -148,10 +148,12 @@ func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOpt
 		eye := this.OvrStuff.HmdDesc.EyeRenderOrder[i]
 		pose := this.OvrStuff.Hmd.BeginEyeRender(eye)
 
-		va := this.OvrStuff.EyeRenderDesc[eye].ViewAdjust
+		v0 := Vec3(this.OvrStuff.EyeRenderDesc[eye].ViewAdjust)
+		v1 := Vec3(pose.Position)
 
 		camera := ww.Player.Camera
-		camera.MoveRelative(mgl.Vec4{va.X, va.Y, va.Z, 0})
+		camera.MoveRelative(v0.Add(v1).Vec4(0))
+		this.Proj = this.OvrStuff.Proj[eye]
 		this.View = (ww.PortalTransform(p0, camera.Pos4f()).Mul4(camera.Model())).Inv()
 		viewports[eye].Activate()
 		textureData.Header.RenderViewport = viewports[eye].ToOvrRecti()
@@ -172,6 +174,14 @@ func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOpt
 	}
 
 	this.FrameIndex++
+}
+
+func Vec3(v ovr.Vector3f) mgl.Vec3 {
+	return mgl.Vec3{v.X, v.Y, v.Z}
+}
+
+func Vec4(v ovr.Vector3f, w float32) mgl.Vec4 {
+	return mgl.Vec4{v.X, v.Y, v.Z, w}
 }
 
 type Viewport struct {
