@@ -143,7 +143,7 @@ func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOpt
 
 	viewports := [2]Viewport{Viewport{0, 0, w / 2, h}, Viewport{w / 2, 0, w / 2, h}}
 
-	this.OvrStuff.Hmd.BeginFrame(this.FrameIndex)
+	this.OvrStuff.Hmd.BeginFrame(0)
 	for i := 0; i < 2; i++ {
 		eye := this.OvrStuff.HmdDesc.EyeRenderOrder[i]
 		pose := this.OvrStuff.Hmd.BeginEyeRender(eye)
@@ -163,8 +163,8 @@ func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOpt
 	gl.Viewport(0, 0, w, h)
 
 	gl.ActiveTexture(gl.TEXTURE0)
-	this.Framebuffer[0].RenderTexture.Bind(gl.TEXTURE_RECTANGLE)
-	this.ScreenQuadRenderer.Render(this.ScreenQuad, this.Proj, this.View, this.ClippingPlane_ws, nil)
+	this.Framebuffer[0].RenderTexture.Bind(target)
+	//this.ScreenQuadRenderer.Render(this.ScreenQuad, this.Proj, this.View, this.ClippingPlane_ws, nil)
 
 	if this.screenShot {
 		this.screenShot = false
@@ -365,7 +365,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 			this.View = oldView
 
 			gl.ActiveTexture(gl.TEXTURE0)
-			this.Framebuffer[recursion+1].RenderTexture.Bind(gl.TEXTURE_RECTANGLE)
+			this.Framebuffer[recursion+1].RenderTexture.Bind(target)
 
 			if scissor {
 				//gl.Scissor(0, 0, w, h)

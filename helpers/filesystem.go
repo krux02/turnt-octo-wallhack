@@ -15,7 +15,8 @@ func Listen(file string, observer chan string) {
 	if err != nil {
 		panic(err)
 	}
-	err = watcher.WatchFlags(file, fsnotify.FSN_MODIFY)
+
+	err = watcher.Watch(file)
 	if err != nil {
 		panic(err)
 	}
