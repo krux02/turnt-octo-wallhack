@@ -1,0 +1,28 @@
+#!/bin/bash
+go get -u github.com/veandco/go-sdl2/sdl_image
+go get -u github.com/veandco/go-sdl2/sdl_mixer
+go get -u github.com/veandco/go-sdl2/sdl_ttf
+go get -u github.com/go-gl/gl
+go get -u github.com/krux02/mathgl/mgl32
+go get -u github.com/krux02/assimp
+go get -u code.google.com/p/go.exp/fsnotify
+go get -u github.com/krux02/tw
+go get -u github.com/veandco/go-sdl2/sdl_ttf
+go get -u github.com/krux02/libovr
+go get -u github.com/go-gl/glu
+go get -u github.com/go-gl/glh
+
+go get -u github.com/krux02/turnt-octo-wallhack/debug
+go get -u github.com/krux02/turnt-octo-wallhack/settings
+go get -u github.com/krux02/turnt-octo-wallhack/debugContext
+go get -u github.com/krux02/turnt-octo-wallhack/math32
+go get -u github.com/krux02/turnt-octo-wallhack/mathint
+go get -u github.com/krux02/turnt-octo-wallhack/constants
+go get -u github.com/krux02/turnt-octo-wallhack/helpers
+go get -u github.com/krux02/turnt-octo-wallhack/renderstuff
+go get -u github.com/krux02/turnt-octo-wallhack/gamestate
+go get -u github.com/krux02/turnt-octo-wallhack/generation
+go get -u github.com/krux02/turnt-octo-wallhack/particles
+go get -u github.com/krux02/turnt-octo-wallhack/rendering
+go get -u github.com/krux02/turnt-octo-wallhack/simulation
+

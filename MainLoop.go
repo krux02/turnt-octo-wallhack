@@ -34,7 +34,9 @@ func MainLoop(gs *gamestate.GameState, renderer *rendering.WorldRenderer) {
 		renderer.View = gs.Camera.View()
 		renderer.Render(gs.World, gs.Options, window)
 
-		tw.Draw()
+		if !gs.Options.RiftRender {
+			tw.Draw()
+		}
 		sdl.GL_SwapWindow(window)
 
 		helpers.UpdateManagers()

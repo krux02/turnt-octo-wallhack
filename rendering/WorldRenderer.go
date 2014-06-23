@@ -52,42 +52,70 @@ func (this *WorldRenderer) ScreenShot() {
 }
 
 type OvrStuff struct {
-	Hmd           *ovr.Hmd
-	HmdDesc       ovr.HmdDesc
-	Proj          [2]mgl.Mat4
-	EyeRenderDesc [2]ovr.EyeRenderDesc
+	Hmd                  *ovr.Hmd
+	HmdDesc              ovr.HmdDesc
+	Proj                 [2]mgl.Mat4
+	EyeRenderDesc        [2]ovr.EyeRenderDesc
+	ViewportsFramebuffer [2]Viewport
+	ViewportsScreen      [2]Viewport
+	Textures             [2]ovr.GLTexture
 }
 
-func NewWorldRenderer(window *sdl.Window, w *gamestate.World) *WorldRenderer {
-	width, height := window.GetSize()
-
-	ovrStuff := new(OvrStuff)
-
-	ovrStuff.Hmd = ovr.HmdCreate(0)
-	if ovrStuff.Hmd == nil {
+func (this *OvrStuff) Init(w, h int, fb *FrameBuffer) *OvrStuff {
+	this.Hmd = ovr.HmdCreate(0)
+	if this.Hmd == nil {
 		fmt.Println("cant create Hmd device")
-		ovrStuff.Hmd = ovr.HmdCreateDebug(ovr.Hmd_DK1)
+		this.Hmd = ovr.HmdCreateDebug(ovr.Hmd_DK1)
 	}
-	ovrStuff.HmdDesc = ovrStuff.Hmd.GetDesc()
-	eyeFovIn := ovrStuff.HmdDesc.DefaultEyeFov
-
-	fmt.Printf("%+v\n", ovrStuff.HmdDesc)
+	this.HmdDesc = this.Hmd.GetDesc()
+	fmt.Printf("%+v\n", this.HmdDesc)
+	eyeFovIn := this.HmdDesc.DefaultEyeFov
 
 	var apiConfig ovr.GLConfig
 	apiConfig.OGL().Header.API = ovr.RenderAPI_OpenGL
 	apiConfig.OGL().Header.Multisample = 1
-	apiConfig.OGL().Header.RTSize = ovr.Sizei{int32(width), int32(height)}
+	apiConfig.OGL().Header.RTSize = ovr.Sizei{int32(w), int32(h)}
 	distortionCaps := ovr.DistortionCap_Chromatic
 	var ok bool
-	ovrStuff.EyeRenderDesc, ok = ovrStuff.Hmd.ConfigureRendering(apiConfig.Config(), distortionCaps, eyeFovIn)
+	this.EyeRenderDesc, ok = this.Hmd.ConfigureRendering(apiConfig.Config(), distortionCaps, eyeFovIn)
 	if !ok {
 		panic("configure rendering failed")
 	} else {
-		fmt.Printf("%+v\n", ovrStuff.EyeRenderDesc)
+		fmt.Printf("%+v\n", this.EyeRenderDesc)
 	}
 
-	ovrStuff.Proj[0] = mgl.Mat4(ovr.MatrixProjection(eyeFovIn[0], 0.3, 100000, false).FlatArray())
-	ovrStuff.Proj[1] = mgl.Mat4(ovr.MatrixProjection(eyeFovIn[1], 0.3, 100000, false).FlatArray())
+	// ovr is row major
+	this.Proj[0] = mgl.Mat4(ovr.MatrixProjection(eyeFovIn[0], 0.3, 1000, true).FlatArray()).Transpose()
+	this.Proj[1] = mgl.Mat4(ovr.MatrixProjection(eyeFovIn[1], 0.3, 1000, true).FlatArray()).Transpose()
+
+	this.ViewportsFramebuffer[0] = Viewport{0, 0, fb.W / 2, fb.H}
+	this.ViewportsFramebuffer[1] = Viewport{fb.W / 2, 0, fb.W / 2, fb.H}
+	this.ViewportsScreen[0] = Viewport{0, 0, w / 2, h}
+	this.ViewportsScreen[1] = Viewport{w / 2, 0, w / 2, h}
+
+	for eye := ovr.Eye_Left; eye < ovr.Eye_Count; eye++ {
+		textureData := this.Textures[eye].OGL()
+		textureData.Header.RenderViewport = this.ViewportsFramebuffer[eye].ToOvrRecti()
+		textureData.Header.API = ovr.RenderAPI_OpenGL
+		textureData.Header.TextureSize = ovr.Sizei{int32(fb.W), int32(fb.H)}
+		textureData.TexId = uint32(fb.RenderTexture)
+	}
+
+	return this
+}
+
+func NewWorldRenderer(window *sdl.Window, w *gamestate.World) *WorldRenderer {
+
+	width, height := 1280, 800
+	window.SetSize(width, height)
+
+	framebufferWidth, FrameBufferHeight := 1920, 1080
+	framebuffers := [2]*FrameBuffer{
+		NewFrameBuffer(framebufferWidth, FrameBufferHeight),
+		NewFrameBuffer(framebufferWidth, FrameBufferHeight),
+	}
+
+	ovrStuff := new(OvrStuff).Init(width, height, framebuffers[0])
 
 	return &WorldRenderer{
 		Proj:               mgl.Perspective(90, float32(width)/float32(height), 0.3, 1000),
@@ -103,7 +131,7 @@ func NewWorldRenderer(window *sdl.Window, w *gamestate.World) *WorldRenderer {
 		SkyboxRenderer:     NewSkyboxRenderer(),
 		Skybox:             &Skybox{},
 		ParticleSystem:     particles.NewParticleSystem(w, 10000, mgl.Vec3{32, 32, 32}, 1, 250),
-		Framebuffer:        [2]*FrameBuffer{NewFrameBuffer(window.GetSize()), NewFrameBuffer(window.GetSize())},
+		Framebuffer:        framebuffers,
 		ScreenQuad:         &ScreenQuad{},
 		ScreenQuadRenderer: NewScreenQuadRenderer(),
 		DebugRenderer:      NewLineRenderer(),
@@ -133,40 +161,37 @@ func (this *WorldRenderer) Delete() {
 func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOptions, window *sdl.Window) {
 
 	p0 := ww.Player.Camera.Pos4f()
-	w, h := window.GetSize()
+	w, h := this.Framebuffer[0].W, this.Framebuffer[0].H
 
-	var texture ovr.GLTexture
-	textureData := texture.OGL()
-	textureData.Header.API = ovr.RenderAPI_OpenGL
-	textureData.Header.TextureSize = ovr.Sizei{int32(w), int32(h)}
-	textureData.TexId = uint32(this.Framebuffer[0].RenderTexture)
+	if options.RiftRender {
+		proj := this.Proj
+		this.OvrStuff.Hmd.BeginFrame(0)
+		for i := 0; i < 2; i++ {
+			eye := this.OvrStuff.HmdDesc.EyeRenderOrder[i]
+			pose := this.OvrStuff.Hmd.BeginEyeRender(eye)
 
-	viewports := [2]Viewport{Viewport{0, 0, w / 2, h}, Viewport{w / 2, 0, w / 2, h}}
+			v0 := Vec3(this.OvrStuff.EyeRenderDesc[eye].ViewAdjust)
+			v3 := v0.Add(Vec3(pose.Position)).Vec4(0)
 
-	this.OvrStuff.Hmd.BeginFrame(0)
-	for i := 0; i < 2; i++ {
-		eye := this.OvrStuff.HmdDesc.EyeRenderOrder[i]
-		pose := this.OvrStuff.Hmd.BeginEyeRender(eye)
-
-		v0 := Vec3(this.OvrStuff.EyeRenderDesc[eye].ViewAdjust)
-		v1 := Vec3(pose.Position)
-
-		camera := ww.Player.Camera
-		camera.MoveRelative(v0.Add(v1).Vec4(0))
-		this.Proj = this.OvrStuff.Proj[eye]
-		this.View = (ww.PortalTransform(p0, camera.Pos4f()).Mul4(camera.Model())).Inv()
-		viewports[eye].Activate()
-		textureData.Header.RenderViewport = viewports[eye].ToOvrRecti()
-		this.render(ww, options, viewports[eye], 0, nil)
-		this.OvrStuff.Hmd.EndEyeRender(eye, pose, texture.Texture())
+			camera := ww.Player.Camera
+			camera.MoveRelative(v3)
+			this.Proj = this.OvrStuff.Proj[eye]
+			this.View = (ww.PortalTransform(p0, camera.Pos4f()).Mul4(camera.Model())).Inv()
+			viewport := this.OvrStuff.ViewportsFramebuffer[eye]
+			viewport.Activate()
+			this.render(ww, options, viewport, 0, nil)
+			this.OvrStuff.Hmd.EndEyeRender(eye, pose, this.OvrStuff.Textures[eye].Texture())
+		}
+		this.OvrStuff.Hmd.EndFrame()
+		this.Proj = proj
+	} else {
+		viewport := Viewport{0, 0, w, h}
+		this.render(ww, options, viewport, 0, nil)
+		viewport.Activate()
+		gl.ActiveTexture(gl.TEXTURE0)
+		this.Framebuffer[0].RenderTexture.Bind(target)
+		this.ScreenQuadRenderer.Render(this.ScreenQuad, this.Proj, this.View, this.ClippingPlane_ws, nil)
 	}
-	this.OvrStuff.Hmd.EndFrame()
-
-	gl.Viewport(0, 0, w, h)
-
-	gl.ActiveTexture(gl.TEXTURE0)
-	this.Framebuffer[0].RenderTexture.Bind(target)
-	//this.ScreenQuadRenderer.Render(this.ScreenQuad, this.Proj, this.View, this.ClippingPlane_ws, nil)
 
 	if this.screenShot {
 		this.screenShot = false

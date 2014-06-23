@@ -108,6 +108,8 @@ func Input(gs *gamestate.GameState, worldRenderer *rendering.WorldRenderer) bool
 				case sdl.SCANCODE_SPACE:
 				case sdl.SCANCODE_ESCAPE:
 					running = false
+				case sdl.SCANCODE_F3:
+					gs.Options.RiftRender = !gs.Options.RiftRender
 				}
 			case *sdl.KeyUpEvent:
 			}

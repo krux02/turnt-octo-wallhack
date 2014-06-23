@@ -20,7 +20,8 @@ type BoolOptions struct {
 	WaterNormals,
 	DebugLines,
 	DepthTestDebugLines,
-	PersistentPlayerPos bool
+	PersistentPlayerPos,
+	RiftRender bool
 	WaterHeight   float32
 	Width, Height int
 }
