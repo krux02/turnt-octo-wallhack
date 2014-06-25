@@ -13,14 +13,9 @@ import (
 
 func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOptions, viewport Viewport, recursion int, srcPortal *gamestate.Portal) {
 
+	fmt.Println(recursion)
 	this.Framebuffer[recursion].Bind()
 	defer this.Framebuffer[recursion].Unbind()
-
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Println("Recovered in f", r)
-		}
-	}()
 
 	gl.Clear(gl.DEPTH_BUFFER_BIT)
 
@@ -99,8 +94,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 		// do not draw the nearest portal or the portal behind the source portal if available
 		if (nearestPortal != portal) && (srcPortal == nil || srcPortal.Target != portal) {
 			gl.Enable(gl.DEPTH_CLAMP)
-			additionalUniforms := map[string]int{"Image": 7}
-			this.PortalRenderer.Render(portal, this.Proj, this.View, this.ClippingPlane_ws, additionalUniforms)
+			this.PortalRenderer.Render(nearestPortal, this.Proj, this.View, this.ClippingPlane_ws, PortalRenderUniforms{viewport, 0})
 		}
 	}
 
@@ -117,7 +111,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 	}
 
 	// draw
-	if recursion < this.MaxRecursion {
+	if recursion < MaxRecursion {
 		portal := nearestPortal
 		pos := portal.Position
 		rotation := portal.Orientation.Mat4()
@@ -172,17 +166,17 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 			this.ClippingPlane_ws = oldClippingPlane
 			this.View = oldView
 
-			gl.ActiveTexture(gl.TEXTURE0)
-			this.Framebuffer[recursion+1].RenderTexture.Bind(target)
-
 			if scissor {
 				//gl.Scissor(0, 0, w, h)
 				gl.Disable(gl.SCISSOR_TEST)
 			}
 			this.Framebuffer[recursion].Bind()
 			gl.Enable(gl.DEPTH_CLAMP)
-			additionalUniforms := map[string]int{"Image": 0}
-			this.PortalRenderer.Render(nearestPortal, this.Proj, this.View, this.ClippingPlane_ws, additionalUniforms)
+
+			gl.ActiveTexture(gl.TEXTURE0)
+			this.Framebuffer[recursion+1].RenderTexture.Bind(target)
+
+			this.PortalRenderer.Render(nearestPortal, this.Proj, this.View, this.ClippingPlane_ws, PortalRenderUniforms{viewport, 0})
 		}
 	}
 }

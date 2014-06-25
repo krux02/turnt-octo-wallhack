@@ -14,6 +14,8 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+const MaxRecursion = 1
+
 type WorldRenderer struct {
 	Proj, View         mgl.Mat4
 	ClippingPlane_ws   mgl.Vec4
@@ -28,13 +30,12 @@ type WorldRenderer struct {
 	Skybox             *Skybox
 	SkyboxRenderer     *renderstuff.Renderer
 	ParticleSystem     *particles.ParticleSystem
-	Framebuffer        [2]*FrameBuffer
+	Framebuffer        [MaxRecursion + 1]*FrameBuffer
 	ScreenQuad         *ScreenQuad
 	ScreenQuadRenderer *renderstuff.Renderer
 	DebugRenderer      *LineRenderer
 	OvrStuff           *OvrStuff
 	FrameIndex         int
-	MaxRecursion       int
 	width, height      int
 	riftRender         bool
 	screenShot         bool
@@ -77,9 +78,9 @@ func NewWorldRenderer(window *sdl.Window, w *gamestate.World) *WorldRenderer {
 	width, height := window.GetSize()
 
 	//framebufferWidth, FrameBufferHeight := 1920, 1080
-	framebuffers := [2]*FrameBuffer{
-		NewFrameBuffer(width, height),
-		NewFrameBuffer(width, height),
+	var framebuffers [MaxRecursion + 1]*FrameBuffer
+	for i := 0; i < MaxRecursion+1; i++ {
+		framebuffers[i] = NewFrameBuffer(width, height)
 	}
 
 	ovrStuff := new(OvrStuff).Init(width, height, framebuffers[0])
@@ -103,7 +104,6 @@ func NewWorldRenderer(window *sdl.Window, w *gamestate.World) *WorldRenderer {
 		ScreenQuadRenderer: NewScreenQuadRenderer(),
 		DebugRenderer:      NewLineRenderer(),
 		OvrStuff:           ovrStuff,
-		MaxRecursion:       1,
 	}
 }
 
@@ -159,6 +159,7 @@ func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOpt
 		//fmt.Println(viewport)
 		viewport.Activate()
 		gl.ActiveTexture(gl.TEXTURE0)
+
 		this.Framebuffer[0].RenderTexture.Bind(target)
 		this.ScreenQuadRenderer.Render(this.ScreenQuad, this.Proj, this.View, this.ClippingPlane_ws, mgl.Vec2{float32(w), float32(h)})
 	}

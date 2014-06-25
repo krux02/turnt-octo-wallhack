@@ -6,6 +6,8 @@ in vec4 Normal_ms;
 out vec4 Normal_cs;
 out vec4 Position_cs;
 
+out vec2 TexCoord;
+
 uniform mat4 Proj;
 uniform mat4 View;
 uniform mat4 Model;
@@ -18,5 +20,7 @@ void main() {
 	vec4 Position_ws = Model * Vertex_ms;
 	Position_cs = View * Position_ws;
 	gl_ClipDistance[0] = dot(Position_ws, ClippingPlane_ws);
-	gl_Position = Proj * Position_cs;
+	vec4 clipPos = Proj * Position_cs; 
+	gl_Position = clipPos;
+	TexCoord = ((clipPos.xy / vec2(clipPos.w)) + vec2(1)) / vec2(2);
 }

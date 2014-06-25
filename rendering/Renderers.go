@@ -1,7 +1,7 @@
 package rendering
 
 import (
-	//"fmt"
+	"fmt"
 	"github.com/go-gl/gl"
 	mgl "github.com/krux02/mathgl/mgl32"
 	"github.com/krux02/turnt-octo-wallhack/constants"
@@ -57,9 +57,21 @@ func NewDebugWaterRenderer() *renderstuff.Renderer {
 	return renderer
 }
 
+type PortalRenderUniforms struct {
+	Viewport Viewport
+	Image    int
+}
+
 func NewPortalRenderer() *renderstuff.Renderer {
 	program := helpers.MakeProgram("Portal.vs", "Portal.fs")
-	return renderstuff.NewRenderer(program, "Portal", nil, nil)
+	return renderstuff.NewRenderer(program, "Portal", nil, PortalRenderUpdate)
+}
+
+func PortalRenderUpdate(loc *renderstuff.RenderLocations, entity renderstuff.IRenderEntity, etc interface{}) {
+	uniforms := etc.(PortalRenderUniforms)
+	loc.Viewport.Uniform4f(float32(uniforms.Viewport.X), float32(uniforms.Viewport.Y), float32(uniforms.Viewport.W), float32(uniforms.Viewport.H))
+	fmt.Println(uniforms.Viewport)
+	loc.Image.Uniform1i(uniforms.Image)
 }
 
 func NewMeshRenderer() (this *renderstuff.Renderer) {
