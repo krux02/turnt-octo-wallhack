@@ -12,7 +12,6 @@ import (
 	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 	"github.com/krux02/turnt-octo-wallhack/settings"
 	"github.com/veandco/go-sdl2/sdl"
-	"math"
 )
 
 type WorldRenderer struct {
@@ -36,14 +35,19 @@ type WorldRenderer struct {
 	OvrStuff           *OvrStuff
 	FrameIndex         int
 	MaxRecursion       int
+	width, height      int
+	riftRender         bool
 	screenShot         bool
 }
 
 func (this *WorldRenderer) Resize(width, height int) {
-	this.Proj = mgl.Perspective(90, float32(width)/float32(height), 0.3, 1000)
-	gl.Viewport(0, 0, width, height)
-	for _, fb := range this.Framebuffer {
-		fb.Resize(width, height)
+	if !this.riftRender {
+		this.Proj = mgl.Perspective(90, float32(width)/float32(height), 0.3, 1000)
+		this.width = width
+		this.height = height
+		for _, fb := range this.Framebuffer {
+			fb.Resize(width, height)
+		}
 	}
 }
 
@@ -51,68 +55,31 @@ func (this *WorldRenderer) ScreenShot() {
 	this.screenShot = true
 }
 
-type OvrStuff struct {
-	Hmd                  *ovr.Hmd
-	HmdDesc              ovr.HmdDesc
-	Proj                 [2]mgl.Mat4
-	EyeRenderDesc        [2]ovr.EyeRenderDesc
-	ViewportsFramebuffer [2]Viewport
-	ViewportsScreen      [2]Viewport
-	Textures             [2]ovr.GLTexture
+func (this *WorldRenderer) ToggleRift() {
+	this.riftRender = !this.riftRender
+
+	if this.riftRender {
+		for _, fb := range this.Framebuffer {
+			fb.Resize(1920, 1080)
+		}
+		this.width, this.height = 1920, 1080
+	} else {
+		this.Resize(1280, 800)
+	}
 }
 
-func (this *OvrStuff) Init(w, h int, fb *FrameBuffer) *OvrStuff {
-	this.Hmd = ovr.HmdCreate(0)
-	if this.Hmd == nil {
-		fmt.Println("cant create Hmd device")
-		this.Hmd = ovr.HmdCreateDebug(ovr.Hmd_DK1)
-	}
-	this.HmdDesc = this.Hmd.GetDesc()
-	fmt.Printf("%+v\n", this.HmdDesc)
-	eyeFovIn := this.HmdDesc.DefaultEyeFov
-
-	var apiConfig ovr.GLConfig
-	apiConfig.OGL().Header.API = ovr.RenderAPI_OpenGL
-	apiConfig.OGL().Header.Multisample = 1
-	apiConfig.OGL().Header.RTSize = ovr.Sizei{int32(w), int32(h)}
-	distortionCaps := ovr.DistortionCap_Chromatic
-	var ok bool
-	this.EyeRenderDesc, ok = this.Hmd.ConfigureRendering(apiConfig.Config(), distortionCaps, eyeFovIn)
-	if !ok {
-		panic("configure rendering failed")
-	} else {
-		fmt.Printf("%+v\n", this.EyeRenderDesc)
-	}
-
-	// ovr is row major
-	this.Proj[0] = mgl.Mat4(ovr.MatrixProjection(eyeFovIn[0], 0.3, 1000, true).FlatArray()).Transpose()
-	this.Proj[1] = mgl.Mat4(ovr.MatrixProjection(eyeFovIn[1], 0.3, 1000, true).FlatArray()).Transpose()
-
-	this.ViewportsFramebuffer[0] = Viewport{0, 0, fb.W / 2, fb.H}
-	this.ViewportsFramebuffer[1] = Viewport{fb.W / 2, 0, fb.W / 2, fb.H}
-	this.ViewportsScreen[0] = Viewport{0, 0, w / 2, h}
-	this.ViewportsScreen[1] = Viewport{w / 2, 0, w / 2, h}
-
-	for eye := ovr.Eye_Left; eye < ovr.Eye_Count; eye++ {
-		textureData := this.Textures[eye].OGL()
-		textureData.Header.RenderViewport = this.ViewportsFramebuffer[eye].ToOvrRecti()
-		textureData.Header.API = ovr.RenderAPI_OpenGL
-		textureData.Header.TextureSize = ovr.Sizei{int32(fb.W), int32(fb.H)}
-		textureData.TexId = uint32(fb.RenderTexture)
-	}
-
-	return this
+func (this *WorldRenderer) RiftRender() bool {
+	return this.riftRender
 }
 
 func NewWorldRenderer(window *sdl.Window, w *gamestate.World) *WorldRenderer {
 
-	width, height := 1280, 800
-	window.SetSize(width, height)
+	width, height := window.GetSize()
 
-	framebufferWidth, FrameBufferHeight := 1920, 1080
+	//framebufferWidth, FrameBufferHeight := 1920, 1080
 	framebuffers := [2]*FrameBuffer{
-		NewFrameBuffer(framebufferWidth, FrameBufferHeight),
-		NewFrameBuffer(framebufferWidth, FrameBufferHeight),
+		NewFrameBuffer(width, height),
+		NewFrameBuffer(width, height),
 	}
 
 	ovrStuff := new(OvrStuff).Init(width, height, framebuffers[0])
@@ -161,9 +128,9 @@ func (this *WorldRenderer) Delete() {
 func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOptions, window *sdl.Window) {
 
 	p0 := ww.Player.Camera.Pos4f()
-	w, h := this.Framebuffer[0].W, this.Framebuffer[0].H
 
-	if options.RiftRender {
+	if this.riftRender {
+		//w, h := this.Framebuffer[0].W, this.Framebuffer[0].H
 		proj := this.Proj
 		this.OvrStuff.Hmd.BeginFrame(0)
 		for i := 0; i < 2; i++ {
@@ -179,18 +146,21 @@ func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOpt
 			this.View = (ww.PortalTransform(p0, camera.Pos4f()).Mul4(camera.Model())).Inv()
 			viewport := this.OvrStuff.ViewportsFramebuffer[eye]
 			viewport.Activate()
+			fmt.Println(viewport)
 			this.render(ww, options, viewport, 0, nil)
 			this.OvrStuff.Hmd.EndEyeRender(eye, pose, this.OvrStuff.Textures[eye].Texture())
 		}
 		this.OvrStuff.Hmd.EndFrame()
 		this.Proj = proj
 	} else {
+		w, h := window.GetSize()
 		viewport := Viewport{0, 0, w, h}
 		this.render(ww, options, viewport, 0, nil)
+		//fmt.Println(viewport)
 		viewport.Activate()
 		gl.ActiveTexture(gl.TEXTURE0)
 		this.Framebuffer[0].RenderTexture.Bind(target)
-		this.ScreenQuadRenderer.Render(this.ScreenQuad, this.Proj, this.View, this.ClippingPlane_ws, nil)
+		this.ScreenQuadRenderer.Render(this.ScreenQuad, this.Proj, this.View, this.ClippingPlane_ws, mgl.Vec2{float32(w), float32(h)})
 	}
 
 	if this.screenShot {
@@ -242,174 +212,4 @@ func (this *Viewport) ToPixel(pos mgl.Vec2) (X, Y int) {
 		y = this.H - 1
 	}
 	return x + this.X, y + this.Y
-}
-
-func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOptions, viewport Viewport, recursion int, srcPortal *gamestate.Portal) {
-
-	this.Framebuffer[recursion].Bind()
-	defer this.Framebuffer[recursion].Unbind()
-
-	gl.Clear(gl.DEPTH_BUFFER_BIT)
-
-	camera := gamestate.NewCameraFromMat4(this.View)
-	Rot2D := camera.Rotation2D()
-
-	gl.CullFace(gl.BACK)
-
-	time := float64(sdl.GetTicks()) / 1000
-
-	if options.Wireframe {
-		gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
-	} else {
-		gl.PolygonMode(gl.FRONT_AND_BACK, gl.FILL)
-	}
-
-	if options.Skybox {
-		gl.Disable(gl.DEPTH_TEST)
-		this.SkyboxRenderer.Render(this.Skybox, this.Proj, this.View, this.ClippingPlane_ws, nil)
-		gl.Enable(gl.DEPTH_TEST)
-	}
-
-	gl.Enable(gl.CULL_FACE)
-
-	if recursion != 0 {
-		gl.Enable(gl.CLIP_DISTANCE0)
-		defer gl.Disable(gl.CLIP_DISTANCE0)
-	}
-
-	for _, entity := range ww.ExampleObjects {
-		this.MeshRenderer.Render(entity, this.Proj, this.View, this.ClippingPlane_ws, nil)
-	}
-
-	gl.Enable(gl.BLEND)
-	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-
-	gl.Disable(gl.CULL_FACE)
-
-	if options.WorldRender {
-		this.HeightMapRenderer.Render(ww.HeightMap, this.Proj, this.View, this.ClippingPlane_ws, nil)
-	}
-	PlayerPos := ww.Player.Position()
-	ww.Water.Height = PlayerPos[2] - 15
-	if options.WaterRender {
-		this.WaterRendererA.Render(ww.Water, this.Proj, this.View, this.ClippingPlane_ws, WaterRenderUniforms{time, PlayerPos})
-	}
-	if options.WaterNormals {
-		this.WaterRendererB.Render(ww.Water, this.Proj, this.View, this.ClippingPlane_ws, WaterRenderUniforms{time, PlayerPos})
-	}
-
-	gl.Disable(gl.CULL_FACE)
-
-	gl.Disable(gl.BLEND)
-	if options.TreeRender {
-		this.TreeRenderer.Render(ww.Trees, this.Proj, this.View, this.ClippingPlane_ws, Rot2D)
-	}
-
-	gl.Enable(gl.BLEND)
-	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE)
-	if options.ParticleRender {
-		this.ParticleSystem.Render(this.Proj, this.View, this.ClippingPlane_ws)
-	}
-
-	gl.Disable(gl.BLEND)
-
-	boxVertices := (*gamestate.TriangleMesh)(gamestate.QuadMesh()).MakeBoxVertices()
-
-	pv := this.Proj.Mul4(this.View)
-
-	// calculating nearest portal
-	pos4f := this.View.Inv().Mul4x1(mgl.Vec4{0, 0, 0, 1})
-	nearestPortal := ww.NearestPortal(pos4f)
-
-	// draw  all portals except the nearest and the portal that we are looking throug
-	for _, portal := range ww.Portals {
-		// do not draw the nearest portal or the portal behind the source portal if available
-		if (nearestPortal != portal) && (srcPortal == nil || srcPortal.Target != portal) {
-			gl.Enable(gl.DEPTH_CLAMP)
-			additionalUniforms := map[string]int{"Image": 7}
-			this.PortalRenderer.Render(portal, this.Proj, this.View, this.ClippingPlane_ws, additionalUniforms)
-		}
-	}
-
-	gl.Disable(gl.BLEND)
-	gl.Disable(gl.CULL_FACE)
-
-	if options.DebugLines {
-
-		if options.DepthTestDebugLines {
-			gl.Disable(gl.DEPTH_TEST)
-		}
-		this.DebugRenderer.Render(this.Proj, this.View)
-		gl.Enable(gl.DEPTH_TEST)
-	}
-
-	// draw
-	if recursion < this.MaxRecursion {
-		portal := nearestPortal
-		pos := portal.Position
-		rotation := portal.Orientation.Mat4()
-		Model := mgl.Translate3D(pos[0], pos[1], pos[2]).Mul4(rotation)
-
-		pvm := pv.Mul4(Model)
-		meshMin := mgl.Vec4{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32}
-		meshMax := mgl.Vec4{-math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32}
-		for _, v := range boxVertices {
-			v = pvm.Mul4x1(v)
-			v = v.Mul(1 / v[3])
-			meshMin = gamestate.Min(meshMin, v)
-			meshMax = gamestate.Max(meshMax, v)
-		}
-
-		// at least partially visible
-		if -1 < meshMax[0] && meshMin[0] < 1 &&
-			-1 < meshMax[1] && meshMin[1] < 1 &&
-			-1 < meshMax[2] && meshMin[2] < 1 {
-
-			p1x, p1y := viewport.ToPixel(meshMin.Vec2())
-			p2x, p2y := viewport.ToPixel(meshMax.Vec2())
-			pw, ph := p2x-p1x, p2y-p1y
-
-			// do scissoring only when all vertices are in front of the camera
-			scissor := meshMax[2] < 1
-			scissor = scissor && (p1x != 0 || p1y != 0 || pw != viewport.W-1 || ph != viewport.H-1)
-
-			if scissor {
-				gl.Enable(gl.SCISSOR_TEST)
-				gl.Scissor(p1x, p1y, pw, ph)
-			}
-
-			// omit rendering when portal is not in frustum at all
-			// calculation View matrix that shows the target portal from the same angle as view shows the source portal
-
-			//pos2 := portal.Target.Position
-			Model2 := portal.Target.Model()
-			// model matrix, so that portal 1 in camera 1 looks identical to portal 2 in camera
-			oldView := this.View
-			this.View = this.View.Mul4(Model).Mul4(Model2.Inv())
-
-			normal_os := portal.Target.Normal
-			normal_ws := Model.Mul4x1(normal_os)
-			view_dir := helpers.HomogenDiff(portal.Position, camera.Position)
-			sign := view_dir.Dot(normal_ws)
-
-			oldClippingPlane := this.ClippingPlane_ws
-			this.ClippingPlane_ws = portal.Target.ClippingPlane(sign > 0)
-
-			this.render(ww, options, viewport, recursion+1, nearestPortal)
-			this.ClippingPlane_ws = oldClippingPlane
-			this.View = oldView
-
-			gl.ActiveTexture(gl.TEXTURE0)
-			this.Framebuffer[recursion+1].RenderTexture.Bind(target)
-
-			if scissor {
-				//gl.Scissor(0, 0, w, h)
-				gl.Disable(gl.SCISSOR_TEST)
-			}
-			this.Framebuffer[recursion].Bind()
-			gl.Enable(gl.DEPTH_CLAMP)
-			additionalUniforms := map[string]int{"Image": 0}
-			this.PortalRenderer.Render(nearestPortal, this.Proj, this.View, this.ClippingPlane_ws, additionalUniforms)
-		}
-	}
 }

@@ -9,21 +9,19 @@ import (
 )
 
 type BoolOptions struct {
-	ParticleRender,
-	ParticlePhysics,
-	WorldRender,
-	WaterRender,
-	TreeRender,
-	PlayerPhysics,
-	Skybox,
-	Wireframe,
-	WaterNormals,
-	DebugLines,
-	DepthTestDebugLines,
-	PersistentPlayerPos,
-	RiftRender bool
-	WaterHeight   float32
-	Width, Height int
+	ParticleRender      bool
+	ParticlePhysics     bool
+	WorldRender         bool
+	WaterRender         bool
+	TreeRender          bool
+	PlayerPhysics       bool
+	Skybox              bool
+	Wireframe           bool
+	WaterNormals        bool
+	DebugLines          bool
+	DepthTestDebugLines bool
+	PersistentPlayerPos bool
+	WaterHeight         float32
 }
 
 func (this *BoolOptions) Load() {

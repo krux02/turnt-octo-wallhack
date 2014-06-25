@@ -15,6 +15,7 @@ type RenderLocations struct {
 	ClippingPlane_ws                                 gl.UniformLocation
 	TextureHeightMap, LowerBound, UpperBound         gl.UniformLocation
 	Time, WaterHeight                                gl.UniformLocation
+	ViewPortSize                                     gl.UniformLocation
 }
 
 type RenderData struct {

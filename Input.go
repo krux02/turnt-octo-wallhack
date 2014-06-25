@@ -54,11 +54,6 @@ func Input(gs *gamestate.GameState, worldRenderer *rendering.WorldRenderer) bool
 	window := gs.Window
 	inp := gamestate.PlayerInput{}
 
-	width, height := window.GetSize()
-	if width != gs.Options.Width || height != gs.Options.Height {
-		window.SetSize(gs.Options.Width, gs.Options.Height)
-	}
-
 	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 		consumeEvent := true
 		if !sdl.GetRelativeMouseMode() {
@@ -72,8 +67,6 @@ func Input(gs *gamestate.GameState, worldRenderer *rendering.WorldRenderer) bool
 					running = false
 				case sdl.WINDOWEVENT_RESIZED:
 					width, height := int(e.Data1), int(e.Data2)
-					gs.Options.Width = width
-					gs.Options.Height = height
 					worldRenderer.Resize(width, height)
 					tw.WindowSize(width, height)
 				}
@@ -109,7 +102,10 @@ func Input(gs *gamestate.GameState, worldRenderer *rendering.WorldRenderer) bool
 				case sdl.SCANCODE_ESCAPE:
 					running = false
 				case sdl.SCANCODE_F3:
-					gs.Options.RiftRender = !gs.Options.RiftRender
+					worldRenderer.ToggleRift()
+					if worldRenderer.RiftRender() {
+						window.SetSize(1280, 800)
+					}
 				}
 			case *sdl.KeyUpEvent:
 			}

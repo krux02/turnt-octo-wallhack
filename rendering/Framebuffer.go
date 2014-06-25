@@ -14,32 +14,36 @@ type FrameBuffer struct {
 
 const target = gl.TEXTURE_2D
 
-func NewFrameBuffer(width, height int) (this *FrameBuffer) {
-	this = &FrameBuffer{width, height, gl.GenFramebuffer(), gl.GenTexture(), gl.GenTexture()}
+func GetActiveFrameBuffer() gl.Framebuffer {
+	fb, _, _, _ := gl.GetInteger4(gl.FRAMEBUFFER_BINDING)
+	return gl.Framebuffer(fb)
+}
 
-	this.Resize(width, height)
-
-	var outer gl.Framebuffer
-	{
-		params := []int32{0}
-		gl.GetIntegerv(gl.FRAMEBUFFER_BINDING, params)
-		outer = gl.Framebuffer(params[0])
-	}
-
-	this.Framebuffer.Bind()
-	gl.FramebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, target, this.RenderTexture, 0)
-	gl.FramebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, target, this.DepthTexture, 0)
-	outer.Bind()
-
+func (this *FrameBuffer) Check() {
 	if gl.CheckFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE {
 		this.Delete()
 		panic("framebuffer incomplete")
 	}
+}
+
+func NewFrameBuffer(width, height int) (this *FrameBuffer) {
+	this = &FrameBuffer{width, height, gl.GenFramebuffer(), gl.GenTexture(), gl.GenTexture()}
+	outer := GetActiveFrameBuffer()
+
+	this.Framebuffer.Bind()
+
+	this.resize(width, height)
+
+	gl.FramebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, target, this.RenderTexture, 0)
+	gl.FramebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, target, this.DepthTexture, 0)
+	this.Check()
+
+	outer.Bind()
 
 	return
 }
 
-func (this *FrameBuffer) Resize(width, height int) {
+func (this *FrameBuffer) resize(width, height int) {
 	this.W, this.H = width, height
 	//this.Framebuffer.Bind()
 	// this.RenderTexture := gl.GenTexture()
@@ -57,6 +61,14 @@ func (this *FrameBuffer) Resize(width, height int) {
 	gl.TexParameteri(target, gl.TEXTURE_WRAP_S, gl.CLAMP)
 	gl.TexParameteri(target, gl.TEXTURE_WRAP_T, gl.CLAMP)
 	this.DepthTexture.Unbind(target)
+}
+
+func (this *FrameBuffer) Resize(width, height int) {
+	outer := GetActiveFrameBuffer()
+	this.Bind()
+	this.resize(width, height)
+	this.Check()
+	outer.Bind()
 }
 
 func (this *FrameBuffer) Delete() {

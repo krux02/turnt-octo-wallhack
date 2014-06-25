@@ -2,8 +2,8 @@ package rendering
 
 import (
 	//"fmt"
-	mgl "github.com/krux02/mathgl/mgl32"
 	"github.com/go-gl/gl"
+	mgl "github.com/krux02/mathgl/mgl32"
 	"github.com/krux02/turnt-octo-wallhack/constants"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
@@ -68,7 +68,12 @@ func NewMeshRenderer() (this *renderstuff.Renderer) {
 
 func NewScreenQuadRenderer() (this *renderstuff.Renderer) {
 	program := helpers.MakeProgram("ScreenQuad.vs", "ScreenQuad.fs")
-	return renderstuff.NewRenderer(program, "ScreenQuad", nil, nil)
+	return renderstuff.NewRenderer(program, "ScreenQuad", nil, ScreenQuadUpdate)
+}
+
+func ScreenQuadUpdate(loc *renderstuff.RenderLocations, entity renderstuff.IRenderEntity, etc interface{}) {
+	size := etc.(mgl.Vec2)
+	loc.ViewPortSize.Uniform2f(size[0], size[1])
 }
 
 func NewHeightMapRenderer() *renderstuff.Renderer {

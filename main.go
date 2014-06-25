@@ -61,14 +61,9 @@ func main() {
 	options.Load()
 	defer options.Save()
 
-	if options.Width == 0 {
-		options.Width = 1280
-	}
-	if options.Height == 0 {
-		options.Height = 800
-	}
-
-	window := sdl.CreateWindow("TOW", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, options.Width, options.Height, sdl.WINDOW_OPENGL|sdl.WINDOW_SHOWN|sdl.WINDOW_RESIZABLE)
+	width := 1280
+	height := 800
+	window := sdl.CreateWindow("TOW", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, width, height, sdl.WINDOW_OPENGL|sdl.WINDOW_SHOWN|sdl.WINDOW_RESIZABLE)
 	if window == nil {
 		panic("cant create window")
 	}
