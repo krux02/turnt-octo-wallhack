@@ -1,7 +1,7 @@
 package rendering
 
 import (
-	"fmt"
+	//	"fmt"
 	"github.com/go-gl/gl"
 	mgl "github.com/krux02/mathgl/mgl32"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
@@ -146,7 +146,6 @@ func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOpt
 			this.View = (ww.PortalTransform(p0, camera.Pos4f()).Mul4(camera.Model())).Inv()
 			viewport := this.OvrStuff.ViewportsFramebuffer[eye]
 			viewport.Activate()
-			fmt.Println(viewport)
 			this.render(ww, options, viewport, 0, nil)
 			this.OvrStuff.Hmd.EndEyeRender(eye, pose, this.OvrStuff.Textures[eye].Texture())
 		}
@@ -156,7 +155,6 @@ func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOpt
 		w, h := window.GetSize()
 		viewport := Viewport{0, 0, w, h}
 		this.render(ww, options, viewport, 0, nil)
-		//fmt.Println(viewport)
 		viewport.Activate()
 		gl.ActiveTexture(gl.TEXTURE0)
 
@@ -166,7 +164,10 @@ func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOpt
 
 	if this.screenShot {
 		this.screenShot = false
-		helpers.SaveTexture(gl.TEXTURE_RECTANGLE, 0, "screenshot.png")
+		gl.Flush()
+		gl.ActiveTexture(gl.TEXTURE0)
+		this.Framebuffer[0].RenderTexture.Bind(gl.TEXTURE_2D)
+		helpers.SaveTexture(gl.TEXTURE_2D, 0, "screenshot2.png")
 	}
 
 	this.FrameIndex++

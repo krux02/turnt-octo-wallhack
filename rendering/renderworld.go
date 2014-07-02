@@ -12,8 +12,8 @@ import (
 )
 
 func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOptions, viewport Viewport, recursion int, srcPortal *gamestate.Portal) {
+	fmt.Println("Start Frame: ", this.FrameIndex)
 
-	fmt.Println(recursion)
 	this.Framebuffer[recursion].Bind()
 	defer this.Framebuffer[recursion].Unbind()
 
@@ -58,7 +58,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 		this.HeightMapRenderer.Render(ww.HeightMap, this.Proj, this.View, this.ClippingPlane_ws, nil)
 	}
 	PlayerPos := ww.Player.Position()
-	ww.Water.Height = PlayerPos[2] - 15
+	//ww.Water.Height = PlayerPos[2] - 15
 	if options.WaterRender {
 		this.WaterRendererA.Render(ww.Water, this.Proj, this.View, this.ClippingPlane_ws, WaterRenderUniforms{time, PlayerPos})
 	}
@@ -90,13 +90,15 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 	nearestPortal := ww.NearestPortal(pos4f)
 
 	// draw  all portals except the nearest and the portal that we are looking throug
-	for _, portal := range ww.Portals {
-		// do not draw the nearest portal or the portal behind the source portal if available
-		if (nearestPortal != portal) && (srcPortal == nil || srcPortal.Target != portal) {
-			gl.Enable(gl.DEPTH_CLAMP)
-			this.PortalRenderer.Render(nearestPortal, this.Proj, this.View, this.ClippingPlane_ws, PortalRenderUniforms{viewport, 0})
+	/*
+		for _, portal := range ww.Portals {
+			// do not draw the nearest portal or the portal behind the source portal if available
+			if nearestPortal != portal {
+				gl.Enable(gl.DEPTH_CLAMP)
+				//this.PortalRenderer.Render(nearestPortal, this.Proj, this.View, this.ClippingPlane_ws, PortalRenderUniforms{viewport, 0})
+			}
 		}
-	}
+	*/
 
 	gl.Disable(gl.BLEND)
 	gl.Disable(gl.CULL_FACE)
@@ -170,6 +172,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 				//gl.Scissor(0, 0, w, h)
 				gl.Disable(gl.SCISSOR_TEST)
 			}
+
 			this.Framebuffer[recursion].Bind()
 			gl.Enable(gl.DEPTH_CLAMP)
 
@@ -179,4 +182,5 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 			this.PortalRenderer.Render(nearestPortal, this.Proj, this.View, this.ClippingPlane_ws, PortalRenderUniforms{viewport, 0})
 		}
 	}
+
 }

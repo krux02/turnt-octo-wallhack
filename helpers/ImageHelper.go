@@ -188,5 +188,5 @@ func SaveTexture(target gl.GLenum, level int, filename string) {
 		copy(l, r)
 	}
 
-	go SaveImage(filename, img)
+	SaveImage(filename, img)
 }
