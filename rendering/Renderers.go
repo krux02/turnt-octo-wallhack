@@ -83,9 +83,15 @@ func NewScreenQuadRenderer() (this *renderstuff.Renderer) {
 	return renderstuff.NewRenderer(program, "ScreenQuad", nil, ScreenQuadUpdate)
 }
 
+type ScreenQuadData struct {
+	TextureSize  mgl.Vec2
+	ViewportSize mgl.Vec2
+}
+
 func ScreenQuadUpdate(loc *renderstuff.RenderLocations, entity renderstuff.IRenderEntity, etc interface{}) {
-	size := etc.(mgl.Vec2)
-	loc.ViewPortSize.Uniform2f(size[0], size[1])
+	data := etc.(ScreenQuadData)
+	loc.ViewPortSize.Uniform2f(data.ViewportSize.Elem())
+	loc.TextureSize.Uniform2f(data.TextureSize.Elem())
 }
 
 func NewHeightMapRenderer() *renderstuff.Renderer {

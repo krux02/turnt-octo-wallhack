@@ -57,7 +57,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 	if options.WorldRender {
 		this.HeightMapRenderer.Render(ww.HeightMap, this.Proj, this.View, this.ClippingPlane_ws, nil)
 	}
-	PlayerPos := ww.Player.Position()
+	PlayerPos := camera.Position
 	//ww.Water.Height = PlayerPos[2] - 15
 	if options.WaterRender {
 		this.WaterRendererA.Render(ww.Water, this.Proj, this.View, this.ClippingPlane_ws, WaterRenderUniforms{time, PlayerPos})

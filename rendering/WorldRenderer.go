@@ -5,9 +5,9 @@ import (
 	"github.com/go-gl/gl"
 	mgl "github.com/krux02/mathgl/mgl32"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
-	"github.com/krux02/turnt-octo-wallhack/helpers"
 	//"github.com/krux02/turnt-octo-wallhack/math32"
 	"github.com/krux02/libovr"
+	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/particles"
 	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 	"github.com/krux02/turnt-octo-wallhack/settings"
@@ -17,6 +17,7 @@ import (
 const MaxRecursion = 1
 
 type WorldRenderer struct {
+	helpers.DependenceList
 	Proj, View         mgl.Mat4
 	ClippingPlane_ws   mgl.Vec4
 	Textures           *Textures
@@ -73,7 +74,7 @@ func (this *WorldRenderer) RiftRender() bool {
 	return this.riftRender
 }
 
-func NewWorldRenderer(window *sdl.Window, w *gamestate.World) *WorldRenderer {
+func NewWorldRenderer(window *sdl.Window, w *gamestate.World) (this *WorldRenderer) {
 
 	width, height := window.GetSize()
 
@@ -85,44 +86,42 @@ func NewWorldRenderer(window *sdl.Window, w *gamestate.World) *WorldRenderer {
 
 	ovrStuff := new(OvrStuff).Init(width, height, framebuffers[0])
 
-	return &WorldRenderer{
-		Proj:               mgl.Perspective(90, float32(width)/float32(height), 0.3, 1000),
-		View:               mgl.Ident4(),
-		ClippingPlane_ws:   mgl.Vec4{1, 0, 0, -1000000},
-		Textures:           NewTextures(w.HeightMap),
-		HeightMapRenderer:  NewHeightMapRenderer(),
-		WaterRendererA:     NewSurfaceWaterRenderer(),
-		WaterRendererB:     NewDebugWaterRenderer(),
-		MeshRenderer:       NewMeshRenderer(),
-		PortalRenderer:     NewPortalRenderer(),
-		TreeRenderer:       NewTreeRenderer(),
-		SkyboxRenderer:     NewSkyboxRenderer(),
-		Skybox:             &Skybox{},
-		ParticleSystem:     particles.NewParticleSystem(w, 10000, mgl.Vec3{32, 32, 32}, 1, 250),
-		Framebuffer:        framebuffers,
-		ScreenQuad:         &ScreenQuad{},
-		ScreenQuadRenderer: NewScreenQuadRenderer(),
-		DebugRenderer:      NewLineRenderer(),
-		OvrStuff:           ovrStuff,
-	}
-}
+	this = new(WorldRenderer)
 
-func (this *WorldRenderer) Delete() {
-	this.Textures.Delete()
-	this.HeightMapRenderer.Delete()
-	this.MeshRenderer.Delete()
-	this.PortalRenderer.Delete()
-	this.TreeRenderer.Delete()
-	this.ParticleSystem.Delete()
-	this.SkyboxRenderer.Delete()
-	this.WaterRendererA.Delete()
-	this.WaterRendererB.Delete()
-	for _, Framebuffer := range this.Framebuffer {
-		Framebuffer.Delete()
+	this.Proj = mgl.Perspective(90, float32(width)/float32(height), 0.3, 1000)
+	this.View = mgl.Ident4()
+	this.ClippingPlane_ws = mgl.Vec4{1, 0, 0, -1000000}
+	this.Textures = NewTextures(w.HeightMap)
+	this.Bind(this.Textures)
+	this.HeightMapRenderer = NewHeightMapRenderer()
+	this.Bind(this.HeightMapRenderer)
+	this.WaterRendererA = NewSurfaceWaterRenderer()
+	this.Bind(this.WaterRendererA)
+	this.WaterRendererB = NewDebugWaterRenderer()
+	this.Bind(this.WaterRendererB)
+	this.MeshRenderer = NewMeshRenderer()
+	this.Bind(this.MeshRenderer)
+	this.PortalRenderer = NewPortalRenderer()
+	this.Bind(this.PortalRenderer)
+	this.TreeRenderer = NewTreeRenderer()
+	this.Bind(this.TreeRenderer)
+	this.SkyboxRenderer = NewSkyboxRenderer()
+	this.Bind(this.SkyboxRenderer)
+	this.Skybox = &Skybox{}
+	this.ParticleSystem = particles.NewParticleSystem(w, 10000, mgl.Vec3{32, 32, 32}, 1, 250)
+	this.Bind(this.ParticleSystem)
+	this.Framebuffer = framebuffers
+	for _, fb := range this.Framebuffer {
+		this.Bind(fb)
 	}
-	this.ScreenQuadRenderer.Delete()
-	this.DebugRenderer.Delete()
-	*this = WorldRenderer{}
+	this.ScreenQuad = &ScreenQuad{}
+	this.ScreenQuadRenderer = NewScreenQuadRenderer()
+	this.Bind(this.ScreenQuadRenderer)
+	this.DebugRenderer = NewLineRenderer()
+	this.Bind(this.DebugRenderer)
+	this.OvrStuff = ovrStuff
+
+	return this
 }
 
 func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOptions, window *sdl.Window) {
@@ -155,11 +154,27 @@ func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOpt
 		w, h := window.GetSize()
 		viewport := Viewport{0, 0, w, h}
 		this.render(ww, options, viewport, 0, nil)
-		viewport.Activate()
+
 		gl.ActiveTexture(gl.TEXTURE0)
 
-		this.Framebuffer[0].RenderTexture.Bind(target)
-		this.ScreenQuadRenderer.Render(this.ScreenQuad, this.Proj, this.View, this.ClippingPlane_ws, mgl.Vec2{float32(w), float32(h)})
+		viewports := [...]Viewport{
+			Viewport{0, 0, w / 2, h / 2},
+			Viewport{w / 2, 0, w / 2, h / 2},
+			Viewport{0, h / 2, w / 2, h / 2},
+		}
+
+		data := ScreenQuadData{
+			ViewportSize: mgl.Vec2{float32(w / 2), float32(h / 2)},
+			TextureSize:  mgl.Vec2{float32(w), float32(h)},
+		}
+
+		for i, fb := range this.Framebuffer {
+			fb.RenderTexture.Bind(target)
+			viewports[i].Activate()
+			this.ScreenQuadRenderer.Render(this.ScreenQuad, this.Proj, this.View, this.ClippingPlane_ws, data)
+		}
+
+		viewport.Activate()
 	}
 
 	if this.screenShot {

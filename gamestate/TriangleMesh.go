@@ -2,8 +2,8 @@ package gamestate
 
 import (
 	"fmt"
-	mgl "github.com/krux02/mathgl/mgl32"
 	ai "github.com/krux02/assimp"
+	mgl "github.com/krux02/mathgl/mgl32"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 	"math"
@@ -31,22 +31,29 @@ func QuadMesh() (mesh *renderstuff.Mesh) {
 	return mesh
 }
 
+const (
+	a = 1
+	b = 0.8
+	c = 0.5
+)
+
 func PortalQuad() (mesh *renderstuff.Mesh) {
 	mesh = new(renderstuff.Mesh)
 	mesh.Vertices = []MeshVertex{
-		MeshVertex{mgl.Vec4{-1, -1, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
-		MeshVertex{mgl.Vec4{1, -1, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
-		MeshVertex{mgl.Vec4{1, 1, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
-		MeshVertex{mgl.Vec4{-1, 1, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
+		MeshVertex{mgl.Vec4{-a, -a, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
+		MeshVertex{mgl.Vec4{a, -a, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
+		MeshVertex{mgl.Vec4{a, a, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
+		MeshVertex{mgl.Vec4{-a, a, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
 
-		MeshVertex{mgl.Vec4{-1, -1, 0.5, 1}, mgl.Vec4{0, 0, 1, 0}},
-		MeshVertex{mgl.Vec4{1, -1, 0.5, 1}, mgl.Vec4{0, 0, 1, 0}},
-		MeshVertex{mgl.Vec4{1, 1, 0.5, 1}, mgl.Vec4{0, 0, 1, 0}},
-		MeshVertex{mgl.Vec4{-1, 1, 0.5, 1}, mgl.Vec4{0, 0, 1, 0}},
+		MeshVertex{mgl.Vec4{-b, -b, c, 1}, mgl.Vec4{0, 0, 1, 0}},
+		MeshVertex{mgl.Vec4{b, -b, c, 1}, mgl.Vec4{0, 0, 1, 0}},
+		MeshVertex{mgl.Vec4{b, b, c, 1}, mgl.Vec4{0, 0, 1, 0}},
+		MeshVertex{mgl.Vec4{-b, b, c, 1}, mgl.Vec4{0, 0, 1, 0}},
 	}
 	mesh.Indices = []MeshIndex{
-		0, 1, 2, 2, 3, 0,
-		4, 5, 6, 6, 7, 4,
+		0, 4, 3, 3, 7, 2, 2, 6, 1, 1, 5, 0,
+		7, 3, 4, 6, 2, 7, 5, 1, 6, 4, 0, 5,
+		4, 5, 7, 6, 7, 5,
 	}
 	mesh.Mode = renderstuff.Triangles
 	return
