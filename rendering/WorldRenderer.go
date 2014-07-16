@@ -152,16 +152,16 @@ func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOpt
 		this.Proj = proj
 	} else {
 		w, h := window.GetSize()
-		viewport := Viewport{0, 0, w, h}
+		viewport := Viewport{0, 0, w, h, w, h}
 		this.render(ww, options, viewport, 0, nil)
 
 		gl.ActiveTexture(gl.TEXTURE0)
 
 		if options.ShowFramebuffers {
 			viewports := [...]Viewport{
-				Viewport{0, 0, w / 2, h / 2},
-				Viewport{w / 2, 0, w / 2, h / 2},
-				Viewport{0, h / 2, w / 2, h / 2},
+				Viewport{0, 0, w / 2, h / 2, w, h},
+				Viewport{w / 2, 0, w / 2, h / 2, w, h},
+				Viewport{0, h / 2, w / 2, h / 2, w, h},
 			}
 
 			data := ScreenQuadData{
@@ -209,6 +209,7 @@ func Vec4(v ovr.Vector3f, w float32) mgl.Vec4 {
 
 type Viewport struct {
 	X, Y, W, H int
+	SW, SH     int
 }
 
 func (this *Viewport) ToOvrRecti() (rect ovr.Recti) {
@@ -240,4 +241,12 @@ func (this *Viewport) ToPixel(pos mgl.Vec2) (X, Y int) {
 		y = this.H - 1
 	}
 	return x + this.X, y + this.Y
+}
+
+func (this *Viewport) Vec4() mgl.Vec4 {
+	return mgl.Vec4{float32(this.X), float32(this.Y), float32(this.W), float32(this.H)}
+}
+
+func (this *Viewport) Size() mgl.Vec2 {
+	return mgl.Vec2{float32(this.SW), float32(this.SH)}
 }

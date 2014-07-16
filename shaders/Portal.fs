@@ -4,11 +4,10 @@
 //uniform sampler2DRect Image;
 uniform sampler2D Image;
 uniform vec4 Viewport;
+uniform vec4 TexturePort = vec4(0,0,0.5,1);
 
 in vec4 Normal_cs;
 in vec4 Position_cs;
-
-
 
 out vec4 color;
 
@@ -27,7 +26,11 @@ vec4 mymix(vec4 color, float alpha) {
 }
 
 void main() {
-	vec4 t = texture(Image, (gl_FragCoord.xy - Viewport.xy)/Viewport.zw);
+
+	
+	vec2 texCoord1 = (gl_FragCoord.xy - Viewport.xy) / Viewport.zw;
+	vec2 texCoord2 = (texCoord1 * TexturePort.zw) + TexturePort.xy;
+	vec4 t = texture(Image, texCoord2);
 	float alpha = acos(abs(dot(normalize(Position_cs.xyz), Normal_cs.xyz)));
 
 	float dist = length(Position_cs.xyz);

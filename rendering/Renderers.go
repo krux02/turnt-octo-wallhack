@@ -68,7 +68,16 @@ func NewPortalRenderer() *renderstuff.Renderer {
 
 func PortalRenderUpdate(loc *renderstuff.RenderLocations, entity renderstuff.IRenderEntity, etc interface{}) {
 	uniforms := etc.(PortalRenderUniforms)
-	loc.Viewport.Uniform4f(float32(uniforms.Viewport.X), float32(uniforms.Viewport.Y), float32(uniforms.Viewport.W), float32(uniforms.Viewport.H))
+	viewport := uniforms.Viewport.Vec4()
+	loc.Viewport.Uniform4f(viewport.Elem())
+	w, h := uniforms.Viewport.Size().Elem()
+
+	var TexturePort mgl.Vec4
+	TexturePort[0] = viewport[0] / w
+	TexturePort[1] = viewport[1] / h
+	TexturePort[2] = viewport[2] / w
+	TexturePort[3] = viewport[3] / h
+	loc.TexturePort.Uniform4f(TexturePort.Elem())
 	loc.Image.Uniform1i(uniforms.Image)
 }
 

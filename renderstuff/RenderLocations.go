@@ -16,7 +16,7 @@ type RenderLocations struct {
 	TextureHeightMap, LowerBound, UpperBound         gl.UniformLocation
 	Time, WaterHeight                                gl.UniformLocation
 	ViewPortSize                                     gl.UniformLocation
-	Viewport, TextureSize                            gl.UniformLocation
+	Viewport, TextureSize, TexturePort               gl.UniformLocation
 }
 
 type RenderData struct {

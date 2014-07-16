@@ -43,10 +43,10 @@ func (this *OvrStuff) Init(w, h int, fb *FrameBuffer) *OvrStuff {
 	this.Proj[0] = mgl.Mat4(ovr.MatrixProjection(eyeFovIn[0], 0.3, 1000, true).FlatArray()).Transpose()
 	this.Proj[1] = mgl.Mat4(ovr.MatrixProjection(eyeFovIn[1], 0.3, 1000, true).FlatArray()).Transpose()
 
-	this.ViewportsFramebuffer[0] = Viewport{0, 0, 960, 1080}
-	this.ViewportsFramebuffer[1] = Viewport{960, 0, 960, 1080}
-	this.ViewportsScreen[0] = Viewport{0, 0, w / 2, h}
-	this.ViewportsScreen[1] = Viewport{w / 2, 0, w / 2, h}
+	this.ViewportsFramebuffer[0] = Viewport{0, 0, 960, 1080, 1920, 1080}
+	this.ViewportsFramebuffer[1] = Viewport{960, 0, 960, 1080, 1920, 1080}
+	this.ViewportsScreen[0] = Viewport{0, 0, w / 2, h, w, h}
+	this.ViewportsScreen[1] = Viewport{w / 2, 0, w / 2, h, w, h}
 
 	for eye := ovr.Eye_Left; eye < ovr.Eye_Count; eye++ {
 		textureData := this.Textures[eye].OGL()

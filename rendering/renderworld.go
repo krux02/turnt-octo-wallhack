@@ -143,6 +143,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 			// do scissoring only when all vertices are in front of the camera
 			scissor := meshMax[2] < 1
 			scissor = scissor && (p1x != 0 || p1y != 0 || pw != viewport.W-1 || ph != viewport.H-1)
+			scissor = false
 
 			if scissor {
 				gl.Enable(gl.SCISSOR_TEST)
