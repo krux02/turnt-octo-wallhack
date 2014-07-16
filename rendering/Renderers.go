@@ -1,7 +1,6 @@
 package rendering
 
 import (
-	"fmt"
 	"github.com/go-gl/gl"
 	mgl "github.com/krux02/mathgl/mgl32"
 	"github.com/krux02/turnt-octo-wallhack/constants"
@@ -70,7 +69,6 @@ func NewPortalRenderer() *renderstuff.Renderer {
 func PortalRenderUpdate(loc *renderstuff.RenderLocations, entity renderstuff.IRenderEntity, etc interface{}) {
 	uniforms := etc.(PortalRenderUniforms)
 	loc.Viewport.Uniform4f(float32(uniforms.Viewport.X), float32(uniforms.Viewport.Y), float32(uniforms.Viewport.W), float32(uniforms.Viewport.H))
-	fmt.Println(uniforms.Viewport)
 	loc.Image.Uniform1i(uniforms.Image)
 }
 

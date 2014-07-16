@@ -88,7 +88,7 @@ func NewWorldRenderer(window *sdl.Window, w *gamestate.World) (this *WorldRender
 
 	this = new(WorldRenderer)
 
-	this.Proj = mgl.Perspective(90, float32(width)/float32(height), 0.3, 1000)
+	this.Proj = mgl.Perspective(90, float32(width)/float32(height), 0.05, 1000)
 	this.View = mgl.Ident4()
 	this.ClippingPlane_ws = mgl.Vec4{1, 0, 0, -1000000}
 	this.Textures = NewTextures(w.HeightMap)
@@ -157,20 +157,31 @@ func (this *WorldRenderer) Render(ww *gamestate.World, options *settings.BoolOpt
 
 		gl.ActiveTexture(gl.TEXTURE0)
 
-		viewports := [...]Viewport{
-			Viewport{0, 0, w / 2, h / 2},
-			Viewport{w / 2, 0, w / 2, h / 2},
-			Viewport{0, h / 2, w / 2, h / 2},
-		}
+		if options.ShowFramebuffers {
+			viewports := [...]Viewport{
+				Viewport{0, 0, w / 2, h / 2},
+				Viewport{w / 2, 0, w / 2, h / 2},
+				Viewport{0, h / 2, w / 2, h / 2},
+			}
 
-		data := ScreenQuadData{
-			ViewportSize: mgl.Vec2{float32(w / 2), float32(h / 2)},
-			TextureSize:  mgl.Vec2{float32(w), float32(h)},
-		}
+			data := ScreenQuadData{
+				ViewportSize: mgl.Vec2{float32(w / 2), float32(h / 2)},
+				TextureSize:  mgl.Vec2{float32(w), float32(h)},
+			}
 
-		for i, fb := range this.Framebuffer {
-			fb.RenderTexture.Bind(target)
-			viewports[i].Activate()
+			for i, fb := range this.Framebuffer {
+				fb.RenderTexture.Bind(target)
+				viewports[i].Activate()
+				this.ScreenQuadRenderer.Render(this.ScreenQuad, this.Proj, this.View, this.ClippingPlane_ws, data)
+			}
+		} else {
+			data := ScreenQuadData{
+				ViewportSize: mgl.Vec2{float32(w), float32(h)},
+				TextureSize:  mgl.Vec2{float32(w), float32(h)},
+			}
+			this.Framebuffer[0].RenderTexture.Bind(target)
+			viewport.Activate()
+			this.Framebuffer[0].RenderTexture.Bind(target)
 			this.ScreenQuadRenderer.Render(this.ScreenQuad, this.Proj, this.View, this.ClippingPlane_ws, data)
 		}
 

@@ -1,7 +1,7 @@
 package rendering
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/go-gl/gl"
 	mgl "github.com/krux02/mathgl/mgl32"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
@@ -12,7 +12,6 @@ import (
 )
 
 func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOptions, viewport Viewport, recursion int, srcPortal *gamestate.Portal) {
-	fmt.Println("Start Frame: ", this.FrameIndex)
 
 	this.Framebuffer[recursion].Bind()
 	defer this.Framebuffer[recursion].Unbind()
@@ -81,7 +80,7 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 
 	gl.Disable(gl.BLEND)
 
-	boxVertices := (*gamestate.TriangleMesh)(gamestate.QuadMesh()).MakeBoxVertices()
+	boxVertices := (*gamestate.TriangleMesh)(gamestate.PortalQuad()).MakeBoxVertices()
 
 	pv := this.Proj.Mul4(this.View)
 
@@ -130,10 +129,13 @@ func (this *WorldRenderer) render(ww *gamestate.World, options *settings.BoolOpt
 		}
 
 		// at least partially visible
-		if -1 < meshMax[0] && meshMin[0] < 1 &&
-			-1 < meshMax[1] && meshMin[1] < 1 &&
-			-1 < meshMax[2] && meshMin[2] < 1 {
 
+		/*if -1 < meshMax[0] && meshMin[0] < 1 &&
+		-1 < meshMax[1] && meshMin[1] < 1 &&
+		-1 < meshMax[2] && meshMin[2] < 1 {
+		*/
+
+		if true {
 			p1x, p1y := viewport.ToPixel(meshMin.Vec2())
 			p2x, p2y := viewport.ToPixel(meshMax.Vec2())
 			pw, ph := p2x-p1x, p2y-p1y

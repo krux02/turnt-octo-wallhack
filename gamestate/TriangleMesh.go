@@ -34,7 +34,7 @@ func QuadMesh() (mesh *renderstuff.Mesh) {
 const (
 	a = 1
 	b = 0.8
-	c = 0.5
+	c = 0.0
 )
 
 func PortalQuad() (mesh *renderstuff.Mesh) {

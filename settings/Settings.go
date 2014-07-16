@@ -21,6 +21,7 @@ type BoolOptions struct {
 	DebugLines          bool
 	DepthTestDebugLines bool
 	PersistentPlayerPos bool
+	ShowFramebuffers    bool
 	WaterHeight         float32
 }
 
