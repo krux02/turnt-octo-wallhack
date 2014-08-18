@@ -1,9 +1,10 @@
 package helpers
 
 import (
-	"code.google.com/p/go.exp/fsnotify"
 	"log"
 	"time"
+
+	"gopkg.in/fsnotify.v0"
 )
 
 const Duration = 500 * time.Millisecond
