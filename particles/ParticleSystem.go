@@ -3,12 +3,11 @@ package particles
 import (
 	"fmt"
 	mgl "github.com/krux02/mathgl/mgl32"
-	"github.com/go-gl/gl"
-	"github.com/go-gl/glh"
+	"github.com/go-gl-legacy/gl"
 	"github.com/krux02/turnt-octo-wallhack/constants"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
-	"io/ioutil"
+	//"io/ioutil"
 	//"math"
 	"math/rand"
 )
@@ -89,12 +88,7 @@ func NewParticleSystem(w *gamestate.World, numParticles int, Origin mgl.Vec3, in
 
 	TransformProg := gl.CreateProgram()
 
-	content, err := ioutil.ReadFile("shaders/ParticleTFF.vs")
-	if err != nil {
-		panic(err)
-	}
-
-	shader := glh.MakeShader(gl.VERTEX_SHADER, string(content))
+	shader := helpers.MakeShader(gl.VERTEX_SHADER, "ParticleTFF.vs")
 	TransformProg.AttachShader(shader)
 	TransformProg.TransformFeedbackVaryings([]string{"v_Pos1", "v_Pos2", "v_Lifetime"}, gl.INTERLEAVED_ATTRIBS)
 	TransformProg.Link()

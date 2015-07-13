@@ -1,7 +1,7 @@
 package helpers
 
 import (
-	"github.com/go-gl/gl"
+	"github.com/go-gl-legacy/gl"
 )
 
 func TypeToString(Type gl.GLenum) string {

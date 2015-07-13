@@ -3,7 +3,7 @@ package renderstuff
 import (
 	"fmt"
 	//	mgl "github.com/krux02/mathgl/mgl32"
-	"github.com/go-gl/gl"
+	"github.com/go-gl-legacy/gl"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"reflect"
 )

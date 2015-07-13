@@ -2,7 +2,7 @@ package rendering
 
 import (
 	//	"fmt"
-	"github.com/go-gl/gl"
+	"github.com/go-gl-legacy/gl"
 	mgl "github.com/krux02/mathgl/mgl32"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"

@@ -2,7 +2,7 @@ package main
 
 import (
 	//	"fmt"
-	"github.com/go-gl/gl"
+	"github.com/go-gl-legacy/gl"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/rendering"

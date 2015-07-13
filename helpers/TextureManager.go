@@ -1,6 +1,6 @@
 package helpers
 
-import "github.com/go-gl/gl"
+import "github.com/go-gl-legacy/gl"
 
 type textureManager struct {
 	texture gl.Texture

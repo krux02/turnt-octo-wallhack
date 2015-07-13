@@ -2,7 +2,7 @@ package rendering
 
 import (
 	//	"errors"
-	"github.com/go-gl/gl"
+	"github.com/go-gl-legacy/gl"
 )
 
 type FrameBuffer struct {

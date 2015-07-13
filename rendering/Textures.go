@@ -2,7 +2,7 @@ package rendering
 
 import (
 	"fmt"
-	"github.com/go-gl/gl"
+	"github.com/go-gl-legacy/gl"
 	"github.com/krux02/turnt-octo-wallhack/constants"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
@@ -83,12 +83,12 @@ func NewTextures(heightMap *gamestate.HeightMap) *Textures {
 	defer ttf.Quit()
 	font, _ := ttf.OpenFont("fonts/Symbola.ttf", 64)
 	color := sdl.Color{255, 255, 255, 255}
-	surface := font.RenderText_Blended("Bla", color)
+	surface, _ := font.RenderUTF8_Blended("Bla", color)
 	defer surface.Free()
 	gl.ActiveTexture(gl.TEXTURE0 + constants.TextureFont)
 	textures[8].Bind(gl.TEXTURE_2D)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, int(surface.W), int(surface.H), 0, gl.RGBA, gl.UNSIGNED_BYTE, uintptr(surface.Data()))
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+  gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 
 	gl.ActiveTexture(gl.TEXTURE0)

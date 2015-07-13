@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/go-gl/gl"
+	"github.com/go-gl-legacy/gl"
 	//"github.com/krux02/libovr"
 	"github.com/krux02/turnt-octo-wallhack/debugContext"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
@@ -14,6 +14,7 @@ import (
 	"os"
 	"runtime"
 	"runtime/pprof"
+  "log"
 )
 
 var counter = 1
@@ -37,14 +38,14 @@ func main() {
 	if *cpuprofile != "" {
 		f, err := os.Create(*cpuprofile)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		pprof.StartCPUProfile(f)
 		defer pprof.StopCPUProfile()
 	}
 
-	if sdl.Init(sdl.INIT_EVERYTHING) < 0 {
-		panic("Unable to initialize SDL")
+  if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
+		panic(err)
 	}
 	defer sdl.Quit()
 
@@ -56,17 +57,17 @@ func main() {
 	sdl.GL_SetAttribute(sdl.GL_DEPTH_SIZE, 24)
 	sdl.GL_SetAttribute(sdl.GL_CONTEXT_FLAGS, sdl.GL_CONTEXT_DEBUG_FLAG|sdl.GL_CONTEXT_FORWARD_COMPATIBLE_FLAG)
 
-	window := sdl.CreateWindow("TOW", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, 1024, 768, sdl.WINDOW_OPENGL|sdl.WINDOW_SHOWN|sdl.WINDOW_RESIZABLE)
-	if window == nil {
-		panic("cant create window")
+	window, err := sdl.CreateWindow("TOW", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, 1024, 768, sdl.WINDOW_OPENGL|sdl.WINDOW_SHOWN|sdl.WINDOW_RESIZABLE)
+	if err != nil {
+    log.Fatal("can't create window", err)
 	}
 	defer window.Destroy()
 
 	//defer renderer.Destroy()
 
-	glcontext := sdl.GL_CreateContext(window)
-	if glcontext == nil {
-		panic(fmt.Sprintf("can't create context %v", sdl.GetError()))
+	glcontext, err := sdl.GL_CreateContext(window)
+	if err != nil {
+    log.Fatal("can't create context", err)
 	}
 	defer sdl.GL_DeleteContext(glcontext)
 	sdl.GL_MakeCurrent(window, glcontext)

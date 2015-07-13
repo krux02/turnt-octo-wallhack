@@ -9,7 +9,7 @@ import "C"
 
 import (
 	"fmt"
-	"github.com/go-gl/gl"
+	"github.com/go-gl-legacy/gl"
 	"unsafe"
 )
 

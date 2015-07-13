@@ -1,6 +1,6 @@
 package renderstuff
 
-import "github.com/go-gl/gl"
+import "github.com/go-gl-legacy/gl"
 
 type RenderLocations struct {
 	Vertex_ws, Vertex_ms, Vertex_ndc gl.AttribLocation

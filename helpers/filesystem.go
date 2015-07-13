@@ -1,10 +1,9 @@
 package helpers
 
 import (
+	"gopkg.in/fsnotify.v1"
 	"log"
 	"time"
-
-	"gopkg.in/fsnotify.v0"
 )
 
 const Duration = 500 * time.Millisecond
@@ -16,14 +15,10 @@ func Listen(file string, observer chan string) {
 	if err != nil {
 		panic(err)
 	}
-	err = watcher.WatchFlags(file, fsnotify.FSN_MODIFY)
-	if err != nil {
-		panic(err)
-	}
 
 	for true {
 		select {
-		case event := <-watcher.Event:
+		case event := <-watcher.Events:
 			log.Println(event.Name)
 
 			timer := time.NewTimer(Duration)
@@ -31,7 +26,7 @@ func Listen(file string, observer chan string) {
 
 			for b := true; b; {
 				select {
-				case event = <-watcher.Event:
+				case event = <-watcher.Events:
 					log.Println("lala", event.Name)
 					timer.Reset(Duration)
 				case <-timer.C:
@@ -40,7 +35,7 @@ func Listen(file string, observer chan string) {
 				}
 			}
 			observer <- event.Name
-		case err = <-watcher.Error:
+		case err = <-watcher.Errors:
 			panic(err)
 		}
 	}

@@ -3,7 +3,7 @@ package helpers
 import (
 	"bufio"
 	"fmt"
-	"github.com/go-gl/gl"
+	"github.com/go-gl-legacy/gl"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/sdl_image"
 	"image"
@@ -28,13 +28,17 @@ var BindingMap = map[gl.GLenum]gl.GLenum{
 	gl.TEXTURE_RECTANGLE:            gl.TEXTURE_BINDING_RECTANGLE,
 }
 
-func loadSdlSurface(filename string) *sdl.Surface {
-	surface := img.Load(filename)
-	if surface == nil {
-		panic(sdl.GetError())
+func loadSdlSurface(filename string) (result *sdl.Surface) {
+	surface, err := img.Load(filename)
+	if err != nil {
+		panic(err)
 	}
 	defer surface.Free()
-	return surface.ConvertFormat(pixelFormat, 0)
+	result,err = surface.ConvertFormat(pixelFormat, 0)
+  if err != nil {
+    panic(err)
+  }
+  return
 }
 
 func LoadTexture(filename string, target gl.GLenum) {
@@ -92,7 +96,7 @@ func LoadTextureCube(filename string) {
 	right_rect := sdl.Rect{2 * W, H, W, H}
 	back_rect := sdl.Rect{3 * W, H, W, H}
 	bounds := sdl.Rect{0, 0, W, H}
-	imageData := sdl.CreateRGBSurface(0, W, H, 32, surface.Format.Rmask, surface.Format.Gmask, surface.Format.Bmask, surface.Format.Amask)
+	imageData,_ := sdl.CreateRGBSurface(0, W, H, 32, surface.Format.Rmask, surface.Format.Gmask, surface.Format.Bmask, surface.Format.Amask)
 
 	surface.Blit(&top_rect, imageData, &bounds)
 	gl.TexImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, gl.RGBA, int(W), int(H), 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData.Pixels())

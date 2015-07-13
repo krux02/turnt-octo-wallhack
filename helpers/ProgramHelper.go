@@ -2,7 +2,7 @@ package helpers
 
 import (
 	"fmt"
-	"github.com/go-gl/gl"
+	"github.com/go-gl-legacy/gl"
 	"io/ioutil"
 	"log"
 	"reflect"
