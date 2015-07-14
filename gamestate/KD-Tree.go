@@ -71,7 +71,7 @@ func (this KdTree) Left() KdTree {
 }
 
 func (this KdTree) Right() KdTree {
-	return this[len(this)/2+1 : len(this)]
+	return this[len(this)/2+1:]
 }
 
 func (this KdTree) HasRight() bool {

@@ -1,8 +1,8 @@
 package renderstuff
 
 import (
+	"github.com/go-gl-legacy/gl"
 	mgl "github.com/krux02/mathgl/mgl32"
-  "github.com/go-gl-legacy/gl"
 	"github.com/krux02/turnt-octo-wallhack/constants"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"reflect"

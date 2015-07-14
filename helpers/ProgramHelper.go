@@ -114,13 +114,13 @@ func ByteSizeOfSlice(slice interface{}) int {
 }
 
 func BindUniformLocations(name string, prog gl.Program, locations map[string]gl.UniformLocation) {
-	for name, _ := range locations {
+	for name := range locations {
 		locations[name] = prog.GetUniformLocation(name)
 	}
 }
 
 func BindAttribLocations(name string, prog gl.Program, locations map[string]gl.AttribLocation) {
-	for name, _ := range locations {
+	for name := range locations {
 		locations[name] = prog.GetAttribLocation(name)
 	}
 }

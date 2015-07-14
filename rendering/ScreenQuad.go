@@ -11,9 +11,9 @@ type ScreenQuadVertex struct {
 
 var ScreenQuadMesh = renderstuff.Mesh{
 	Vertices: []ScreenQuadVertex{
-		ScreenQuadVertex{mgl.Vec4{-1, -1, 0, 1}},
-		ScreenQuadVertex{mgl.Vec4{3, -1, 0, 1}},
-		ScreenQuadVertex{mgl.Vec4{-1, 3, 0, 1}},
+		{mgl.Vec4{-1, -1, 0, 1}},
+		{mgl.Vec4{3, -1, 0, 1}},
+		{mgl.Vec4{-1, 3, 0, 1}},
 	},
 	Mode: renderstuff.Triangles,
 }

@@ -34,10 +34,10 @@ func (this *Forest) Mesh() *renderstuff.Mesh {
 	if this.mesh == nil {
 		this.mesh = &renderstuff.Mesh{
 			Vertices: []TreeVertex{
-				TreeVertex{mgl.Vec4{0, 1, 2, 1}, mgl.Vec2{1, 0}},
-				TreeVertex{mgl.Vec4{0, 1, 0, 1}, mgl.Vec2{1, 1}},
-				TreeVertex{mgl.Vec4{0, -1, 0, 1}, mgl.Vec2{0, 1}},
-				TreeVertex{mgl.Vec4{0, -1, 2, 1}, mgl.Vec2{0, 0}},
+				{mgl.Vec4{0, 1, 2, 1}, mgl.Vec2{1, 0}},
+				{mgl.Vec4{0, 1, 0, 1}, mgl.Vec2{1, 1}},
+				{mgl.Vec4{0, -1, 0, 1}, mgl.Vec2{0, 1}},
+				{mgl.Vec4{0, -1, 2, 1}, mgl.Vec2{0, 0}},
 			},
 			InstanceData: this.Positions,
 			Mode:         renderstuff.TriangleFan,

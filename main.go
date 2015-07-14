@@ -11,10 +11,10 @@ import (
 	"github.com/krux02/turnt-octo-wallhack/rendering"
 	"github.com/krux02/tw"
 	"github.com/veandco/go-sdl2/sdl"
+	"log"
 	"os"
 	"runtime"
 	"runtime/pprof"
-  "log"
 )
 
 var counter = 1
@@ -44,7 +44,7 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-  if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
+	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		panic(err)
 	}
 	defer sdl.Quit()
@@ -59,7 +59,7 @@ func main() {
 
 	window, err := sdl.CreateWindow("TOW", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, 1024, 768, sdl.WINDOW_OPENGL|sdl.WINDOW_SHOWN|sdl.WINDOW_RESIZABLE)
 	if err != nil {
-    log.Fatal("can't create window", err)
+		log.Fatal("can't create window", err)
 	}
 	defer window.Destroy()
 
@@ -67,7 +67,7 @@ func main() {
 
 	glcontext, err := sdl.GL_CreateContext(window)
 	if err != nil {
-    log.Fatal("can't create context", err)
+		log.Fatal("can't create context", err)
 	}
 	defer sdl.GL_DeleteContext(glcontext)
 	sdl.GL_MakeCurrent(window, glcontext)
@@ -82,16 +82,6 @@ func main() {
 
 	tw.Init(tw.OPENGL_CORE, nil)
 	defer tw.Terminate()
-
-	/*
-		ok := ovr.Initialize()
-		if !ok {
-			panic("cant't initialize ovr")
-		}
-		defer ovr.Shutdown()
-
-		OvrTest()
-	*/
 
 	gl.GetError() // Ignore error
 	debugContext.InitDebugContext()
@@ -127,9 +117,7 @@ func OvrTest() {
 		defer hmd.Destroy()
 		desc := hmd.GetDesc()
 		fmt.Println("%+v", desc)
-
 		fmt.Println(hmd.GetEnabledCaps())
-
 	}
 }
 */

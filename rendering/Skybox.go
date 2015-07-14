@@ -12,14 +12,14 @@ type SkyboxVertex struct {
 
 var SkyboxMesh = renderstuff.Mesh{
 	Vertices: []SkyboxVertex{
-		SkyboxVertex{mgl.Vec3{-1, -1, -1}},
-		SkyboxVertex{mgl.Vec3{1, -1, -1}},
-		SkyboxVertex{mgl.Vec3{-1, 1, -1}},
-		SkyboxVertex{mgl.Vec3{1, 1, -1}},
-		SkyboxVertex{mgl.Vec3{-1, -1, 1}},
-		SkyboxVertex{mgl.Vec3{1, -1, 1}},
-		SkyboxVertex{mgl.Vec3{-1, 1, 1}},
-		SkyboxVertex{mgl.Vec3{1, 1, 1}},
+		{mgl.Vec3{-1, -1, -1}},
+		{mgl.Vec3{1, -1, -1}},
+		{mgl.Vec3{-1, 1, -1}},
+		{mgl.Vec3{1, 1, -1}},
+		{mgl.Vec3{-1, -1, 1}},
+		{mgl.Vec3{1, -1, 1}},
+		{mgl.Vec3{-1, 1, 1}},
+		{mgl.Vec3{1, 1, 1}},
 	},
 	Indices: []uint16{
 		0, 2, 1, 1, 2, 3,

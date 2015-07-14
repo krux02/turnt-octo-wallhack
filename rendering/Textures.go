@@ -88,7 +88,7 @@ func NewTextures(heightMap *gamestate.HeightMap) *Textures {
 	gl.ActiveTexture(gl.TEXTURE0 + constants.TextureFont)
 	textures[8].Bind(gl.TEXTURE_2D)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, int(surface.W), int(surface.H), 0, gl.RGBA, gl.UNSIGNED_BYTE, uintptr(surface.Data()))
-  gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 
 	gl.ActiveTexture(gl.TEXTURE0)

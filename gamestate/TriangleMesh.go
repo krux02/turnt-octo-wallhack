@@ -2,8 +2,8 @@ package gamestate
 
 import (
 	"fmt"
-	mgl "github.com/krux02/mathgl/mgl32"
 	ai "github.com/krux02/assimp"
+	mgl "github.com/krux02/mathgl/mgl32"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
 	"github.com/krux02/turnt-octo-wallhack/renderstuff"
 	"math"
@@ -21,10 +21,10 @@ type TriangleMesh renderstuff.Mesh
 func QuadMesh() (mesh *renderstuff.Mesh) {
 	mesh = new(renderstuff.Mesh)
 	mesh.Vertices = []MeshVertex{
-		MeshVertex{mgl.Vec4{-1, -1, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
-		MeshVertex{mgl.Vec4{1, -1, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
-		MeshVertex{mgl.Vec4{1, 1, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
-		MeshVertex{mgl.Vec4{-1, 1, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
+		{mgl.Vec4{-1, -1, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
+		{mgl.Vec4{1, -1, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
+		{mgl.Vec4{1, 1, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
+		{mgl.Vec4{-1, 1, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
 	}
 	mesh.Indices = []MeshIndex{0, 1, 2, 2, 3, 0}
 	mesh.Mode = renderstuff.Triangles
@@ -34,15 +34,15 @@ func QuadMesh() (mesh *renderstuff.Mesh) {
 func PortalQuad() (mesh *renderstuff.Mesh) {
 	mesh = new(renderstuff.Mesh)
 	mesh.Vertices = []MeshVertex{
-		MeshVertex{mgl.Vec4{-1, -1, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
-		MeshVertex{mgl.Vec4{1, -1, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
-		MeshVertex{mgl.Vec4{1, 1, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
-		MeshVertex{mgl.Vec4{-1, 1, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
+		{mgl.Vec4{-1, -1, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
+		{mgl.Vec4{1, -1, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
+		{mgl.Vec4{1, 1, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
+		{mgl.Vec4{-1, 1, 0, 1}, mgl.Vec4{0, 0, 1, 0}},
 
-		MeshVertex{mgl.Vec4{-1, -1, 0.5, 1}, mgl.Vec4{0, 0, 1, 0}},
-		MeshVertex{mgl.Vec4{1, -1, 0.5, 1}, mgl.Vec4{0, 0, 1, 0}},
-		MeshVertex{mgl.Vec4{1, 1, 0.5, 1}, mgl.Vec4{0, 0, 1, 0}},
-		MeshVertex{mgl.Vec4{-1, 1, 0.5, 1}, mgl.Vec4{0, 0, 1, 0}},
+		{mgl.Vec4{-1, -1, 0.5, 1}, mgl.Vec4{0, 0, 1, 0}},
+		{mgl.Vec4{1, -1, 0.5, 1}, mgl.Vec4{0, 0, 1, 0}},
+		{mgl.Vec4{1, 1, 0.5, 1}, mgl.Vec4{0, 0, 1, 0}},
+		{mgl.Vec4{-1, 1, 0.5, 1}, mgl.Vec4{0, 0, 1, 0}},
 	}
 	mesh.Indices = []MeshIndex{
 		0, 1, 2, 2, 3, 0,
@@ -55,10 +55,10 @@ func PortalQuad() (mesh *renderstuff.Mesh) {
 func PortalRect() (mesh *renderstuff.Mesh) {
 	mesh = new(renderstuff.Mesh)
 	mesh.Vertices = []MeshVertex{
-		MeshVertex{mgl.Vec4{-1, 0, -2, 1}, mgl.Vec4{0, 1, 0, 0}},
-		MeshVertex{mgl.Vec4{-1, 0, 2, 1}, mgl.Vec4{0, 1, 0, 0}},
-		MeshVertex{mgl.Vec4{1, 0, 2, 1}, mgl.Vec4{0, 1, 0, 0}},
-		MeshVertex{mgl.Vec4{1, 0, -2, 1}, mgl.Vec4{0, 1, 0, 0}},
+		{mgl.Vec4{-1, 0, -2, 1}, mgl.Vec4{0, 1, 0, 0}},
+		{mgl.Vec4{-1, 0, 2, 1}, mgl.Vec4{0, 1, 0, 0}},
+		{mgl.Vec4{1, 0, 2, 1}, mgl.Vec4{0, 1, 0, 0}},
+		{mgl.Vec4{1, 0, -2, 1}, mgl.Vec4{0, 1, 0, 0}},
 	}
 	mesh.Indices = []MeshIndex{0, 1, 2, 2, 3, 0}
 	mesh.Mode = renderstuff.Triangles

@@ -159,7 +159,7 @@ func (m *HeightMap) Normal2f(x float32, y float32) (n mgl.Vec3) {
 func (m *HeightMap) TexturePixels() (pixels []float32) {
 	pixels = make([]float32, m.W*m.H)
 	minh, maxh := m.Bounds()
-	for i, _ := range pixels {
+	for i := range pixels {
 		pixels[i] = (m.Data[i] - minh) / (maxh - minh)
 	}
 	return

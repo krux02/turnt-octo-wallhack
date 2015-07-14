@@ -55,7 +55,7 @@ func (e *Entity) Save(writer io.Writer) {
 	encoder := json.NewEncoder(writer)
 	m := map[string][4]float32{
 		"Position":    [4]float32(e.Position),
-		"Orientation": [4]float32{e.Orientation.W, e.Orientation.V[0], e.Orientation.V[1], e.Orientation.V[2]},
+		"Orientation": {e.Orientation.W, e.Orientation.V[0], e.Orientation.V[1], e.Orientation.V[2]},
 	}
 	encoder.Encode(m)
 }

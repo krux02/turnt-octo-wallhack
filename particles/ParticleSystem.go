@@ -2,8 +2,8 @@ package particles
 
 import (
 	"fmt"
-	mgl "github.com/krux02/mathgl/mgl32"
 	"github.com/go-gl-legacy/gl"
+	mgl "github.com/krux02/mathgl/mgl32"
 	"github.com/krux02/turnt-octo-wallhack/constants"
 	"github.com/krux02/turnt-octo-wallhack/gamestate"
 	"github.com/krux02/turnt-octo-wallhack/helpers"
@@ -59,7 +59,7 @@ func NewParticleSystem(w *gamestate.World, numParticles int, Origin mgl.Vec3, in
 	vertices := make([]ParticleVertex, numParticles)
 	directions := make([]NonTransformBuffer, numParticles)
 
-	for i, _ := range vertices {
+	for i := range vertices {
 		dir := mgl.Vec3{rand.Float32()*2 - 1, rand.Float32()*2 - 1, rand.Float32()*2 - 1}
 		for dir.Len() > 1 {
 			dir = mgl.Vec3{rand.Float32()*2 - 1, rand.Float32()*2 - 1, rand.Float32()*2 - 1}
@@ -231,10 +231,10 @@ func CreateShapeDataBuffer() gl.Buffer {
 	fmt.Println("CreateShapeDataBuffer:")
 
 	particleShape := []ParticleShapeVertex{
-		ParticleShapeVertex{mgl.Vec4{-R, -R, 0, 1}, mgl.Vec2{0, 1}},
-		ParticleShapeVertex{mgl.Vec4{R, -R, 0, 1}, mgl.Vec2{1, 1}},
-		ParticleShapeVertex{mgl.Vec4{R, R, 0, 1}, mgl.Vec2{1, 0}},
-		ParticleShapeVertex{mgl.Vec4{-R, R, 0, 1}, mgl.Vec2{0, 0}},
+		{mgl.Vec4{-R, -R, 0, 1}, mgl.Vec2{0, 1}},
+		{mgl.Vec4{R, -R, 0, 1}, mgl.Vec2{1, 1}},
+		{mgl.Vec4{R, R, 0, 1}, mgl.Vec2{1, 0}},
+		{mgl.Vec4{-R, R, 0, 1}, mgl.Vec2{0, 0}},
 	}
 
 	particleShapeBuffer := gl.GenBuffer()
